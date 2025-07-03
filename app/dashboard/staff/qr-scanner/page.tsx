@@ -1,3 +1,5 @@
+"use client"
+
 import { DashboardLayout } from "@/components/layout/dashboard-layout"
 import { QRScanner } from "@/components/qr-scanner"
 
