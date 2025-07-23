@@ -1,302 +1,472 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Calendar, ChevronLeft, ChevronRight, Plus, Users, Clock, AlertTriangle } from "lucide-react"
+"use client";
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  CalendarIcon,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Plus,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-export default function ManagerSchedulerPage() {
-  const currentWeek = "March 4 - March 10, 2024"
+export default function StaffSchedulerPage() {
+  const [selectedDate, setSelectedDate] = useState("24 October");
+  const [isAddShiftOpen, setIsAddShiftOpen] = useState(false);
+  const { toast } = useToast();
 
-  const shifts = [
+  const stats = [
     {
-      id: 1,
-      day: "Monday",
-      date: "Mar 4",
-      shifts: [
-        { time: "06:00-14:00", staff: "Sarah Johnson", role: "Care Worker", status: "confirmed" },
-        { time: "14:00-22:00", staff: "Mike Chen", role: "Welfare Officer", status: "confirmed" },
-        { time: "22:00-06:00", staff: "David Brown", role: "Security", status: "confirmed" },
-      ],
+      title: "Total Shifts",
+      value: "4",
+      icon: CalendarIcon,
+      color: "text-red-600",
     },
     {
-      id: 2,
-      day: "Tuesday",
-      date: "Mar 5",
-      shifts: [
-        { time: "06:00-14:00", staff: "Emma Wilson", role: "Care Worker", status: "pending" },
-        { time: "14:00-22:00", staff: "John Smith", role: "Care Worker", status: "confirmed" },
-        { time: "22:00-06:00", staff: "David Brown", role: "Security", status: "confirmed" },
-      ],
+      title: "Confirmed",
+      value: "3",
+      icon: CheckCircle,
+      color: "text-green-600",
     },
     {
-      id: 3,
-      day: "Wednesday",
-      date: "Mar 6",
-      shifts: [
-        { time: "06:00-14:00", staff: "Sarah Johnson", role: "Care Worker", status: "confirmed" },
-        { time: "14:00-22:00", staff: "", role: "", status: "vacant" },
-        { time: "22:00-06:00", staff: "Lisa Parker", role: "Security", status: "confirmed" },
-      ],
+      title: "Pending",
+      value: "1",
+      icon: AlertTriangle,
+      color: "text-yellow-600",
     },
     {
-      id: 4,
-      day: "Thursday",
-      date: "Mar 7",
-      shifts: [
-        { time: "06:00-14:00", staff: "Mike Chen", role: "Welfare Officer", status: "confirmed" },
-        { time: "14:00-22:00", staff: "Emma Wilson", role: "Care Worker", status: "confirmed" },
-        { time: "22:00-06:00", staff: "David Brown", role: "Security", status: "confirmed" },
-      ],
+      title: "Total Hours",
+      value: "32",
+      icon: Clock,
+      color: "text-purple-600",
     },
-    {
-      id: 5,
-      day: "Friday",
-      date: "Mar 8",
-      shifts: [
-        { time: "06:00-14:00", staff: "Sarah Johnson", role: "Care Worker", status: "confirmed" },
-        { time: "14:00-22:00", staff: "John Smith", role: "Care Worker", status: "confirmed" },
-        { time: "22:00-06:00", staff: "", role: "", status: "vacant" },
-      ],
-    },
-    {
-      id: 6,
-      day: "Saturday",
-      date: "Mar 9",
-      shifts: [
-        { time: "06:00-14:00", staff: "Emma Wilson", role: "Care Worker", status: "confirmed" },
-        { time: "14:00-22:00", staff: "Mike Chen", role: "Welfare Officer", status: "confirmed" },
-        { time: "22:00-06:00", staff: "Lisa Parker", role: "Security", status: "confirmed" },
-      ],
-    },
-    {
-      id: 7,
-      day: "Sunday",
-      date: "Mar 10",
-      shifts: [
-        { time: "06:00-14:00", staff: "John Smith", role: "Care Worker", status: "confirmed" },
-        { time: "14:00-22:00", staff: "Sarah Johnson", role: "Care Worker", status: "confirmed" },
-        { time: "22:00-06:00", staff: "David Brown", role: "Security", status: "confirmed" },
-      ],
-    },
-  ]
+  ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return "bg-green-100 text-green-800"
-      case "pending":
-        return "bg-yellow-100 text-yellow-800"
-      case "vacant":
-        return "bg-red-100 text-red-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
-  }
+  const timeSlots = [
+    "8:00",
+    "9:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+  ];
 
-  const vacantShifts = shifts.reduce((count, day) => {
-    return count + day.shifts.filter((shift) => shift.status === "vacant").length
-  }, 0)
+  // Timeline shifts organized by rows to avoid overlap
+  const timelineRows = [
+    // Row 1
+    [
+      {
+        id: 1,
+        name: "Sarah Johnson",
+        time: "8:00 - 12:00",
+        startHour: 8,
+        duration: 4,
+        color: "bg-orange-400",
+      },
+      {
+        id: 2,
+        name: "Sarah Johnson",
+        time: "13:00 - 17:00",
+        startHour: 13,
+        duration: 4,
+        color: "bg-green-400",
+      },
+    ],
+    // Row 2
+    [
+      {
+        id: 3,
+        name: "Walter White",
+        time: "9:00 - 12:00",
+        startHour: 9,
+        duration: 3,
+        color: "bg-red-400",
+      },
+      {
+        id: 4,
+        name: "Franklin Saint",
+        time: "10:00 - 13:00",
+        startHour: 10,
+        duration: 3,
+        color: "bg-blue-400",
+      },
+    ],
+    // Row 3
+    [
+      {
+        id: 5,
+        name: "Hank",
+        time: "14:00 - 16:00",
+        startHour: 14,
+        duration: 2,
+        color: "bg-blue-400",
+      },
+    ],
+    // Row 4
+    [
+      {
+        id: 6,
+        name: "Gus Fring",
+        time: "8:00 - 11:00",
+        startHour: 8,
+        duration: 3,
+        color: "bg-orange-400",
+      },
+      {
+        id: 7,
+        name: "Robert",
+        time: "11:00 - 15:00",
+        startHour: 11,
+        duration: 4,
+        color: "bg-green-400",
+      },
+      {
+        id: 8,
+        name: "Chris Evans",
+        time: "13:00 - 17:00",
+        startHour: 13,
+        duration: 4,
+        color: "bg-blue-400",
+      },
+    ],
+    // Row 5
+    [
+      {
+        id: 9,
+        name: "Walter White",
+        time: "12:00 - 14:00",
+        startHour: 12,
+        duration: 2,
+        color: "bg-red-400",
+      },
+      {
+        id: 10,
+        name: "Sarah Johnson",
+        time: "13:00 - 16:00",
+        startHour: 13,
+        duration: 3,
+        color: "bg-green-400",
+      },
+    ],
+    // Row 6
+    [
+      {
+        id: 11,
+        name: "Sarah Johnson",
+        time: "16:00 - 17:00",
+        startHour: 16,
+        duration: 1,
+        color: "bg-green-400",
+      },
+    ],
+  ];
 
-  const pendingShifts = shifts.reduce((count, day) => {
-    return count + day.shifts.filter((shift) => shift.status === "pending").length
-  }, 0)
+  const handleAddShift = () => {
+    toast({
+      title: "Shift Added",
+      description: "New shift has been successfully scheduled.",
+    });
+    setIsAddShiftOpen(false);
+  };
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Staff Scheduler" }]}>
+    <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-start">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Staff Scheduler</h1>
-            <p className="text-muted-foreground">Manage staff shifts and assignments</p>
+            <h1 className="text-2xl font-bold">Staff Scheduler</h1>
+            <p className="text-muted-foreground">
+              Drag and drop to reschedule shifts
+            </p>
           </div>
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Create Shift
-          </Button>
+          <Dialog open={isAddShiftOpen} onOpenChange={setIsAddShiftOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-red-500 hover:bg-red-600 text-white">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Shift
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Schedule New Shift</DialogTitle>
+                <DialogDescription>
+                  Create a new shift assignment for staff
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="staff">Staff Member</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select staff" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sarah">Sarah Johnson</SelectItem>
+                        <SelectItem value="walter">Walter White</SelectItem>
+                        <SelectItem value="hank">Hank</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">Role</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="staff">Staff</SelectItem>
+                        <SelectItem value="security">Security</SelectItem>
+                        <SelectItem value="cook">Cook</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input id="date" type="date" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="startTime">Start Time</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Start" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endTime">End Time</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="End" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddShiftOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleAddShift}>Schedule Shift</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Shifts</p>
-                  <p className="text-2xl font-bold">21</p>
+        <div className="grid gap-4 md:grid-cols-4">
+          {stats.map((stat) => (
+            <Card key={stat.title}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                  </div>
+                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
                 </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Confirmed</p>
-                  <p className="text-2xl font-bold">{21 - vacantShifts - pendingShifts}</p>
-                </div>
-                <Users className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold">{pendingShifts}</p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Vacant</p>
-                  <p className="text-2xl font-bold">{vacantShifts}</p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Week Navigation */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Weekly Schedule
-                </CardTitle>
-                <CardDescription>{currentWeek}</CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm">
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm">
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+        {/* Filters */}
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search" className="pl-10 w-64" />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              {shifts.map((day) => (
-                <div key={day.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{day.day}</h3>
-                      <p className="text-sm text-muted-foreground">{day.date}</p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Edit Day
-                    </Button>
-                  </div>
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {day.shifts.map((shift, index) => (
-                      <div key={index} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm">{shift.time}</span>
-                          <Badge className={getStatusColor(shift.status)}>{shift.status}</Badge>
-                        </div>
-                        {shift.staff ? (
-                          <div>
-                            <p className="font-medium">{shift.staff}</p>
-                            <p className="text-sm text-muted-foreground">{shift.role}</p>
-                          </div>
-                        ) : (
-                          <div className="text-center py-2">
-                            <p className="text-sm text-red-600 font-medium">VACANT</p>
-                            <Button variant="outline" size="sm" className="mt-2 bg-transparent">
-                              Assign Staff
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+            <Select defaultValue="all-branches">
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all-branches">All Branches</SelectItem>
+                <SelectItem value="manchester">Manchester</SelectItem>
+                <SelectItem value="birmingham">Birmingham</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select defaultValue="all-roles">
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all-roles">All Roles</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
+                <SelectItem value="staff">Staff</SelectItem>
+                <SelectItem value="security">Security</SelectItem>
+                <SelectItem value="cook">Cook</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select defaultValue="all-status">
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all-status">All Status</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm">
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </Button>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-medium">{selectedDate}</span>
+              <Button variant="outline" size="sm">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span>8:00 - 17:00</span>
+              <Badge variant="outline" className="text-xs">
+                Now
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Schedule Timeline */}
+        <Card>
+          <CardContent className="p-6">
+            {/* Time Header */}
+            <div className="grid grid-cols-10 gap-0 mb-4">
+              {timeSlots.map((time) => (
+                <div
+                  key={time}
+                  className="text-xs text-center text-muted-foreground font-medium py-2 border-r border-gray-200 last:border-r-0"
+                >
+                  {time}
                 </div>
               ))}
             </div>
+
+            {/* Timeline Rows */}
+            <div className="space-y-2">
+              {timelineRows.map((row, rowIndex) => (
+                <div
+                  key={rowIndex}
+                  className="relative h-12 bg-gray-50 rounded-lg"
+                >
+                  {/* Grid background */}
+                  <div className="absolute inset-0 grid grid-cols-10 gap-0">
+                    {timeSlots.map((_, colIndex) => (
+                      <div
+                        key={colIndex}
+                        className="border-r border-gray-200 last:border-r-0"
+                      ></div>
+                    ))}
+                  </div>
+
+                  {/* Shift blocks in this row */}
+                  {row.map((shift) => {
+                    const leftPercentage = ((shift.startHour - 8) / 9) * 100;
+                    const widthPercentage = (shift.duration / 9) * 100;
+
+                    return (
+                      <div
+                        key={shift.id}
+                        className={`absolute top-1 bottom-1 rounded-md px-3 flex items-center justify-between text-white text-sm font-medium cursor-pointer hover:opacity-90 shadow-sm ${shift.color}`}
+                        style={{
+                          left: `${leftPercentage}%`,
+                          width: `${widthPercentage}%`,
+                        }}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate text-xs">
+                            {shift.name}
+                          </div>
+                          <div className="text-xs opacity-90">{shift.time}</div>
+                        </div>
+                        <MoreHorizontal className="h-3 w-3 ml-2 flex-shrink-0 opacity-70" />
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {/* Legend */}
+            <div className="flex items-center gap-6 mt-6 pt-4 border-t">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-blue-400"></div>
+                <span className="text-sm">Manager</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-green-400"></div>
+                <span className="text-sm">Staff</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-red-400"></div>
+                <span className="text-sm">Security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded bg-orange-400"></div>
+                <span className="text-sm">Cook</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common scheduling tasks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <Button className="w-full justify-start bg-transparent" variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create New Shift Pattern
-                </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
-                  <Users className="h-4 w-4 mr-2" />
-                  Bulk Assign Shifts
-                </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Copy Previous Week
-                </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Fill Vacant Shifts
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Staff Availability</CardTitle>
-              <CardDescription>Available staff for assignment</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div>
-                    <p className="font-medium">Sarah Johnson</p>
-                    <p className="text-sm text-muted-foreground">Care Worker</p>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Available
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div>
-                    <p className="font-medium">Mike Chen</p>
-                    <p className="text-sm text-muted-foreground">Welfare Officer</p>
-                  </div>
-                  <Badge variant="outline" className="bg-green-50 text-green-700">
-                    Available
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-2 border rounded">
-                  <div>
-                    <p className="font-medium">Emma Wilson</p>
-                    <p className="text-sm text-muted-foreground">Care Worker</p>
-                  </div>
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-                    Limited
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </DashboardLayout>
-  )
+  );
 }

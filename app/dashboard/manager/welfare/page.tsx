@@ -1,22 +1,55 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Heart, Search, Filter, Download, AlertTriangle, CheckCircle, Clock, Eye, Plus } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Heart,
+  Search,
+  Filter,
+  Download,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Eye,
+  Plus,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function WelfarePage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const { toast } = useToast();
 
   const welfareChecks = [
     {
@@ -55,7 +88,8 @@ export default function WelfarePage() {
       criticalFlag: true,
       status: "critical",
       followUpRequired: true,
-      notes: "Resident showing signs of anxiety, requires mental health support.",
+      notes:
+        "Resident showing signs of anxiety, requires mental health support.",
     },
     {
       id: "WEL003",
@@ -93,95 +127,107 @@ export default function WelfarePage() {
       criticalFlag: true,
       status: "critical",
       followUpRequired: true,
-      notes: "Resident showing COVID symptoms, isolated immediately. Requires medical attention.",
+      notes:
+        "Resident showing COVID symptoms, isolated immediately. Requires medical attention.",
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
 
   const filteredChecks = welfareChecks.filter((check) => {
     const matchesSearch =
       check.residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       check.residentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      check.room.toLowerCase().includes(searchTerm.toLowerCase())
+      check.room.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || check.branch === selectedBranch
-    const matchesStatus = selectedStatus === "all" || check.status === selectedStatus
+    const matchesBranch =
+      selectedBranch === "all" || check.branch === selectedBranch;
+    const matchesStatus =
+      selectedStatus === "all" || check.status === selectedStatus;
 
-    return matchesSearch && matchesBranch && matchesStatus
-  })
+    return matchesSearch && matchesBranch && matchesStatus;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "critical":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "pending":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "overdue":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getHealthColor = (health: string) => {
     switch (health) {
       case "Excellent":
       case "Good":
-        return "text-green-600"
+        return "text-green-600";
       case "Fair":
-        return "text-yellow-600"
+        return "text-yellow-600";
       case "Poor":
-        return "text-red-600"
+        return "text-red-600";
       default:
-        return "text-gray-600"
+        return "text-gray-600";
     }
-  }
+  };
 
   const getMentalStateColor = (state: string) => {
     switch (state) {
       case "Positive":
       case "Stable":
-        return "text-green-600"
+        return "text-green-600";
       case "Anxious":
-        return "text-yellow-600"
+        return "text-yellow-600";
       case "Distressed":
-        return "text-red-600"
+        return "text-red-600";
       default:
-        return "text-gray-600"
+        return "text-gray-600";
     }
-  }
+  };
 
   const handleViewDetails = (checkId: string) => {
     toast({
       title: "View Welfare Check",
       description: `Opening detailed view for welfare check ${checkId}`,
-    })
-  }
+    });
+  };
 
   const handleNewCheck = () => {
     toast({
       title: "New Welfare Check",
       description: "Opening new welfare check form",
-    })
-  }
+    });
+  };
 
   const getStats = () => {
-    const totalChecks = filteredChecks.length
-    const criticalChecks = filteredChecks.filter((c) => c.criticalFlag).length
-    const completedToday = filteredChecks.filter((c) => c.checkDate === new Date().toISOString().split("T")[0]).length
-    const followUpRequired = filteredChecks.filter((c) => c.followUpRequired).length
+    const totalChecks = filteredChecks.length;
+    const criticalChecks = filteredChecks.filter((c) => c.criticalFlag).length;
+    const completedToday = filteredChecks.filter(
+      (c) => c.checkDate === new Date().toISOString().split("T")[0]
+    ).length;
+    const followUpRequired = filteredChecks.filter(
+      (c) => c.followUpRequired
+    ).length;
 
-    return { totalChecks, criticalChecks, completedToday, followUpRequired }
-  }
+    return { totalChecks, criticalChecks, completedToday, followUpRequired };
+  };
 
-  const stats = getStats()
+  const stats = getStats();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Welfare Checks" }]}
       title="Welfare Check Management"
       description="Monitor and manage resident welfare checks across all branches"
       actions={
@@ -215,8 +261,12 @@ export default function WelfarePage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Critical Flags</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.criticalChecks}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Critical Flags
+                  </p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {stats.criticalChecks}
+                  </p>
                 </div>
                 <AlertTriangle className="h-8 w-8 text-red-600" />
               </div>
@@ -226,7 +276,9 @@ export default function WelfarePage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Completed Today</p>
+                  <p className="text-sm text-muted-foreground">
+                    Completed Today
+                  </p>
                   <p className="text-2xl font-bold">{stats.completedToday}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
@@ -237,8 +289,12 @@ export default function WelfarePage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Follow-up Required</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.followUpRequired}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Follow-up Required
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {stats.followUpRequired}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-orange-600" />
               </div>
@@ -253,7 +309,6 @@ export default function WelfarePage() {
               <Heart className="h-5 w-5" />
               Welfare Check Records
             </CardTitle>
-            <CardDescription>Monitor resident welfare and health status</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -313,9 +368,9 @@ export default function WelfarePage() {
                     <TableHead>Check Details</TableHead>
                     <TableHead>Health Status</TableHead>
                     <TableHead>Mental State</TableHead>
-                    <TableHead>Flags</TableHead>
+
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -323,64 +378,71 @@ export default function WelfarePage() {
                     <TableRow key={check.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{check.residentName}</div>
-                          <div className="text-sm text-muted-foreground">{check.residentId}</div>
+                          <div className="font-medium">
+                            {check.residentName}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {check.residentId}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-sm font-medium">{check.branch}</div>
-                          <div className="text-sm text-muted-foreground">Room {check.room}</div>
+                          <div className="text-sm font-medium">
+                            {check.branch}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Room {check.room}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           <div className="text-sm">{check.checkDate}</div>
-                          <div className="text-sm text-muted-foreground">{check.checkTime}</div>
-                          <div className="text-xs text-muted-foreground">by {check.staffMember}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {check.checkTime}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            by {check.staffMember}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`font-medium ${getHealthColor(check.physicalHealth)}`}>
+                        <span
+                          className={`font-medium ${getHealthColor(
+                            check.physicalHealth
+                          )}`}
+                        >
                           {check.physicalHealth}
                         </span>
                       </TableCell>
                       <TableCell>
-                        <span className={`font-medium ${getMentalStateColor(check.mentalState)}`}>
+                        <span
+                          className={`font-medium ${getMentalStateColor(
+                            check.mentalState
+                          )}`}
+                        >
                           {check.mentalState}
                         </span>
                       </TableCell>
+
                       <TableCell>
-                        <div className="space-y-1">
-                          {check.criticalFlag && (
-                            <Badge variant="destructive" className="text-xs">
-                              Critical
-                            </Badge>
-                          )}
-                          {check.covidSymptoms && (
-                            <Badge variant="secondary" className="text-xs">
-                              COVID
-                            </Badge>
-                          )}
-                          {check.isolationRequired && (
-                            <Badge variant="outline" className="text-xs">
-                              Isolation
-                            </Badge>
-                          )}
-                          {check.followUpRequired && (
-                            <Badge variant="secondary" className="text-xs">
-                              Follow-up
-                            </Badge>
-                          )}
+                        <Badge className={getStatusColor(check.status)}>
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(check.status)}>{check.status}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetails(check.id)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -391,8 +453,12 @@ export default function WelfarePage() {
             {filteredChecks.length === 0 && (
               <div className="text-center py-8">
                 <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No welfare checks found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria.</p>
+                <h3 className="text-lg font-medium mb-2">
+                  No welfare checks found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria.
+                </p>
               </div>
             )}
           </CardContent>
@@ -415,7 +481,10 @@ export default function WelfarePage() {
                 {filteredChecks
                   .filter((check) => check.criticalFlag)
                   .map((check) => (
-                    <div key={check.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <div
+                      key={check.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg"
+                    >
                       <div>
                         <p className="font-medium text-red-900">
                           {check.residentName} - Room {check.room}
@@ -425,7 +494,11 @@ export default function WelfarePage() {
                           {check.branch} • Checked by {check.staffMember}
                         </p>
                       </div>
-                      <Button size="sm" variant="destructive" onClick={() => handleViewDetails(check.id)}>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleViewDetails(check.id)}
+                      >
                         Review
                       </Button>
                     </div>
@@ -436,5 +509,5 @@ export default function WelfarePage() {
         )}
       </div>
     </DashboardLayout>
-  )
+  );
 }

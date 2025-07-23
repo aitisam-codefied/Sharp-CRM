@@ -197,7 +197,6 @@ export default function IncidentsPage() {
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Incident Reports" }]}
       title="Incident Management System"
       description="Report, track and manage incidents across all branches"
       actions={
@@ -421,13 +420,13 @@ export default function IncidentsPage() {
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-muted">
                     <TableHead>Incident Details</TableHead>
                     <TableHead>Location & Resident</TableHead>
                     <TableHead>Severity & Category</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Reported</TableHead>
-                    <TableHead>Assigned To</TableHead>
+                 
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -438,7 +437,7 @@ export default function IncidentsPage() {
                         <div>
                           <div className="font-medium">{incident.title}</div>
                           <div className="text-sm text-muted-foreground line-clamp-2">{incident.description}</div>
-                          <div className="text-xs text-muted-foreground mt-1">ID: {incident.id}</div>
+                        
                         </div>
                       </TableCell>
                       <TableCell>
@@ -470,9 +469,7 @@ export default function IncidentsPage() {
                           <div className="text-xs text-muted-foreground">by {incident.reportedBy}</div>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="text-sm">{incident.assignedTo}</div>
-                      </TableCell>
+                    
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <Button variant="ghost" size="sm" onClick={() => handleViewIncident(incident.id)}>

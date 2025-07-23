@@ -1,356 +1,457 @@
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Utensils, Search, Download, Clock, Users, TrendingUp, AlertTriangle } from "lucide-react"
+"use client";
 
-export default function ManagerMealsPage() {
-  const mealData = [
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import {
+  Utensils,
+  Search,
+  QrCode,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Download,
+  Filter,
+  Users,
+  TrendingUp,
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+export default function MealsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedMeal, setSelectedMeal] = useState("all");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const { toast } = useToast();
+
+  const residents = [
     {
-      id: 1,
-      resident: "John Smith",
-      room: "204",
-      breakfast: { collected: true, time: "08:15 AM", dietary: "Regular" },
-      lunch: { collected: false, time: null, dietary: "Regular" },
-      dinner: { collected: false, time: null, dietary: "Regular" },
-      specialRequirements: "None",
-      lastUpdated: "2 hours ago",
+      id: "SMS-USER-1001",
+      name: "John Smith",
+      room: "204A",
+      branch: "Manchester",
+      meals: {
+        breakfast: { marked: true, time: "08:30", staff: "Sarah J." },
+        lunch: { marked: false, time: null, staff: null },
+        dinner: { marked: false, time: null, staff: null },
+      },
+      dietary: ["Halal", "No Nuts"],
+      lastMeal: "Breakfast",
     },
     {
-      id: 2,
-      resident: "Mary Wilson",
-      room: "301",
-      breakfast: { collected: true, time: "08:30 AM", dietary: "Vegetarian" },
-      lunch: { collected: true, time: "12:45 PM", dietary: "Vegetarian" },
-      dinner: { collected: false, time: null, dietary: "Vegetarian" },
-      specialRequirements: "Vegetarian",
-      lastUpdated: "30 minutes ago",
+      id: "SMS-USER-1002",
+      name: "Ahmed Hassan",
+      room: "205B",
+      branch: "Manchester",
+      meals: {
+        breakfast: { marked: true, time: "08:15", staff: "Ahmed H." },
+        lunch: { marked: true, time: "12:45", staff: "Emma W." },
+        dinner: { marked: false, time: null, staff: null },
+      },
+      dietary: ["Vegetarian"],
+      lastMeal: "Lunch",
     },
     {
-      id: 3,
-      resident: "Robert Davis",
-      room: "105",
-      breakfast: { collected: false, time: null, dietary: "Diabetic" },
-      lunch: { collected: false, time: null, dietary: "Diabetic" },
-      dinner: { collected: false, time: null, dietary: "Diabetic" },
-      specialRequirements: "Diabetic, Low Sodium",
-      lastUpdated: "1 hour ago",
+      id: "SMS-USER-1003",
+      name: "Maria Garcia",
+      room: "206A",
+      branch: "Birmingham",
+      meals: {
+        breakfast: { marked: false, time: null, staff: null },
+        lunch: { marked: false, time: null, staff: null },
+        dinner: { marked: false, time: null, staff: null },
+      },
+      dietary: [],
+      lastMeal: "None",
     },
     {
-      id: 4,
-      resident: "Alice Johnson",
-      room: "208",
-      breakfast: { collected: true, time: "09:00 AM", dietary: "Halal" },
-      lunch: { collected: true, time: "01:15 PM", dietary: "Halal" },
-      dinner: { collected: false, time: null, dietary: "Halal" },
-      specialRequirements: "Halal",
-      lastUpdated: "45 minutes ago",
+      id: "SMS-USER-1004",
+      name: "David Wilson",
+      room: "207B",
+      branch: "Liverpool",
+      meals: {
+        breakfast: { marked: true, time: "09:00", staff: "Lisa C." },
+        lunch: { marked: false, time: null, staff: null },
+        dinner: { marked: false, time: null, staff: null },
+      },
+      dietary: ["Gluten Free"],
+      lastMeal: "Breakfast",
     },
-  ]
+  ];
 
-  const mealStats = {
-    breakfast: { total: 28, collected: 24, percentage: 86 },
-    lunch: { total: 28, collected: 18, percentage: 64 },
-    dinner: { total: 28, collected: 0, percentage: 0 },
-  }
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
 
-  const dietaryBreakdown = [
-    { type: "Regular", count: 18, percentage: 64 },
-    { type: "Vegetarian", count: 4, percentage: 14 },
-    { type: "Diabetic", count: 3, percentage: 11 },
-    { type: "Halal", count: 2, percentage: 7 },
-    { type: "Other", count: 1, percentage: 4 },
-  ]
+  const filteredResidents = residents.filter((resident) => {
+    const matchesSearch =
+      resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resident.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resident.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const getMealStatus = (meal: any) => {
-    if (meal.collected) {
-      return <Badge className="bg-green-100 text-green-800">Collected</Badge>
-    }
-    return <Badge className="bg-gray-100 text-gray-800">Pending</Badge>
-  }
+    const matchesBranch =
+      selectedBranch === "all" || resident.branch === selectedBranch;
 
-  const getDietaryColor = (dietary: string) => {
-    switch (dietary.toLowerCase()) {
-      case "vegetarian":
-        return "text-green-600"
-      case "diabetic":
-        return "text-blue-600"
-      case "halal":
-        return "text-purple-600"
-      default:
-        return "text-gray-600"
-    }
-  }
+    return matchesSearch && matchesBranch;
+  });
+
+  const handleMealToggle = (
+    userId: string,
+    mealType: string,
+    checked: boolean
+  ) => {
+    const currentTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const resident = residents.find((r) => r.id === userId);
+
+    toast({
+      title: checked ? "Meal Marked" : "Meal Unmarked",
+      description: `${mealType} ${checked ? "marked" : "unmarked"} for ${
+        resident?.name
+      }`,
+    });
+  };
+
+  const getMealStats = () => {
+    const totalResidents = filteredResidents.length;
+    const breakfastMarked = filteredResidents.filter(
+      (r) => r.meals.breakfast.marked
+    ).length;
+    const lunchMarked = filteredResidents.filter(
+      (r) => r.meals.lunch.marked
+    ).length;
+    const dinnerMarked = filteredResidents.filter(
+      (r) => r.meals.dinner.marked
+    ).length;
+
+    return {
+      breakfast: {
+        marked: breakfastMarked,
+        total: totalResidents,
+        percentage: (breakfastMarked / totalResidents) * 100,
+      },
+      lunch: {
+        marked: lunchMarked,
+        total: totalResidents,
+        percentage: (lunchMarked / totalResidents) * 100,
+      },
+      dinner: {
+        marked: dinnerMarked,
+        total: totalResidents,
+        percentage: (dinnerMarked / totalResidents) * 100,
+      },
+      totalMarked: breakfastMarked + lunchMarked + dinnerMarked,
+      totalPossible: totalResidents * 3,
+    };
+  };
+
+  const stats = getMealStats();
 
   return (
-    <DashboardLayout breadcrumbs={[{ label: "Meal Marking" }]}>
+    <DashboardLayout
+      title="Meal Tracking System"
+      description="Track meal attendance and dietary requirements across all branches"
+    >
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Meal Marking</h1>
-            <p className="text-muted-foreground">Track meal collection and dietary requirements</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2 bg-transparent">
-              <Download className="h-4 w-4" />
-              Export Report
-            </Button>
-            <Button className="flex items-center gap-2">
-              <Utensils className="h-4 w-4" />
-              Mark Meals
-            </Button>
-          </div>
-        </div>
-
-        {/* Meal Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
+        {/* Meal Statistics */}
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Breakfast</h3>
-                <Utensils className="h-5 w-5 text-orange-600" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Collected:</span>
-                  <span className="font-medium">
-                    {mealStats.breakfast.collected}/{mealStats.breakfast.total}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-orange-600 h-2 rounded-full"
-                    style={{ width: `${mealStats.breakfast.percentage}%` }}
-                  />
-                </div>
-                <div className="text-right text-sm text-muted-foreground">
-                  {mealStats.breakfast.percentage}% completion
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Lunch</h3>
-                <Utensils className="h-5 w-5 text-green-600" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Collected:</span>
-                  <span className="font-medium">
-                    {mealStats.lunch.collected}/{mealStats.lunch.total}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-green-600 h-2 rounded-full" style={{ width: `${mealStats.lunch.percentage}%` }} />
-                </div>
-                <div className="text-right text-sm text-muted-foreground">{mealStats.lunch.percentage}% completion</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="font-semibold">Dinner</h3>
-                <Utensils className="h-5 w-5 text-blue-600" />
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Collected:</span>
-                  <span className="font-medium">
-                    {mealStats.dinner.collected}/{mealStats.dinner.total}
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${mealStats.dinner.percentage}%` }} />
-                </div>
-                <div className="text-right text-sm text-muted-foreground">
-                  {mealStats.dinner.percentage}% completion
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Dietary Requirements Breakdown */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Dietary Requirements</CardTitle>
-              <CardDescription>Distribution of special dietary needs</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Breakfast</CardTitle>
+              <Utensils className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {dietaryBreakdown.map((diet, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-20 text-sm font-medium">{diet.type}</div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${diet.percentage}%` }} />
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">{diet.count}</div>
-                      <div className="text-xs text-muted-foreground">{diet.percentage}%</div>
-                    </div>
-                  </div>
-                ))}
+              <div className="text-2xl font-bold">
+                {stats.breakfast.marked}/{stats.breakfast.total}
+              </div>
+              <Progress value={stats.breakfast.percentage} className="mt-2" />
+              <div className="flex items-center text-xs text-muted-foreground mt-1">
+                <CheckCircle className="mr-1 h-3 w-3 text-green-500" />
+                {Math.round(stats.breakfast.percentage)}% completed
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Today's Summary</CardTitle>
-              <CardDescription>Overall meal collection statistics</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Lunch</CardTitle>
+              <Utensils className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-blue-600" />
-                    <span className="font-medium">Total Residents</span>
-                  </div>
-                  <span className="text-2xl font-bold">28</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                    <span className="font-medium">Meals Collected</span>
-                  </div>
-                  <span className="text-2xl font-bold">42</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                    <span className="font-medium">Missed Meals</span>
-                  </div>
-                  <span className="text-2xl font-bold">12</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-purple-600" />
-                    <span className="font-medium">Avg Collection Time</span>
-                  </div>
-                  <span className="text-2xl font-bold">2.5m</span>
-                </div>
+              <div className="text-2xl font-bold">
+                {stats.lunch.marked}/{stats.lunch.total}
+              </div>
+              <Progress value={stats.lunch.percentage} className="mt-2" />
+              <div className="flex items-center text-xs text-muted-foreground mt-1">
+                <Clock className="mr-1 h-3 w-3 text-orange-500" />
+                {Math.round(stats.lunch.percentage)}% completed
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Dinner</CardTitle>
+              <Utensils className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.dinner.marked}/{stats.dinner.total}
+              </div>
+              <Progress value={stats.dinner.percentage} className="mt-2" />
+              <div className="flex items-center text-xs text-muted-foreground mt-1">
+                <AlertCircle className="mr-1 h-3 w-3 text-gray-500" />
+                {Math.round(stats.dinner.percentage)}% completed
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Meals</CardTitle>
+              <TrendingUp className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.totalMarked}/{stats.totalPossible}
+              </div>
+              <Progress
+                value={(stats.totalMarked / stats.totalPossible) * 100}
+                className="mt-2"
+              />
+              <div className="flex items-center text-xs text-muted-foreground mt-1">
+                <Users className="mr-1 h-3 w-3" />
+                {Math.round((stats.totalMarked / stats.totalPossible) * 100)}%
+                overall
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Meal Tracking Table */}
+        {/* Filters and Search */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Utensils className="h-5 w-5" />
-                  Meal Collection Tracking
-                </CardTitle>
-                <CardDescription>Individual resident meal status</CardDescription>
-              </div>
-              <div className="flex gap-2">
-                <Select>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by dietary" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Dietary Types</SelectItem>
-                    <SelectItem value="regular">Regular</SelectItem>
-                    <SelectItem value="vegetarian">Vegetarian</SelectItem>
-                    <SelectItem value="diabetic">Diabetic</SelectItem>
-                    <SelectItem value="halal">Halal</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input placeholder="Search residents..." className="pl-10 w-64" />
-                </div>
-              </div>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Utensils className="h-5 w-5" />
+              Meal Attendance Tracking
+            </CardTitle>
+            <CardDescription>
+              Mark meal attendance for residents across all branches
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex flex-col md:flex-row gap-4 mb-6">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, room, or ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <Input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full md:w-48"
+              />
+              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="All Branches" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Branches</SelectItem>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch} value={branch}>
+                      {branch}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="All Meals" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Meals</SelectItem>
+                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                  <SelectItem value="lunch">Lunch</SelectItem>
+                  <SelectItem value="dinner">Dinner</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm">
+                <Filter className="h-4 w-4 mr-2" />
+                More Filters
+              </Button>
+            </div>
+
+            {/* Residents Table */}
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Resident</TableHead>
+                    <TableHead>Branch & Room</TableHead>
+                    <TableHead>Dietary Requirements</TableHead>
                     <TableHead>Breakfast</TableHead>
                     <TableHead>Lunch</TableHead>
                     <TableHead>Dinner</TableHead>
-                    <TableHead>Dietary Requirements</TableHead>
-                    <TableHead>Last Updated</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mealData.map((resident) => (
+                  {filteredResidents.map((resident) => (
                     <TableRow key={resident.id}>
                       <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar>
-                            <AvatarFallback>
-                              {resident.resident
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{resident.resident}</div>
-                            <div className="text-sm text-muted-foreground">Room {resident.room}</div>
+                        <div>
+                          <div className="font-medium">{resident.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {resident.id}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          {getMealStatus(resident.breakfast)}
-                          {resident.breakfast.collected && (
-                            <div className="text-xs text-muted-foreground">{resident.breakfast.time}</div>
+                          <div className="text-sm font-medium">
+                            {resident.branch}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Room {resident.room}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {resident.dietary.length > 0 ? (
+                            resident.dietary.map((diet) => (
+                              <Badge
+                                key={diet}
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                {diet}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-sm text-muted-foreground">
+                              None
+                            </span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          {getMealStatus(resident.lunch)}
-                          {resident.lunch.collected && (
-                            <div className="text-xs text-muted-foreground">{resident.lunch.time}</div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`${resident.id}-breakfast`}
+                            checked={resident.meals.breakfast.marked}
+                            onCheckedChange={(checked) =>
+                              handleMealToggle(
+                                resident.id,
+                                "breakfast",
+                                checked as boolean
+                              )
+                            }
+                          />
+                          {resident.meals.breakfast.marked && (
+                            <div className="text-xs text-muted-foreground">
+                              <div>{resident.meals.breakfast.time}</div>
+                              <div>{resident.meals.breakfast.staff}</div>
+                            </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-1">
-                          {getMealStatus(resident.dinner)}
-                          {resident.dinner.collected && (
-                            <div className="text-xs text-muted-foreground">{resident.dinner.time}</div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`${resident.id}-lunch`}
+                            checked={resident.meals.lunch.marked}
+                            onCheckedChange={(checked) =>
+                              handleMealToggle(
+                                resident.id,
+                                "lunch",
+                                checked as boolean
+                              )
+                            }
+                          />
+                          {resident.meals.lunch.marked && (
+                            <div className="text-xs text-muted-foreground">
+                              <div>{resident.meals.lunch.time}</div>
+                              <div>{resident.meals.lunch.staff}</div>
+                            </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className={`font-medium ${getDietaryColor(resident.breakfast.dietary)}`}>
-                          {resident.breakfast.dietary}
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`${resident.id}-dinner`}
+                            checked={resident.meals.dinner.marked}
+                            onCheckedChange={(checked) =>
+                              handleMealToggle(
+                                resident.id,
+                                "dinner",
+                                checked as boolean
+                              )
+                            }
+                          />
+                          {resident.meals.dinner.marked && (
+                            <div className="text-xs text-muted-foreground">
+                              <div>{resident.meals.dinner.time}</div>
+                              <div>{resident.meals.dinner.staff}</div>
+                            </div>
+                          )}
                         </div>
-                        {resident.specialRequirements !== "None" && (
-                          <div className="text-xs text-muted-foreground">{resident.specialRequirements}</div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground">{resident.lastUpdated}</div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            Update
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
-                            View Details
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -359,9 +460,19 @@ export default function ManagerMealsPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {filteredResidents.length === 0 && (
+              <div className="text-center py-8">
+                <Utensils className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">No residents found</h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

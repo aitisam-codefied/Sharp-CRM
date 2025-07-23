@@ -1,24 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Progress } from "@/components/ui/progress"
-import { MessageSquare, Search, Download, Star, Eye, BarChart3, Utensils, ThumbsUp, ThumbsDown } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
+import {
+  MessageSquare,
+  Search,
+  Download,
+  Star,
+  Eye,
+  BarChart3,
+  Utensils,
+  ThumbsUp,
+  ThumbsDown,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function FeedbackPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedMeal, setSelectedMeal] = useState("all")
-  const [selectedRating, setSelectedRating] = useState("all")
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedMeal, setSelectedMeal] = useState("all");
+  const [selectedRating, setSelectedRating] = useState("all");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const { toast } = useToast();
 
   const feedbackData = [
     {
@@ -57,7 +90,8 @@ export default function FeedbackPage() {
         temperature: 2,
         overall: 3.0,
       },
-      comments: "Food was cold when served, taste was okay but could be better.",
+      comments:
+        "Food was cold when served, taste was okay but could be better.",
       staffMember: "Ahmed Hassan",
       dietary: ["Vegetarian"],
     },
@@ -77,7 +111,8 @@ export default function FeedbackPage() {
         temperature: 5,
         overall: 5.0,
       },
-      comments: "Excellent dinner! The curry was perfectly spiced and very fresh.",
+      comments:
+        "Excellent dinner! The curry was perfectly spiced and very fresh.",
       staffMember: "Emma Wilson",
       dietary: [],
     },
@@ -101,68 +136,86 @@ export default function FeedbackPage() {
       staffMember: "Lisa Chen",
       dietary: ["Gluten Free"],
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
-  const mealTypes = ["Breakfast", "Lunch", "Dinner"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
+  const mealTypes = ["Breakfast", "Lunch", "Dinner"];
 
   const filteredFeedback = feedbackData.filter((feedback) => {
     const matchesSearch =
       feedback.residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       feedback.residentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feedback.comments.toLowerCase().includes(searchTerm.toLowerCase())
+      feedback.comments.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || feedback.branch === selectedBranch
-    const matchesMeal = selectedMeal === "all" || feedback.mealType === selectedMeal
+    const matchesBranch =
+      selectedBranch === "all" || feedback.branch === selectedBranch;
+    const matchesMeal =
+      selectedMeal === "all" || feedback.mealType === selectedMeal;
     const matchesRating =
       selectedRating === "all" ||
       (selectedRating === "excellent" && feedback.ratings.overall >= 4.5) ||
-      (selectedRating === "good" && feedback.ratings.overall >= 3.5 && feedback.ratings.overall < 4.5) ||
-      (selectedRating === "fair" && feedback.ratings.overall >= 2.5 && feedback.ratings.overall < 3.5) ||
-      (selectedRating === "poor" && feedback.ratings.overall < 2.5)
+      (selectedRating === "good" &&
+        feedback.ratings.overall >= 3.5 &&
+        feedback.ratings.overall < 4.5) ||
+      (selectedRating === "fair" &&
+        feedback.ratings.overall >= 2.5 &&
+        feedback.ratings.overall < 3.5) ||
+      (selectedRating === "poor" && feedback.ratings.overall < 2.5);
 
-    return matchesSearch && matchesBranch && matchesMeal && matchesRating
-  })
+    return matchesSearch && matchesBranch && matchesMeal && matchesRating;
+  });
 
   const getRatingColor = (rating: number) => {
-    if (rating >= 4.5) return "text-green-600"
-    if (rating >= 3.5) return "text-blue-600"
-    if (rating >= 2.5) return "text-yellow-600"
-    return "text-red-600"
-  }
+    if (rating >= 4.5) return "text-green-600";
+    if (rating >= 3.5) return "text-blue-600";
+    if (rating >= 2.5) return "text-yellow-600";
+    return "text-red-600";
+  };
 
   const getRatingBadgeColor = (rating: number) => {
-    if (rating >= 4.5) return "bg-green-100 text-green-800"
-    if (rating >= 3.5) return "bg-blue-100 text-blue-800"
-    if (rating >= 2.5) return "bg-yellow-100 text-yellow-800"
-    return "bg-red-100 text-red-800"
-  }
+    if (rating >= 4.5) return "bg-green-100 text-green-800";
+    if (rating >= 3.5) return "bg-blue-100 text-blue-800";
+    if (rating >= 2.5) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
+  };
 
   const getMealTypeColor = (mealType: string) => {
     switch (mealType) {
       case "Breakfast":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       case "Lunch":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "Dinner":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const handleViewDetails = (feedbackId: string) => {
     toast({
       title: "View Feedback",
       description: `Opening detailed view for feedback ${feedbackId}`,
-    })
-  }
+    });
+  };
 
   const getStats = () => {
-    const totalFeedback = filteredFeedback.length
-    const avgRating = filteredFeedback.reduce((sum, f) => sum + f.ratings.overall, 0) / totalFeedback || 0
-    const positiveCount = filteredFeedback.filter((f) => f.ratings.overall >= 4).length
-    const negativeCount = filteredFeedback.filter((f) => f.ratings.overall < 3).length
+    const totalFeedback = filteredFeedback.length;
+    const avgRating =
+      filteredFeedback.reduce((sum, f) => sum + f.ratings.overall, 0) /
+        totalFeedback || 0;
+    const positiveCount = filteredFeedback.filter(
+      (f) => f.ratings.overall >= 4
+    ).length;
+    const negativeCount = filteredFeedback.filter(
+      (f) => f.ratings.overall < 3
+    ).length;
 
     return {
       totalFeedback,
@@ -171,121 +224,32 @@ export default function FeedbackPage() {
       negativeCount,
       positivePercentage: (positiveCount / totalFeedback) * 100 || 0,
       negativePercentage: (negativeCount / totalFeedback) * 100 || 0,
-    }
-  }
+    };
+  };
 
-  const stats = getStats()
+  const stats = getStats();
 
   const getCategoryAverages = () => {
-    const categories = ["taste", "freshness", "portion", "temperature"]
+    const categories = ["taste", "freshness", "portion", "temperature"];
     return categories.map((category) => {
       const avg =
-        filteredFeedback.reduce((sum, f) => sum + f.ratings[category as keyof typeof f.ratings], 0) /
-          filteredFeedback.length || 0
-      return { category, average: avg }
-    })
-  }
+        filteredFeedback.reduce(
+          (sum, f) => sum + f.ratings[category as keyof typeof f.ratings],
+          0
+        ) / filteredFeedback.length || 0;
+      return { category, average: avg };
+    });
+  };
 
-  const categoryAverages = getCategoryAverages()
+  const categoryAverages = getCategoryAverages();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Food Feedback" }]}
       title="Food Feedback Management"
       description="Monitor meal satisfaction and feedback from residents"
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Analytics
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-        </div>
-      }
     >
       <div className="space-y-6">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Feedback</p>
-                  <p className="text-2xl font-bold">{stats.totalFeedback}</p>
-                </div>
-                <MessageSquare className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Average Rating</p>
-                  <p className={`text-2xl font-bold ${getRatingColor(stats.avgRating)}`}>
-                    {stats.avgRating.toFixed(1)}
-                  </p>
-                </div>
-                <Star className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Positive Feedback</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.positiveCount}</p>
-                  <p className="text-xs text-muted-foreground">{stats.positivePercentage.toFixed(1)}%</p>
-                </div>
-                <ThumbsUp className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Needs Improvement</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.negativeCount}</p>
-                  <p className="text-xs text-muted-foreground">{stats.negativePercentage.toFixed(1)}%</p>
-                </div>
-                <ThumbsDown className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         <div className="grid gap-6 lg:grid-cols-3">
-          {/* Category Ratings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Category Ratings
-              </CardTitle>
-              <CardDescription>Average ratings by category</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {categoryAverages.map((category) => (
-                  <div key={category.category} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium capitalize">{category.category}</span>
-                      <span className={`font-bold ${getRatingColor(category.average)}`}>
-                        {category.average.toFixed(1)}
-                      </span>
-                    </div>
-                    <Progress value={(category.average / 5) * 100} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Recent Feedback */}
           <Card className="lg:col-span-2">
             <CardHeader>
@@ -293,7 +257,9 @@ export default function FeedbackPage() {
                 <MessageSquare className="h-5 w-5" />
                 Recent Feedback
               </CardTitle>
-              <CardDescription>Latest meal feedback from residents</CardDescription>
+              <CardDescription>
+                Latest meal feedback from residents
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -307,8 +273,14 @@ export default function FeedbackPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={getMealTypeColor(feedback.mealType)}>{feedback.mealType}</Badge>
-                        <Badge className={getRatingBadgeColor(feedback.ratings.overall)}>
+                        <Badge className={getMealTypeColor(feedback.mealType)}>
+                          {feedback.mealType}
+                        </Badge>
+                        <Badge
+                          className={getRatingBadgeColor(
+                            feedback.ratings.overall
+                          )}
+                        >
                           <Star className="h-3 w-3 mr-1" />
                           {feedback.ratings.overall.toFixed(1)}
                         </Badge>
@@ -326,6 +298,41 @@ export default function FeedbackPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Category Ratings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Category Ratings
+              </CardTitle>
+              <CardDescription>Average ratings by category</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {categoryAverages.map((category) => (
+                  <div key={category.category} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium capitalize">
+                        {category.category}
+                      </span>
+                      <span
+                        className={`font-bold ${getRatingColor(
+                          category.average
+                        )}`}
+                      >
+                        {category.average.toFixed(1)}
+                      </span>
+                    </div>
+                    <Progress
+                      value={(category.average / 5) * 100}
+                      className="h-2"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Feedback Table */}
@@ -335,7 +342,9 @@ export default function FeedbackPage() {
               <Utensils className="h-5 w-5" />
               Feedback Records
             </CardTitle>
-            <CardDescription>Detailed meal feedback and ratings</CardDescription>
+            <CardDescription>
+              Detailed meal feedback and ratings
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -402,11 +411,11 @@ export default function FeedbackPage() {
                   <TableRow>
                     <TableHead>Resident</TableHead>
                     <TableHead>Meal Details</TableHead>
-                    <TableHead>Ratings</TableHead>
+
                     <TableHead>Overall</TableHead>
                     <TableHead>Comments</TableHead>
                     <TableHead>Staff</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -414,7 +423,9 @@ export default function FeedbackPage() {
                     <TableRow key={feedback.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{feedback.residentName}</div>
+                          <div className="font-medium">
+                            {feedback.residentName}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             {feedback.branch} • Room {feedback.room}
                           </div>
@@ -422,47 +433,51 @@ export default function FeedbackPage() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <Badge className={getMealTypeColor(feedback.mealType)}>{feedback.mealType}</Badge>
-                          <div className="text-sm text-muted-foreground">
+                          <Badge
+                            className={getMealTypeColor(feedback.mealType)}
+                          >
+                            {feedback.mealType}
+                          </Badge>
+                          <div className="text-xs text-muted-foreground">
                             {feedback.date} at {feedback.time}
                           </div>
-                          {feedback.dietary.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {feedback.dietary.map((diet) => (
-                                <Badge key={diet} variant="outline" className="text-xs">
-                                  {diet}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="space-y-1 text-xs">
-                          <div>Taste: {feedback.ratings.taste}/5</div>
-                          <div>Fresh: {feedback.ratings.freshness}/5</div>
-                          <div>Portion: {feedback.ratings.portion}/5</div>
-                          <div>Temp: {feedback.ratings.temperature}/5</div>
-                        </div>
-                      </TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 text-yellow-500" />
-                          <span className={`font-bold ${getRatingColor(feedback.ratings.overall)}`}>
+                          <span
+                            className={`font-bold ${getRatingColor(
+                              feedback.ratings.overall
+                            )}`}
+                          >
                             {feedback.ratings.overall.toFixed(1)}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <p className="text-sm line-clamp-2 max-w-xs">{feedback.comments}</p>
+                        <p className="text-sm line-clamp-2 max-w-xs">
+                          {feedback.comments}
+                        </p>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-muted-foreground">{feedback.staffMember}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {feedback.staffMember}
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetails(feedback.id)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -474,12 +489,14 @@ export default function FeedbackPage() {
               <div className="text-center py-8">
                 <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No feedback found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria.</p>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

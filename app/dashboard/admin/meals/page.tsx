@@ -1,15 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Progress } from "@/components/ui/progress"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 import {
   Utensils,
   Search,
@@ -21,15 +40,20 @@ import {
   Filter,
   Users,
   TrendingUp,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+  Eye,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MealsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedMeal, setSelectedMeal] = useState("all")
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0])
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedMeal, setSelectedMeal] = useState("all");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const { toast } = useToast();
 
   const residents = [
     {
@@ -84,36 +108,58 @@ export default function MealsPage() {
       dietary: ["Gluten Free"],
       lastMeal: "Breakfast",
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
 
   const filteredResidents = residents.filter((resident) => {
     const matchesSearch =
       resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resident.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resident.id.toLowerCase().includes(searchTerm.toLowerCase())
+      resident.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || resident.branch === selectedBranch
+    const matchesBranch =
+      selectedBranch === "all" || resident.branch === selectedBranch;
 
-    return matchesSearch && matchesBranch
-  })
+    return matchesSearch && matchesBranch;
+  });
 
-  const handleMealToggle = (userId: string, mealType: string, checked: boolean) => {
-    const currentTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    const resident = residents.find((r) => r.id === userId)
+  const handleMealToggle = (
+    userId: string,
+    mealType: string,
+    checked: boolean
+  ) => {
+    const currentTime = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    const resident = residents.find((r) => r.id === userId);
 
     toast({
       title: checked ? "Meal Marked" : "Meal Unmarked",
-      description: `${mealType} ${checked ? "marked" : "unmarked"} for ${resident?.name}`,
-    })
-  }
+      description: `${mealType} ${checked ? "marked" : "unmarked"} for ${
+        resident?.name
+      }`,
+    });
+  };
 
   const getMealStats = () => {
-    const totalResidents = filteredResidents.length
-    const breakfastMarked = filteredResidents.filter((r) => r.meals.breakfast.marked).length
-    const lunchMarked = filteredResidents.filter((r) => r.meals.lunch.marked).length
-    const dinnerMarked = filteredResidents.filter((r) => r.meals.dinner.marked).length
+    const totalResidents = filteredResidents.length;
+    const breakfastMarked = filteredResidents.filter(
+      (r) => r.meals.breakfast.marked
+    ).length;
+    const lunchMarked = filteredResidents.filter(
+      (r) => r.meals.lunch.marked
+    ).length;
+    const dinnerMarked = filteredResidents.filter(
+      (r) => r.meals.dinner.marked
+    ).length;
 
     return {
       breakfast: {
@@ -121,32 +167,27 @@ export default function MealsPage() {
         total: totalResidents,
         percentage: (breakfastMarked / totalResidents) * 100,
       },
-      lunch: { marked: lunchMarked, total: totalResidents, percentage: (lunchMarked / totalResidents) * 100 },
-      dinner: { marked: dinnerMarked, total: totalResidents, percentage: (dinnerMarked / totalResidents) * 100 },
+      lunch: {
+        marked: lunchMarked,
+        total: totalResidents,
+        percentage: (lunchMarked / totalResidents) * 100,
+      },
+      dinner: {
+        marked: dinnerMarked,
+        total: totalResidents,
+        percentage: (dinnerMarked / totalResidents) * 100,
+      },
       totalMarked: breakfastMarked + lunchMarked + dinnerMarked,
       totalPossible: totalResidents * 3,
-    }
-  }
+    };
+  };
 
-  const stats = getMealStats()
+  const stats = getMealStats();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Meal Marking" }]}
       title="Meal Tracking System"
       description="Track meal attendance and dietary requirements across all branches"
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <QrCode className="h-4 w-4 mr-2" />
-            QR Scanner
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-        </div>
-      }
     >
       <div className="space-y-6">
         {/* Meal Statistics */}
@@ -211,10 +252,14 @@ export default function MealsPage() {
               <div className="text-2xl font-bold">
                 {stats.totalMarked}/{stats.totalPossible}
               </div>
-              <Progress value={(stats.totalMarked / stats.totalPossible) * 100} className="mt-2" />
+              <Progress
+                value={(stats.totalMarked / stats.totalPossible) * 100}
+                className="mt-2"
+              />
               <div className="flex items-center text-xs text-muted-foreground mt-1">
                 <Users className="mr-1 h-3 w-3" />
-                {Math.round((stats.totalMarked / stats.totalPossible) * 100)}% overall
+                {Math.round((stats.totalMarked / stats.totalPossible) * 100)}%
+                overall
               </div>
             </CardContent>
           </Card>
@@ -227,7 +272,9 @@ export default function MealsPage() {
               <Utensils className="h-5 w-5" />
               Meal Attendance Tracking
             </CardTitle>
-            <CardDescription>Mark meal attendance for residents across all branches</CardDescription>
+            <CardDescription>
+              Mark meal attendance for residents across all branches
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -289,7 +336,7 @@ export default function MealsPage() {
                     <TableHead>Breakfast</TableHead>
                     <TableHead>Lunch</TableHead>
                     <TableHead>Dinner</TableHead>
-                    <TableHead>Last Meal</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -298,25 +345,37 @@ export default function MealsPage() {
                       <TableCell>
                         <div>
                           <div className="font-medium">{resident.name}</div>
-                          <div className="text-sm text-muted-foreground">{resident.id}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {resident.id}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-sm font-medium">{resident.branch}</div>
-                          <div className="text-sm text-muted-foreground">Room {resident.room}</div>
+                          <div className="text-sm font-medium">
+                            {resident.branch}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            Room {resident.room}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {resident.dietary.length > 0 ? (
                             resident.dietary.map((diet) => (
-                              <Badge key={diet} variant="outline" className="text-xs">
+                              <Badge
+                                key={diet}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {diet}
                               </Badge>
                             ))
                           ) : (
-                            <span className="text-sm text-muted-foreground">None</span>
+                            <span className="text-sm text-muted-foreground">
+                              None
+                            </span>
                           )}
                         </div>
                       </TableCell>
@@ -326,7 +385,11 @@ export default function MealsPage() {
                             id={`${resident.id}-breakfast`}
                             checked={resident.meals.breakfast.marked}
                             onCheckedChange={(checked) =>
-                              handleMealToggle(resident.id, "breakfast", checked as boolean)
+                              handleMealToggle(
+                                resident.id,
+                                "breakfast",
+                                checked as boolean
+                              )
                             }
                           />
                           {resident.meals.breakfast.marked && (
@@ -342,7 +405,13 @@ export default function MealsPage() {
                           <Checkbox
                             id={`${resident.id}-lunch`}
                             checked={resident.meals.lunch.marked}
-                            onCheckedChange={(checked) => handleMealToggle(resident.id, "lunch", checked as boolean)}
+                            onCheckedChange={(checked) =>
+                              handleMealToggle(
+                                resident.id,
+                                "lunch",
+                                checked as boolean
+                              )
+                            }
                           />
                           {resident.meals.lunch.marked && (
                             <div className="text-xs text-muted-foreground">
@@ -357,7 +426,13 @@ export default function MealsPage() {
                           <Checkbox
                             id={`${resident.id}-dinner`}
                             checked={resident.meals.dinner.marked}
-                            onCheckedChange={(checked) => handleMealToggle(resident.id, "dinner", checked as boolean)}
+                            onCheckedChange={(checked) =>
+                              handleMealToggle(
+                                resident.id,
+                                "dinner",
+                                checked as boolean
+                              )
+                            }
                           />
                           {resident.meals.dinner.marked && (
                             <div className="text-xs text-muted-foreground">
@@ -368,9 +443,17 @@ export default function MealsPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {resident.lastMeal}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -382,12 +465,14 @@ export default function MealsPage() {
               <div className="text-center py-8">
                 <Utensils className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No residents found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria.</p>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

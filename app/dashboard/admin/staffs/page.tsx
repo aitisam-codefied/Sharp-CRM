@@ -1,14 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +35,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Users,
   Search,
@@ -34,16 +53,16 @@ import {
   Calendar,
   CheckCircle,
   Download,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StaffManagementPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedRole, setSelectedRole] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedRole, setSelectedRole] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const staffMembers = [
     {
@@ -111,91 +130,101 @@ export default function StaffManagementPage() {
       hoursThisWeek: 42,
       avatar: "/placeholder.svg?height=40&width=40",
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
-  const roles = ["Manager", "Staff", "Security", "Cook", "Cleaner", "Maintenance"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
+  const roles = [
+    "Manager",
+    "Staff",
+    "Security",
+    "Cook",
+    "Cleaner",
+    "Maintenance",
+  ];
 
   const filteredStaff = staffMembers.filter((staff) => {
     const matchesSearch =
       staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.id.toLowerCase().includes(searchTerm.toLowerCase())
+      staff.id.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || staff.branch === selectedBranch
-    const matchesRole = selectedRole === "all" || staff.role === selectedRole
-    const matchesStatus = selectedStatus === "all" || staff.status === selectedStatus
+    const matchesBranch =
+      selectedBranch === "all" || staff.branch === selectedBranch;
+    const matchesRole = selectedRole === "all" || staff.role === selectedRole;
+    const matchesStatus =
+      selectedStatus === "all" || staff.status === selectedStatus;
 
-    return matchesSearch && matchesBranch && matchesRole && matchesStatus
-  })
+    return matchesSearch && matchesBranch && matchesRole && matchesStatus;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "inactive":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "suspended":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
       case "Manager":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "Security":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       case "Cook":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const handleAddStaff = () => {
     toast({
       title: "Staff Member Added",
-      description: "New staff member has been successfully added to the system.",
-    })
-    setIsAddDialogOpen(false)
-  }
+      description:
+        "New staff member has been successfully added to the system.",
+    });
+    setIsAddDialogOpen(false);
+  };
 
   const handleEditStaff = (staffId: string) => {
     toast({
       title: "Edit Staff",
       description: `Opening edit form for staff ID: ${staffId}`,
-    })
-  }
+    });
+  };
 
   const handleDeleteStaff = (staffId: string) => {
     toast({
       title: "Staff Member Removed",
       description: `Staff member ${staffId} has been removed from the system.`,
       variant: "destructive",
-    })
-  }
+    });
+  };
 
   const handleViewProfile = (staffId: string) => {
     toast({
       title: "View Profile",
       description: `Opening detailed profile for staff ID: ${staffId}`,
-    })
-  }
+    });
+  };
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Staff Management" }]}
       title="Staff Management"
-      description="Manage staff across all 30 branches"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
@@ -206,7 +235,9 @@ export default function StaffManagementPage() {
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Add New Staff Member</DialogTitle>
-                <DialogDescription>Enter the details for the new staff member</DialogDescription>
+                <DialogDescription>
+                  Enter the details for the new staff member
+                </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -216,7 +247,11 @@ export default function StaffManagementPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="Enter email address" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter email address"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -263,11 +298,17 @@ export default function StaffManagementPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
-                  <Textarea id="notes" placeholder="Additional notes about the staff member" />
+                  <Textarea
+                    id="notes"
+                    placeholder="Additional notes about the staff member"
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleAddStaff}>Add Staff Member</Button>
@@ -317,7 +358,9 @@ export default function StaffManagementPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Avg Hours/Week</p>
+                  <p className="text-sm text-muted-foreground">
+                    Avg Hours/Week
+                  </p>
                   <p className="text-2xl font-bold">38.5</p>
                 </div>
                 <Clock className="h-8 w-8 text-purple-600" />
@@ -333,7 +376,9 @@ export default function StaffManagementPage() {
               <Users className="h-5 w-5" />
               Staff Directory
             </CardTitle>
-            <CardDescription>Manage and monitor staff across all branches</CardDescription>
+            <CardDescription>
+              Manage and monitor staff across all branches
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -411,7 +456,10 @@ export default function StaffManagementPage() {
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="h-10 w-10">
-                            <AvatarImage src={staff.avatar || "/placeholder.svg"} alt={staff.name} />
+                            <AvatarImage
+                              src={staff.avatar || "/placeholder.svg"}
+                              alt={staff.name}
+                            />
                             <AvatarFallback>
                               {staff.name
                                 .split(" ")
@@ -421,13 +469,17 @@ export default function StaffManagementPage() {
                           </Avatar>
                           <div>
                             <div className="font-medium">{staff.name}</div>
-                            <div className="text-sm text-muted-foreground">{staff.id}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {staff.id}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <Badge className={getRoleColor(staff.role)}>{staff.role}</Badge>
+                          <Badge className={getRoleColor(staff.role)}>
+                            {staff.role}
+                          </Badge>
                           <div className="flex items-center text-sm text-muted-foreground">
                             <MapPin className="h-3 w-3 mr-1" />
                             {staff.branch}
@@ -447,23 +499,37 @@ export default function StaffManagementPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(staff.status)}>{staff.status}</Badge>
+                        <Badge className={getStatusColor(staff.status)}>
+                          {staff.status}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center">
                           <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                          <span className="font-medium">{staff.hoursThisWeek}h</span>
+                          <span className="font-medium">
+                            {staff.hoursThisWeek}h
+                          </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="text-sm text-muted-foreground">{staff.lastLogin}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {staff.lastLogin}
+                        </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewProfile(staff.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewProfile(staff.id)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEditStaff(staff.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditStaff(staff.id)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
@@ -485,13 +551,17 @@ export default function StaffManagementPage() {
             {filteredStaff.length === 0 && (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No staff members found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria or add a new staff member.</p>
+                <h3 className="text-lg font-medium mb-2">
+                  No staff members found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or add a new staff member.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }
