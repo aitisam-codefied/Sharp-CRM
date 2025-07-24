@@ -1,14 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Progress } from "@/components/ui/progress"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +35,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   BarChart3,
   Search,
@@ -35,16 +54,16 @@ import {
   FileText,
   Clock,
   PieChart,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ReportsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedPeriod, setSelectedPeriod] = useState("monthly")
-  const [isNewReportOpen, setIsNewReportOpen] = useState(false)
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+  const [isNewReportOpen, setIsNewReportOpen] = useState(false);
+  const { toast } = useToast();
 
   const reports = [
     {
@@ -120,7 +139,8 @@ export default function ReportsPage() {
       id: "RPT004",
       title: "Welfare Check Compliance",
       category: "welfare",
-      description: "Welfare check completion rates and resident wellbeing metrics",
+      description:
+        "Welfare check completion rates and resident wellbeing metrics",
       branch: "All Branches",
       period: "Week 3, January 2024",
       generatedBy: "Lisa Chen",
@@ -185,107 +205,138 @@ export default function ReportsPage() {
       scheduled: false,
       nextGeneration: null,
     },
-  ]
+  ];
 
-  const categories = ["occupancy", "incidents", "staff", "welfare", "financial", "demographics", "compliance"]
-  const branches = ["All Branches", "Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
-  const periods = ["daily", "weekly", "monthly", "quarterly", "yearly"]
-  const statusOptions = ["completed", "generating", "draft", "scheduled", "failed"]
+  const categories = [
+    "occupancy",
+    "incidents",
+    "staff",
+    "welfare",
+    "financial",
+    "demographics",
+    "compliance",
+  ];
+  const branches = [
+    "All Branches",
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
+  const periods = ["daily", "weekly", "monthly", "quarterly", "yearly"];
+  const statusOptions = [
+    "completed",
+    "generating",
+    "draft",
+    "scheduled",
+    "failed",
+  ];
 
   const filteredReports = reports.filter((report) => {
     const matchesSearch =
       report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      report.category.toLowerCase().includes(searchTerm.toLowerCase())
+      report.category.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesCategory = selectedCategory === "all" || report.category === selectedCategory
-    const matchesBranch = selectedBranch === "all" || report.branch === selectedBranch
+    const matchesCategory =
+      selectedCategory === "all" || report.category === selectedCategory;
+    const matchesBranch =
+      selectedBranch === "all" || report.branch === selectedBranch;
 
-    return matchesSearch && matchesCategory && matchesBranch
-  })
+    return matchesSearch && matchesCategory && matchesBranch;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "generating":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "draft":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "scheduled":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       case "failed":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "occupancy":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "incidents":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "staff":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "welfare":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       case "financial":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "demographics":
-        return "bg-pink-100 text-pink-800"
+        return "bg-pink-100 text-pink-800";
       case "compliance":
-        return "bg-orange-100 text-orange-800"
+        return "bg-orange-100 text-orange-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getTrendIcon = (trend: string) => {
     return trend === "up" ? (
       <TrendingUp className="h-4 w-4 text-green-600" />
     ) : (
       <TrendingDown className="h-4 w-4 text-red-600" />
-    )
-  }
+    );
+  };
 
   const handleNewReport = () => {
     toast({
       title: "Report Scheduled",
       description: "New report has been scheduled for generation.",
-    })
-    setIsNewReportOpen(false)
-  }
+    });
+    setIsNewReportOpen(false);
+  };
 
   const handleViewReport = (reportId: string) => {
     toast({
       title: "View Report",
       description: `Opening report ${reportId}`,
-    })
-  }
+    });
+  };
 
   const handleDownloadReport = (reportId: string) => {
     toast({
       title: "Download Started",
       description: `Downloading report ${reportId}`,
-    })
-  }
+    });
+  };
 
   const getStats = () => {
-    const totalReports = filteredReports.length
-    const completedReports = filteredReports.filter((r) => r.status === "completed").length
-    const scheduledReports = filteredReports.filter((r) => r.scheduled).length
-    const totalDownloads = filteredReports.reduce((sum, report) => sum + report.downloadCount, 0)
+    const totalReports = filteredReports.length;
+    const completedReports = filteredReports.filter(
+      (r) => r.status === "completed"
+    ).length;
+    const scheduledReports = filteredReports.filter((r) => r.scheduled).length;
+    const totalDownloads = filteredReports.reduce(
+      (sum, report) => sum + report.downloadCount,
+      0
+    );
 
-    return { totalReports, completedReports, scheduledReports, totalDownloads }
-  }
+    return { totalReports, completedReports, scheduledReports, totalDownloads };
+  };
 
-  const stats = getStats()
+  const stats = getStats();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Reports & Analytics" }]}
+      breadcrumbs={[
+        { label: "Admin Dashboard", href: "/dashboard/admin" },
+        { label: "Reports & Analytics" },
+      ]}
       title="Reports & Analytics Dashboard"
       description="Generate, manage and analyze comprehensive reports across all operations"
       actions={
@@ -304,7 +355,9 @@ export default function ReportsPage() {
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Generate New Report</DialogTitle>
-                <DialogDescription>Create a custom report with specific parameters</DialogDescription>
+                <DialogDescription>
+                  Create a custom report with specific parameters
+                </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -321,7 +374,8 @@ export default function ReportsPage() {
                       <SelectContent>
                         {categories.map((category) => (
                           <SelectItem key={category} value={category}>
-                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                            {category.charAt(0).toUpperCase() +
+                              category.slice(1)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -416,11 +470,16 @@ export default function ReportsPage() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox id="schedule" />
-                  <Label htmlFor="schedule">Schedule for automatic generation</Label>
+                  <Label htmlFor="schedule">
+                    Schedule for automatic generation
+                  </Label>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsNewReportOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsNewReportOpen(false)}
+                >
                   Save as Template
                 </Button>
                 <Button onClick={handleNewReport}>Generate Report</Button>
@@ -449,7 +508,9 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Completed</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.completedReports}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.completedReports}
+                  </p>
                 </div>
                 <FileText className="h-8 w-8 text-green-600" />
               </div>
@@ -460,7 +521,9 @@ export default function ReportsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Scheduled</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.scheduledReports}</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {stats.scheduledReports}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-purple-600" />
               </div>
@@ -470,8 +533,12 @@ export default function ReportsPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Downloads</p>
-                  <p className="text-2xl font-bold text-orange-600">{stats.totalDownloads}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Downloads
+                  </p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {stats.totalDownloads}
+                  </p>
                 </div>
                 <Download className="h-8 w-8 text-orange-600" />
               </div>
@@ -553,7 +620,9 @@ export default function ReportsPage() {
               <BarChart3 className="h-5 w-5" />
               Generated Reports
             </CardTitle>
-            <CardDescription>Comprehensive reports and analytics across all operational areas</CardDescription>
+            <CardDescription>
+              Comprehensive reports and analytics across all operational areas
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -568,7 +637,10 @@ export default function ReportsPage() {
                   />
                 </div>
               </div>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Categories" />
                 </SelectTrigger>
@@ -617,11 +689,11 @@ export default function ReportsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Report Details</TableHead>
+                    <TableHead>Incident Details</TableHead>
                     <TableHead>Category & Branch</TableHead>
                     <TableHead>Key Metrics</TableHead>
-                    <TableHead>Generation Info</TableHead>
-                    <TableHead>Status & Usage</TableHead>
+                    <TableHead>Arrival Details</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -631,39 +703,54 @@ export default function ReportsPage() {
                       <TableCell>
                         <div className="space-y-1">
                           <div className="font-medium">{report.title}</div>
-                          <div className="text-sm text-muted-foreground line-clamp-2">{report.description}</div>
-                          <div className="text-xs text-muted-foreground">Period: {report.period}</div>
+                          <div className="text-sm text-muted-foreground line-clamp-2">
+                            {report.description}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Period: {report.period}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
                           <Badge className={getCategoryColor(report.category)}>
-                            {report.category.charAt(0).toUpperCase() + report.category.slice(1)}
+                            {report.category.charAt(0).toUpperCase() +
+                              report.category.slice(1)}
                           </Badge>
-                          <div className="text-sm text-muted-foreground">{report.branch}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {report.branch}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
                           {report.category === "occupancy" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.occupancyRate}% Occupancy</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.occupancyRate}% Occupancy
+                              </div>
                               <div className="text-xs text-muted-foreground">
-                                {report.metrics.occupiedRooms}/{report.metrics.totalRooms} rooms
+                                {report.metrics.occupiedRooms}/
+                                {report.metrics.totalRooms} rooms
                               </div>
                             </>
                           )}
                           {report.category === "incidents" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.resolutionRate}% Resolved</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.resolutionRate}% Resolved
+                              </div>
                               <div className="text-xs text-muted-foreground">
-                                {report.metrics.resolvedIncidents}/{report.metrics.totalIncidents} incidents
+                                {report.metrics.resolvedIncidents}/
+                                {report.metrics.totalIncidents} incidents
                               </div>
                             </>
                           )}
                           {report.category === "staff" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.attendanceRate}% Attendance</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.attendanceRate}% Attendance
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 {report.metrics.totalStaff} staff members
                               </div>
@@ -671,23 +758,34 @@ export default function ReportsPage() {
                           )}
                           {report.category === "welfare" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.completionRate}% Complete</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.completionRate}% Complete
+                              </div>
                               <div className="text-xs text-muted-foreground">
-                                {report.metrics.completedChecks}/{report.metrics.totalChecks} checks
+                                {report.metrics.completedChecks}/
+                                {report.metrics.totalChecks} checks
                               </div>
                             </>
                           )}
                           {report.category === "financial" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.profitMargin}% Margin</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.profitMargin}% Margin
+                              </div>
                               <div className="text-xs text-muted-foreground">
-                                £{(report.metrics.totalRevenue / 1000).toFixed(0)}k revenue
+                                £
+                                {(report.metrics.totalRevenue / 1000).toFixed(
+                                  0
+                                )}
+                                k revenue
                               </div>
                             </>
                           )}
                           {report.category === "demographics" && (
                             <>
-                              <div className="text-sm font-medium">{report.metrics.totalServiceUsers} Users</div>
+                              <div className="text-xs font-medium">
+                                {report.metrics.totalServiceUsers} Users
+                              </div>
                               <div className="text-xs text-muted-foreground">
                                 +{report.metrics.newArrivals} new arrivals
                               </div>
@@ -696,7 +794,11 @@ export default function ReportsPage() {
                           <div className="flex items-center gap-1">
                             {getTrendIcon(report.metrics.trend)}
                             <span
-                              className={`text-xs ${report.metrics.trend === "up" ? "text-green-600" : "text-red-600"}`}
+                              className={`text-xs ${
+                                report.metrics.trend === "up"
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              }`}
                             >
                               {report.metrics.change > 0 ? "+" : ""}
                               {report.metrics.change}%
@@ -706,43 +808,43 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="flex items-center text-sm">
+                          <div className="flex items-center text-xs">
                             <Calendar className="h-3 w-3 mr-1" />
                             {report.generatedAt}
                           </div>
-                          <div className="text-sm text-muted-foreground">By: {report.generatedBy}</div>
+                          <div className="text-sm text-muted-foreground">
+                            By: {report.generatedBy}
+                          </div>
                           {report.scheduled && report.nextGeneration && (
-                            <div className="text-xs text-blue-600">Next: {report.nextGeneration}</div>
+                            <div className="text-xs text-blue-600">
+                              Next: {report.nextGeneration}
+                            </div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
                           <Badge className={getStatusColor(report.status)}>
-                            {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                            {report.status.charAt(0).toUpperCase() +
+                              report.status.slice(1)}
                           </Badge>
-                          {report.status === "generating" && <Progress value={65} className="h-1" />}
-                          <div className="text-sm text-muted-foreground">
-                            {report.fileSize && `${report.fileSize} • `}
-                            {report.downloadCount} downloads
-                          </div>
-                          <div className="flex flex-wrap gap-1">
-                            {report.charts.map((chart) => (
-                              <Badge key={chart} variant="outline" className="text-xs">
-                                <PieChart className="h-3 w-3 mr-1" />
-                                {chart.replace("_", " ")}
-                              </Badge>
-                            ))}
-                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewReport(report.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewReport(report.id)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
                           {report.status === "completed" && (
-                            <Button variant="ghost" size="sm" onClick={() => handleDownloadReport(report.id)}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDownloadReport(report.id)}
+                            >
                               <Download className="h-4 w-4" />
                             </Button>
                           )}
@@ -758,12 +860,14 @@ export default function ReportsPage() {
               <div className="text-center py-8">
                 <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No reports found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria or generate a new report.</p>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or generate a new report.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

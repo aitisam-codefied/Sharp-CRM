@@ -1,14 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +35,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Users,
   Search,
@@ -34,16 +53,16 @@ import {
   Download,
   UserCheck,
   Clock,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ServiceUsersPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedNationality, setSelectedNationality] = useState("all")
-  const [isNewUserOpen, setIsNewUserOpen] = useState(false)
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedNationality, setSelectedNationality] = useState("all");
+  const [isNewUserOpen, setIsNewUserOpen] = useState(false);
+  const { toast } = useToast();
 
   const serviceUsers = [
     {
@@ -134,78 +153,102 @@ export default function ServiceUsersPage() {
       lastWelfareCheck: "2024-01-12",
       avatar: "/placeholder.svg?height=40&width=40",
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
-  const nationalities = ["Syrian", "Afghan", "Venezuelan", "Eritrean", "Iraqi", "Iranian", "Sudanese"]
-  const statusOptions = ["active", "transitioning", "departed", "suspended"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
+  const nationalities = [
+    "Syrian",
+    "Afghan",
+    "Venezuelan",
+    "Eritrean",
+    "Iraqi",
+    "Iranian",
+    "Sudanese",
+  ];
+  const statusOptions = ["active", "transitioning", "departed", "suspended"];
 
   const filteredUsers = serviceUsers.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.room.toLowerCase().includes(searchTerm.toLowerCase())
+      user.room.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || user.branch === selectedBranch
-    const matchesStatus = selectedStatus === "all" || user.status === selectedStatus
-    const matchesNationality = selectedNationality === "all" || user.nationality === selectedNationality
+    const matchesBranch =
+      selectedBranch === "all" || user.branch === selectedBranch;
+    const matchesStatus =
+      selectedStatus === "all" || user.status === selectedStatus;
+    const matchesNationality =
+      selectedNationality === "all" || user.nationality === selectedNationality;
 
-    return matchesSearch && matchesBranch && matchesStatus && matchesNationality
-  })
+    return (
+      matchesSearch && matchesBranch && matchesStatus && matchesNationality
+    );
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "transitioning":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "departed":
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
       case "suspended":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const handleNewUser = () => {
     toast({
       title: "Service User Added",
       description: "New service user has been successfully registered.",
-    })
-    setIsNewUserOpen(false)
-  }
+    });
+    setIsNewUserOpen(false);
+  };
 
   const handleViewUser = (userId: string) => {
     toast({
       title: "View Service User",
       description: `Opening detailed profile for ${userId}`,
-    })
-  }
+    });
+  };
 
   const handleEditUser = (userId: string) => {
     toast({
       title: "Edit Service User",
       description: `Opening edit form for ${userId}`,
-    })
-  }
+    });
+  };
 
   const getStats = () => {
-    const totalUsers = filteredUsers.length
-    const activeUsers = filteredUsers.filter((u) => u.status === "active").length
-    const transitioningUsers = filteredUsers.filter((u) => u.status === "transitioning").length
+    const totalUsers = filteredUsers.length;
+    const activeUsers = filteredUsers.filter(
+      (u) => u.status === "active"
+    ).length;
+    const transitioningUsers = filteredUsers.filter(
+      (u) => u.status === "transitioning"
+    ).length;
     const newArrivals = filteredUsers.filter(
-      (u) => new Date(u.arrivalDate) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    ).length
+      (u) =>
+        new Date(u.arrivalDate) >=
+        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    ).length;
 
-    return { totalUsers, activeUsers, transitioningUsers, newArrivals }
-  }
+    return { totalUsers, activeUsers, transitioningUsers, newArrivals };
+  };
 
-  const stats = getStats()
+  const stats = getStats();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Service Users" }]}
       title="Service User Management"
       description="Manage resident profiles and information across all branches"
       actions={
@@ -224,7 +267,9 @@ export default function ServiceUsersPage() {
             <DialogContent className="max-w-4xl">
               <DialogHeader>
                 <DialogTitle>Add New Service User</DialogTitle>
-                <DialogDescription>Register a new service user in the system</DialogDescription>
+                <DialogDescription>
+                  Register a new service user in the system
+                </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -259,7 +304,10 @@ export default function ServiceUsersPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {nationalities.map((nationality) => (
-                          <SelectItem key={nationality} value={nationality.toLowerCase()}>
+                          <SelectItem
+                            key={nationality}
+                            value={nationality.toLowerCase()}
+                          >
                             {nationality}
                           </SelectItem>
                         ))}
@@ -312,7 +360,11 @@ export default function ServiceUsersPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="user@temp.com" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="user@temp.com"
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -322,20 +374,32 @@ export default function ServiceUsersPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="medical">Medical Conditions</Label>
-                    <Textarea id="medical" placeholder="List any medical conditions..." />
+                    <Textarea
+                      id="medical"
+                      placeholder="List any medical conditions..."
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dietary">Dietary Requirements</Label>
-                    <Textarea id="dietary" placeholder="List dietary requirements..." />
+                    <Textarea
+                      id="dietary"
+                      placeholder="List dietary requirements..."
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="support">Support Needs</Label>
-                  <Textarea id="support" placeholder="Describe support needs..." />
+                  <Textarea
+                    id="support"
+                    placeholder="Describe support needs..."
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsNewUserOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsNewUserOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleNewUser}>Add Service User</Button>
@@ -352,7 +416,9 @@ export default function ServiceUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Service Users</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Service Users
+                  </p>
                   <p className="text-2xl font-bold">{stats.totalUsers}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
@@ -363,8 +429,12 @@ export default function ServiceUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Active Residents</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.activeUsers}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Active Residents
+                  </p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.activeUsers}
+                  </p>
                 </div>
                 <UserCheck className="h-8 w-8 text-green-600" />
               </div>
@@ -375,7 +445,9 @@ export default function ServiceUsersPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Transitioning</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.transitioningUsers}</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {stats.transitioningUsers}
+                  </p>
                 </div>
                 <Clock className="h-8 w-8 text-blue-600" />
               </div>
@@ -385,8 +457,12 @@ export default function ServiceUsersPage() {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">New Arrivals (7 days)</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.newArrivals}</p>
+                  <p className="text-sm text-muted-foreground">
+                    New Arrivals (7 days)
+                  </p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {stats.newArrivals}
+                  </p>
                 </div>
                 <Calendar className="h-8 w-8 text-purple-600" />
               </div>
@@ -401,7 +477,9 @@ export default function ServiceUsersPage() {
               <Users className="h-5 w-5" />
               Service User Directory
             </CardTitle>
-            <CardDescription>Comprehensive list of all service users and their information</CardDescription>
+            <CardDescription>
+              Comprehensive list of all service users and their information
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -442,7 +520,10 @@ export default function ServiceUsersPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={selectedNationality} onValueChange={setSelectedNationality}>
+              <Select
+                value={selectedNationality}
+                onValueChange={setSelectedNationality}
+              >
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Nationalities" />
                 </SelectTrigger>
@@ -469,7 +550,7 @@ export default function ServiceUsersPage() {
                     <TableHead>Personal Details</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Contact Info</TableHead>
-                    <TableHead>Support Details</TableHead>
+
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -479,105 +560,81 @@ export default function ServiceUsersPage() {
                     <TableRow key={user.id}>
                       <TableCell>
                         <div className="flex items-center space-x-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                            <AvatarFallback>
-                              {user.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
+                          
                           <div>
                             <div className="font-medium">{user.name}</div>
-                            <div className="text-sm text-muted-foreground">{user.id}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {user.id}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-sm">
+                          <div className="text-xs">
                             <strong>DOB:</strong> {user.dateOfBirth}
                           </div>
-                          <div className="text-sm">
+                          <div className="text-xs">
                             <strong>Nationality:</strong> {user.nationality}
                           </div>
-                          <div className="text-sm">
+                          <div className="text-xs">
                             <strong>Gender:</strong> {user.gender}
                           </div>
-                          <div className="text-sm">
-                            <strong>Languages:</strong> {user.languages.join(", ")}
+                          <div className="text-xs">
+                            <strong>Languages:</strong>{" "}
+                            {user.languages.join(", ")}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="flex items-center text-sm">
+                          <div className="flex items-center text-xs">
                             <MapPin className="h-3 w-3 mr-1" />
                             {user.branch}
                           </div>
-                          <div className="text-sm text-muted-foreground">Room {user.room}</div>
-                          <div className="text-sm">
+                          <div className="text-xs text-muted-foreground">
+                            Room {user.room}
+                          </div>
+                          <div className="text-xs">
                             <strong>Arrived:</strong> {user.arrivalDate}
                           </div>
-                          <div className="text-sm">
+                          <div className="text-xs">
                             <strong>Case Worker:</strong> {user.caseWorker}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="flex items-center text-sm">
+                          <div className="flex items-center text-xs">
                             <Phone className="h-3 w-3 mr-1" />
                             {user.phone}
                           </div>
-                          <div className="flex items-center text-sm">
+                          <div className="flex items-center text-xs">
                             <Mail className="h-3 w-3 mr-1" />
                             {user.email}
                           </div>
-                          <div className="text-xs text-muted-foreground">
-                            <strong>Emergency:</strong> {user.emergencyContact}
-                          </div>
                         </div>
                       </TableCell>
+
                       <TableCell>
-                        <div className="space-y-2">
-                          {user.medicalConditions.length > 0 && (
-                            <div>
-                              <div className="text-xs font-medium">Medical:</div>
-                              <div className="flex flex-wrap gap-1">
-                                {user.medicalConditions.map((condition) => (
-                                  <Badge key={condition} variant="outline" className="text-xs">
-                                    {condition}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {user.dietaryRequirements.length > 0 && (
-                            <div>
-                              <div className="text-xs font-medium">Dietary:</div>
-                              <div className="flex flex-wrap gap-1">
-                                {user.dietaryRequirements.map((req) => (
-                                  <Badge key={req} variant="outline" className="text-xs">
-                                    {req}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          <div className="text-xs text-muted-foreground">Last welfare: {user.lastWelfareCheck}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
+                        <Badge className={getStatusColor(user.status)}>
+                          {user.status}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewUser(user.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewUser(user.id)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEditUser(user.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditUser(user.id)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button variant="ghost" size="sm">
@@ -594,13 +651,17 @@ export default function ServiceUsersPage() {
             {filteredUsers.length === 0 && (
               <div className="text-center py-8">
                 <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No service users found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria or add a new service user.</p>
+                <h3 className="text-lg font-medium mb-2">
+                  No service users found
+                </h3>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or add a new service user.
+                </p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

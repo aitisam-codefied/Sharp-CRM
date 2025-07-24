@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -24,12 +25,11 @@ import {
   BedDouble,
   Menu,
   X,
+  LogOutIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/components/providers/auth-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +37,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/components/providers/auth-provider";
+import Image from "next/image";
 
 export function AppNavbar() {
   const pathname = usePathname();
@@ -51,8 +53,6 @@ export function AppNavbar() {
     logout();
     router.push("/login");
   };
-
-  if (!user) return null;
 
   const currentSection = (() => {
     if (
@@ -91,324 +91,165 @@ export function AppNavbar() {
   const isSubNavActive = (href: string) => pathname === href;
 
   const mainNavItems = [
-    {
-      title: "Dashboard",
-      href: `/dashboard/${user.role}`,
-      key: "dashboard",
-    },
+    { title: "Dashboard", href: "/dashboard/admin", key: "dashboard" },
     {
       title: "Staff Management",
-      href: `/dashboard/${user.role}/staffs`,
+      href: "/dashboard/admin/staffs",
       key: "staffs",
-      roles: ["admin", "manager"],
     },
     {
       title: "Operations",
-      href: `/dashboard/${user.role}/welfare`,
+      href: "/dashboard/admin/welfare",
       key: "operations",
-      roles: ["admin", "manager", "staff"],
     },
     {
       title: "Incidents & Safety",
-      href: `/dashboard/${user.role}/incidents`,
+      href: "/dashboard/admin/incidents",
       key: "incidents",
-      roles: ["admin", "manager", "staff"],
     },
     {
       title: "System Settings",
-      href: `/dashboard/${user.role}/notifications`,
+      href: "/dashboard/admin/notifications",
       key: "system",
-      roles: ["admin", "manager", "staff"],
     },
-
     {
       title: "User Management",
-      href: `/dashboard/${user.role}/service-users`,
+      href: "/dashboard/admin/service-users",
       key: "users",
-      roles: ["admin", "manager"],
     },
-    {
-      title: "Reports",
-      href: `/dashboard/${user.role}/reports`,
-      key: "reports",
-      roles: ["admin", "manager"],
-    },
-  ].filter((item) => !item.roles || item.roles.includes(user.role));
+    { title: "Reports", href: "/dashboard/admin/reports", key: "reports" },
+  ];
 
-  const subNavItems = (() => {
-    switch (currentSection) {
-      case "operations":
-        return [
-          {
-            title: "Welfare Checks",
-            href: `/dashboard/${user.role}/welfare`,
-            icon: Heart,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-          {
-            title: "Meal Marker",
-            href: `/dashboard/${user.role}/meals`,
-            icon: Utensils,
-            color: "bg-green-100 text-green-700 border-green-200",
-          },
-          {
-            title: "Food Images",
-            href: `/dashboard/${user.role}/food-images`,
-            icon: Camera,
-            color: "bg-pink-100 text-pink-700 border-pink-200",
-          },
-          {
-            title: "Food Feedbacks",
-            href: `/dashboard/${user.role}/feedback`,
-            icon: MessageSquare,
-            color: "bg-orange-100 text-orange-700 border-orange-200",
-          },
-          {
-            title: "QR Scanner",
-            href: `/dashboard/${user.role}/qr-scanner`,
-            icon: QrCode,
-            color: "bg-purple-100 text-purple-700 border-purple-200",
-          },
-        ];
-      case "incidents":
-        return [
-          {
-            title: "Incident Reports",
-            href: `/dashboard/${user.role}/incidents`,
-            icon: AlertTriangle,
-            color: "bg-red-100 text-red-700 border-red-200",
-          },
-          {
-            title: "Observation Checks",
-            href: `/dashboard/${user.role}/observations`,
-            icon: Eye,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-          {
-            title: "Safeguarding",
-            href: `/dashboard/${user.role}/safeguarding`,
-            icon: Shield,
-            color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-          },
-        ];
-      case "staffs":
-        if (user.role === "admin" || user.role === "manager") {
-          return [
-            {
-              title: "Staff Management",
-              href: `/dashboard/${user.role}/staffs`,
-              icon: Users,
-              color: "bg-pink-100 text-pink-700 border-pink-200",
-            },
-            {
-              title: "Staff Scheduler",
-              href: `/dashboard/${user.role}/scheduler`,
-              icon: Calendar,
-              color: "bg-blue-100 text-blue-700 border-blue-200",
-            },
-            {
-              title: "QR Clock In/Out",
-              href: `/dashboard/${user.role}/clock-system`,
-              icon: Clock,
-              color: "bg-green-100 text-green-700 border-green-200",
-            },
-          ];
-        }
-        return [];
-      case "system":
-        return [
-          {
-            title: "Notifications",
-            href: `/dashboard/${user.role}/notifications`,
-            icon: Bell,
-            color: "bg-red-100 text-red-700 border-red-200",
-          },
-          {
-            title: "SOP Documents",
-            href: `/dashboard/${user.role}/documents`,
-            icon: FileText,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-        ];
-      case "users":
-        if (user.role === "admin" || user.role === "manager") {
-          return [
-            {
-              title: "Service Users",
-              href: `/dashboard/${user.role}/service-users`,
-              icon: UserIcon,
-              color: "bg-pink-100 text-pink-700 border-pink-200",
-            },
-            {
-              title: "Room Management",
-              href: `/dashboard/${user.role}/rooms`,
-              icon: BedDouble,
-              color: "bg-blue-100 text-blue-700 border-blue-200",
-            },
-            {
-              title: "User Registration",
-              href: `/dashboard/${user.role}/new-user`,
-              icon: UserPlus,
-              color: "bg-green-100 text-green-700 border-green-200",
-            },
-            {
-              title: "In-Transit User",
-              href: `/dashboard/${user.role}/in-transit`,
-              icon: Truck,
-              color: "bg-orange-100 text-orange-700 border-orange-200",
-            },
-          ];
-        }
-        return [];
-      default:
-        return [];
-    }
-  })();
-
-  const getSubNavItemsForSection = (sectionKey: string) => {
-    switch (sectionKey) {
-      case "operations":
-        return [
-          {
-            title: "Welfare Checks",
-            href: `/dashboard/${user.role}/welfare`,
-            icon: Heart,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-          {
-            title: "Meal Marker",
-            href: `/dashboard/${user.role}/meals`,
-            icon: Utensils,
-            color: "bg-green-100 text-green-700 border-green-200",
-          },
-          {
-            title: "Food Images",
-            href: `/dashboard/${user.role}/food-images`,
-            icon: Camera,
-            color: "bg-pink-100 text-pink-700 border-pink-200",
-          },
-          {
-            title: "Food Feedbacks",
-            href: `/dashboard/${user.role}/feedback`,
-            icon: MessageSquare,
-            color: "bg-orange-100 text-orange-700 border-orange-200",
-          },
-          {
-            title: "QR Scanner",
-            href: `/dashboard/${user.role}/qr-scanner`,
-            icon: QrCode,
-            color: "bg-purple-100 text-purple-700 border-purple-200",
-          },
-        ];
-      case "incidents":
-        return [
-          {
-            title: "Incident Reports",
-            href: `/dashboard/${user.role}/incidents`,
-            icon: AlertTriangle,
-            color: "bg-red-100 text-red-700 border-red-200",
-          },
-          {
-            title: "Observation Checks",
-            href: `/dashboard/${user.role}/observations`,
-            icon: Eye,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-          {
-            title: "Safeguarding",
-            href: `/dashboard/${user.role}/safeguarding`,
-            icon: Shield,
-            color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-          },
-        ];
-      case "staffs":
-        if (user.role === "admin" || user.role === "manager") {
-          return [
-            {
-              title: "Staff Management",
-              href: `/dashboard/${user.role}/staffs`,
-              icon: Users,
-              color: "bg-pink-100 text-pink-700 border-pink-200",
-            },
-            {
-              title: "Staff Scheduler",
-              href: `/dashboard/${user.role}/scheduler`,
-              icon: Calendar,
-              color: "bg-blue-100 text-blue-700 border-blue-200",
-            },
-            {
-              title: "QR Clock In/Out",
-              href: `/dashboard/${user.role}/clock-system`,
-              icon: Clock,
-              color: "bg-green-100 text-green-700 border-green-200",
-            },
-          ];
-        }
-        return [];
-      case "system":
-        return [
-          {
-            title: "Notifications",
-            href: `/dashboard/${user.role}/notifications`,
-            icon: Bell,
-            color: "bg-red-100 text-red-700 border-red-200",
-          },
-          {
-            title: "SOP Documents",
-            href: `/dashboard/${user.role}/documents`,
-            icon: FileText,
-            color: "bg-blue-100 text-blue-700 border-blue-200",
-          },
-        ];
-      case "users":
-        if (user.role === "admin" || user.role === "manager") {
-          return [
-            {
-              title: "Service Users",
-              href: `/dashboard/${user.role}/service-users`,
-              icon: UserIcon,
-              color: "bg-pink-100 text-pink-700 border-pink-200",
-            },
-            {
-              title: "Room Management",
-              href: `/dashboard/${user.role}/rooms`,
-              icon: BedDouble,
-              color: "bg-blue-100 text-blue-700 border-blue-200",
-            },
-            {
-              title: "User Registration",
-              href: `/dashboard/${user.role}/new-user`,
-              icon: UserPlus,
-              color: "bg-green-100 text-green-700 border-green-200",
-            },
-            {
-              title: "In-Transit User",
-              href: `/dashboard/${user.role}/in-transit`,
-              icon: Truck,
-              color: "bg-orange-100 text-orange-700 border-orange-200",
-            },
-          ];
-        }
-        return [];
-      default:
-        return [];
-    }
+  const subNavItemsMap: Record<string, any[]> = {
+    operations: [
+      {
+        title: "Welfare Checks",
+        href: "/dashboard/admin/welfare",
+        icon: Heart,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "Meal Marker",
+        href: "/dashboard/admin/meals",
+        icon: Utensils,
+        color: "bg-green-100 text-green-700 border-green-200",
+      },
+      {
+        title: "Food Images",
+        href: "/dashboard/admin/food-images",
+        icon: Camera,
+        color: "bg-pink-100 text-pink-700 border-pink-200",
+      },
+      {
+        title: "Food Feedbacks",
+        href: "/dashboard/admin/feedback",
+        icon: MessageSquare,
+        color: "bg-orange-100 text-orange-700 border-orange-200",
+      },
+      {
+        title: "QR Scanner",
+        href: "/dashboard/admin/qr-scanner",
+        icon: QrCode,
+        color: "bg-purple-100 text-purple-700 border-purple-200",
+      },
+    ],
+    incidents: [
+      {
+        title: "Incident Reports",
+        href: "/dashboard/admin/incidents",
+        icon: AlertTriangle,
+        color: "bg-red-100 text-red-700 border-red-200",
+      },
+      {
+        title: "Observation Checks",
+        href: "/dashboard/admin/observations",
+        icon: Eye,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "Safeguarding",
+        href: "/dashboard/admin/safeguarding",
+        icon: Shield,
+        color: "bg-indigo-100 text-indigo-700 border-indigo-200",
+      },
+    ],
+    staffs: [
+      {
+        title: "Staff Management",
+        href: "/dashboard/admin/staffs",
+        icon: Users,
+        color: "bg-pink-100 text-pink-700 border-pink-200",
+      },
+      {
+        title: "Staff Scheduler",
+        href: "/dashboard/admin/scheduler",
+        icon: Calendar,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "QR Clock In/Out",
+        href: "/dashboard/admin/clock-system",
+        icon: Clock,
+        color: "bg-green-100 text-green-700 border-green-200",
+      },
+    ],
+    system: [
+      {
+        title: "Notifications",
+        href: "/dashboard/admin/notifications",
+        icon: Bell,
+        color: "bg-red-100 text-red-700 border-red-200",
+      },
+      {
+        title: "SOP Documents",
+        href: "/dashboard/admin/documents",
+        icon: FileText,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+    ],
+    users: [
+      {
+        title: "Service Users",
+        href: "/dashboard/admin/service-users",
+        icon: UserIcon,
+        color: "bg-pink-100 text-pink-700 border-pink-200",
+      },
+      {
+        title: "Room Management",
+        href: "/dashboard/admin/rooms",
+        icon: BedDouble,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "User Registration",
+        href: "/dashboard/admin/new-user",
+        icon: UserPlus,
+        color: "bg-green-100 text-green-700 border-green-200",
+      },
+      {
+        title: "In-Transit User",
+        href: "/dashboard/admin/in-transit",
+        icon: Truck,
+        color: "bg-orange-100 text-orange-700 border-orange-200",
+      },
+    ],
   };
+
+  const subNavItems = subNavItemsMap[currentSection] || [];
+
+  const getSubNavItemsForSection = (sectionKey: string) =>
+    subNavItemsMap[sectionKey] || [];
 
   return (
     <div className="border-b bg-white">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        <Link
-          href={`/dashboard/${user.role}`}
-          className="flex items-center gap-2"
-        >
+        <Link href="/dashboard/admin" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
             <Building2 className="h-4 w-4 text-white" />
           </div>
           <span className="font-bold text-lg text-red-600">Sharp MS</span>
         </Link>
 
-        {/* Mobile menu toggle */}
         <div className="flex items-center xl:hidden">
           <Button
             variant="ghost"
@@ -423,7 +264,6 @@ export function AppNavbar() {
           </Button>
         </div>
 
-        {/* Desktop menu */}
         <nav className="hidden xl:flex items-center space-x-2 flex-1 justify-center">
           {mainNavItems.map((item) => {
             const isActive = currentSection === item.key;
@@ -451,23 +291,27 @@ export function AppNavbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs font-medium">
-                    {user.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
+                  <AvatarFallback className="text-xs font-medium p-0">
+                    <Image
+                      src="/placeholder-user.jpg"
+                      alt="User Avatar"
+                      fill
+                      className="h-full w-full object-cover rounded-full"
+                    />
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
               <div className="p-2">
-                <p className="text-sm font-medium">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
+                <p className="text-sm font-medium">{user?.firstName}</p>
+                <p className="text-xs text-muted-foreground">
+                  {user?.emailAddress}
+                </p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href={`/dashboard/${user.role}/settings`}>
+                <Link href="/dashboard/admin/settings">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </Link>
@@ -482,74 +326,77 @@ export function AppNavbar() {
         </div>
       </div>
 
-      {/* Mobile nav links */}
+      {/* Mobile nav section */}
       {mobileMenuOpen && (
         <div className="flex flex-col items-start gap-2 px-4 py-3 xl:hidden border-t">
           {mainNavItems.map((item) => {
-            const hasSubItems =
-              item.key === "operations" ||
-              item.key === "incidents" ||
-              item.key === "staffs" ||
-              item.key === "system" ||
-              item.key === "users";
-
             const isOpen = openMobileSection === item.key;
-
-            const toggleOpen = () => {
-              if (openMobileSection === item.key) {
-                setOpenMobileSection(null);
-              } else {
-                setOpenMobileSection(item.key);
-              }
-            };
-
-            if (hasSubItems) {
-              return (
-                <div key={item.key} className="w-full">
-                  <button
-                    onClick={toggleOpen}
-                    className="w-full text-left text-sm py-2 text-gray-700 hover:bg-gray-100 rounded-md px-2 flex justify-between items-center"
-                  >
-                    <span>{item.title}</span>
-                    <span>{isOpen ? "▲" : "▼"}</span>
-                  </button>
-                  {isOpen && (
-                    <div className="ml-4 mt-2 flex flex-col gap-2">
-                      {getSubNavItemsForSection(item.key).map(
-                        (subItem: any) => (
-                          <Link
-                            key={subItem.title}
-                            href={subItem.href}
-                            className="text-sm text-gray-600 hover:text-black"
-                            onClick={() => {
-                              setMobileMenuOpen(false);
-                              setOpenMobileSection(null);
-                            }}
-                          >
-                            {subItem.title}
-                          </Link>
-                        )
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            }
+            const toggleOpen = () =>
+              setOpenMobileSection(isOpen ? null : item.key);
+            const subItems = getSubNavItemsForSection(item.key);
 
             return (
-              <Link
-                key={item.key}
-                href={item.href}
-                className="w-full text-sm py-2 text-gray-700 hover:bg-gray-100 rounded-md px-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.title}
-              </Link>
+              <div key={item.key} className="w-full">
+                <button
+                  onClick={() => {
+                    if (subItems.length) {
+                      toggleOpen();
+                    } else {
+                      router.push(item.href);
+                      setMobileMenuOpen(false);
+                    }
+                  }}
+                  className="w-full text-left text-sm py-2 text-gray-700 hover:bg-gray-100 rounded-md px-2 flex justify-between items-center"
+                >
+                  <span>{item.title}</span>
+                  {subItems.length > 0 && <span>{isOpen ? "▲" : "▼"}</span>}
+                </button>
+                {isOpen && subItems.length > 0 && (
+                  <div className="ml-4 mt-2 flex flex-col gap-2">
+                    {subItems.map((subItem) => (
+                      <Link
+                        key={subItem.title}
+                        href={subItem.href}
+                        className="text-sm text-gray-600 hover:text-black"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setOpenMobileSection(null);
+                        }}
+                      >
+                        {subItem.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
+
+          {/* ✅ Mobile logout & settings */}
+          <div className="w-full border-t pt-3 mt-3">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/dashboard/admin/settings");
+              }}
+              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2"
+            >
+              Settings
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleLogout();
+              }}
+              className="text-sm w-full text-left text-red-600 hover:bg-red-50 rounded-md px-2 py-2 flex items-center"
+            >
+              <LogOutIcon className="mr-2 h-4 w-4" /> Sign Out
+            </button>
+          </div>
         </div>
       )}
 
+      {/* Desktop subnav */}
       {subNavItems.length > 0 && (
         <div className="hidden xl:block border-t bg-gray-50 px-4 py-4">
           <div className="flex flex-wrap gap-3 justify-center">

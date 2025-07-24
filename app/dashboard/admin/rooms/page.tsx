@@ -1,13 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DashboardLayout } from "@/components/layout/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useState } from "react";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -15,9 +34,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   BedDouble,
   Search,
@@ -31,16 +50,16 @@ import {
   CheckCircle,
   AlertTriangle,
   Download,
-} from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RoomsPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedBranch, setSelectedBranch] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedFloor, setSelectedFloor] = useState("all")
-  const [isNewRoomOpen, setIsNewRoomOpen] = useState(false)
-  const { toast } = useToast()
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedFloor, setSelectedFloor] = useState("all");
+  const [isNewRoomOpen, setIsNewRoomOpen] = useState(false);
+  const { toast } = useToast();
 
   const rooms = [
     {
@@ -138,100 +157,131 @@ export default function RoomsPage() {
       facilities: ["Private Bathroom", "WiFi", "Heating"],
       condition: "poor",
       lastInspection: "2024-01-12",
-      maintenanceIssues: ["Broken heating", "Damaged flooring", "Window repair needed"],
+      maintenanceIssues: [
+        "Broken heating",
+        "Damaged flooring",
+        "Window repair needed",
+      ],
       notes: "Undergoing major repairs, estimated completion: 2024-01-25",
       rent: 250,
       keyHolder: "Maintenance Team",
     },
-  ]
+  ];
 
-  const branches = ["Manchester", "Birmingham", "London Central", "Liverpool", "Leeds"]
-  const statusOptions = ["available", "occupied", "partially_occupied", "maintenance", "reserved"]
-  const floors = ["1", "2", "3", "4", "5"]
-  const roomTypes = ["single", "shared", "family", "accessible"]
+  const branches = [
+    "Manchester",
+    "Birmingham",
+    "London Central",
+    "Liverpool",
+    "Leeds",
+  ];
+  const statusOptions = [
+    "available",
+    "occupied",
+    "partially_occupied",
+    "maintenance",
+    "reserved",
+  ];
+  const floors = ["1", "2", "3", "4", "5"];
+  const roomTypes = ["single", "shared", "family", "accessible"];
 
   const filteredRooms = rooms.filter((room) => {
     const matchesSearch =
       room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       room.resident?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      room.block.toLowerCase().includes(searchTerm.toLowerCase())
+      room.block.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesBranch = selectedBranch === "all" || room.branch === selectedBranch
-    const matchesStatus = selectedStatus === "all" || room.status === selectedStatus
-    const matchesFloor = selectedFloor === "all" || room.floor === selectedFloor
+    const matchesBranch =
+      selectedBranch === "all" || room.branch === selectedBranch;
+    const matchesStatus =
+      selectedStatus === "all" || room.status === selectedStatus;
+    const matchesFloor =
+      selectedFloor === "all" || room.floor === selectedFloor;
 
-    return matchesSearch && matchesBranch && matchesStatus && matchesFloor
-  })
+    return matchesSearch && matchesBranch && matchesStatus && matchesFloor;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "available":
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case "occupied":
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case "partially_occupied":
-        return "bg-yellow-100 text-yellow-800"
+        return "bg-yellow-100 text-yellow-800";
       case "maintenance":
-        return "bg-red-100 text-red-800"
+        return "bg-red-100 text-red-800";
       case "reserved":
-        return "bg-purple-100 text-purple-800"
+        return "bg-purple-100 text-purple-800";
       default:
-        return "bg-gray-100 text-gray-800"
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case "excellent":
-        return "text-green-600"
+        return "text-green-600";
       case "good":
-        return "text-blue-600"
+        return "text-blue-600";
       case "fair":
-        return "text-yellow-600"
+        return "text-yellow-600";
       case "poor":
-        return "text-red-600"
+        return "text-red-600";
       default:
-        return "text-gray-600"
+        return "text-gray-600";
     }
-  }
+  };
 
   const handleNewRoom = () => {
     toast({
       title: "Room Added",
       description: "New room has been successfully added to the system.",
-    })
-    setIsNewRoomOpen(false)
-  }
+    });
+    setIsNewRoomOpen(false);
+  };
 
   const handleViewRoom = (roomId: string) => {
     toast({
       title: "View Room",
       description: `Opening detailed view for room ${roomId}`,
-    })
-  }
+    });
+  };
 
   const handleEditRoom = (roomId: string) => {
     toast({
       title: "Edit Room",
       description: `Opening edit form for room ${roomId}`,
-    })
-  }
+    });
+  };
 
   const getStats = () => {
-    const totalRooms = filteredRooms.length
-    const availableRooms = filteredRooms.filter((r) => r.status === "available").length
-    const occupiedRooms = filteredRooms.filter((r) => r.status === "occupied").length
-    const maintenanceRooms = filteredRooms.filter((r) => r.status === "maintenance").length
-    const occupancyRate = totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(1) : 0
+    const totalRooms = filteredRooms.length;
+    const availableRooms = filteredRooms.filter(
+      (r) => r.status === "available"
+    ).length;
+    const occupiedRooms = filteredRooms.filter(
+      (r) => r.status === "occupied"
+    ).length;
+    const maintenanceRooms = filteredRooms.filter(
+      (r) => r.status === "maintenance"
+    ).length;
+    const occupancyRate =
+      totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(1) : 0;
 
-    return { totalRooms, availableRooms, occupiedRooms, maintenanceRooms, occupancyRate }
-  }
+    return {
+      totalRooms,
+      availableRooms,
+      occupiedRooms,
+      maintenanceRooms,
+      occupancyRate,
+    };
+  };
 
-  const stats = getStats()
+  const stats = getStats();
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Room Management" }]}
       title="Room Management System"
       description="Manage room allocation, availability and maintenance across all branches"
       actions={
@@ -250,7 +300,9 @@ export default function RoomsPage() {
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Add New Room</DialogTitle>
-                <DialogDescription>Register a new room in the system</DialogDescription>
+                <DialogDescription>
+                  Register a new room in the system
+                </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -326,15 +378,24 @@ export default function RoomsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="facilities">Facilities</Label>
-                  <Input id="facilities" placeholder="e.g., Private Bathroom, WiFi, Heating" />
+                  <Input
+                    id="facilities"
+                    placeholder="e.g., Private Bathroom, WiFi, Heating"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
-                  <Textarea id="notes" placeholder="Additional notes about the room..." />
+                  <Textarea
+                    id="notes"
+                    placeholder="Additional notes about the room..."
+                  />
                 </div>
               </div>
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsNewRoomOpen(false)}>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsNewRoomOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleNewRoom}>Add Room</Button>
@@ -346,7 +407,7 @@ export default function RoomsPage() {
     >
       <div className="space-y-6">
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-5">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -363,7 +424,9 @@ export default function RoomsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Available</p>
-                  <p className="text-2xl font-bold text-green-600">{stats.availableRooms}</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats.availableRooms}
+                  </p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
@@ -374,7 +437,9 @@ export default function RoomsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Occupied</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.occupiedRooms}</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {stats.occupiedRooms}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -385,20 +450,11 @@ export default function RoomsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Maintenance</p>
-                  <p className="text-2xl font-bold text-red-600">{stats.maintenanceRooms}</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {stats.maintenanceRooms}
+                  </p>
                 </div>
                 <Wrench className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Occupancy Rate</p>
-                  <p className="text-2xl font-bold text-purple-600">{stats.occupancyRate}%</p>
-                </div>
-                <AlertTriangle className="h-8 w-8 text-purple-600" />
               </div>
             </CardContent>
           </Card>
@@ -411,7 +467,9 @@ export default function RoomsPage() {
               <BedDouble className="h-5 w-5" />
               Room Directory
             </CardTitle>
-            <CardDescription>Comprehensive room management and allocation system</CardDescription>
+            <CardDescription>
+              Comprehensive room management and allocation system
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -447,7 +505,9 @@ export default function RoomsPage() {
                   <SelectItem value="all">All Status</SelectItem>
                   {statusOptions.map((status) => (
                     <SelectItem key={status} value={status}>
-                      {status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                      {status
+                        .replace("_", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -474,12 +534,12 @@ export default function RoomsPage() {
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-muted">
                     <TableHead>Room Details</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Occupancy</TableHead>
                     <TableHead>Current Resident</TableHead>
-                    <TableHead>Condition & Maintenance</TableHead>
+                    <TableHead>Condition</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -489,11 +549,17 @@ export default function RoomsPage() {
                     <TableRow key={room.id}>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-lg">{room.roomNumber}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {room.roomType.charAt(0).toUpperCase() + room.roomType.slice(1)} Room
+                          <div className="font-medium text-sm">
+                            {room.roomNumber}
                           </div>
-                          <div className="text-sm text-muted-foreground">£{room.rent}/month</div>
+                          <div className="text-xs text-muted-foreground">
+                            {room.roomType.charAt(0).toUpperCase() +
+                              room.roomType.slice(1)}{" "}
+                            Room
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            £{room.rent}/month
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
@@ -505,63 +571,64 @@ export default function RoomsPage() {
                           <div className="text-sm text-muted-foreground">
                             Floor {room.floor}, Block {room.block}
                           </div>
-                          <div className="text-sm text-muted-foreground">Key: {room.keyHolder}</div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <div className="space-y-1">
                           <div className="text-sm font-medium">
                             {room.currentOccupancy}/{room.capacity}
-                          </div>
-                          <div className="w-16 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-600 h-2 rounded-full"
-                              style={{ width: `${(room.currentOccupancy / room.capacity) * 100}%` }}
-                            />
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {((room.currentOccupancy / room.capacity) * 100).toFixed(0)}% occupied
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         {room.resident ? (
                           <div className="space-y-1">
-                            <div className="text-sm font-medium">{room.resident.split(" (")[0]}</div>
-                            <div className="text-xs text-muted-foreground">Check-in: {room.checkInDate}</div>
+                            <div className="text-sm font-medium">
+                              {room.resident.split(" (")[0]}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              Check-in: {room.checkInDate}
+                            </div>
                           </div>
                         ) : (
-                          <span className="text-sm text-muted-foreground">Vacant</span>
+                          <span className="text-sm text-muted-foreground">
+                            Vacant
+                          </span>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
-                          <div className={`text-sm font-medium ${getConditionColor(room.condition)}`}>
-                            {room.condition.charAt(0).toUpperCase() + room.condition.slice(1)}
+                          <div
+                            className={`text-sm font-medium ${getConditionColor(
+                              room.condition
+                            )}`}
+                          >
+                            {room.condition.charAt(0).toUpperCase() +
+                              room.condition.slice(1)}
                           </div>
-                          <div className="text-xs text-muted-foreground">Last inspection: {room.lastInspection}</div>
-                          {room.maintenanceIssues.length > 0 && (
-                            <div className="space-y-1">
-                              {room.maintenanceIssues.map((issue, index) => (
-                                <Badge key={index} variant="destructive" className="text-xs">
-                                  {issue}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(room.status)}>
-                          {room.status.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {room.status
+                            .replace("_", " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end space-x-2">
-                          <Button variant="ghost" size="sm" onClick={() => handleViewRoom(room.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleViewRoom(room.id)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => handleEditRoom(room.id)}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditRoom(room.id)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           {room.maintenanceIssues.length > 0 && (
@@ -581,7 +648,9 @@ export default function RoomsPage() {
               <div className="text-center py-8">
                 <BedDouble className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">No rooms found</h3>
-                <p className="text-muted-foreground">Try adjusting your search criteria or add a new room.</p>
+                <p className="text-muted-foreground">
+                  Try adjusting your search criteria or add a new room.
+                </p>
               </div>
             )}
           </CardContent>
@@ -596,25 +665,41 @@ export default function RoomsPage() {
                 Rooms Requiring Maintenance
               </CardTitle>
               <CardDescription className="text-red-600">
-                {stats.maintenanceRooms} rooms currently under maintenance or requiring repairs
+                {stats.maintenanceRooms} rooms currently under maintenance or
+                requiring repairs
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {filteredRooms
-                  .filter((room) => room.status === "maintenance" || room.maintenanceIssues.length > 0)
+                  .filter(
+                    (room) =>
+                      room.status === "maintenance" ||
+                      room.maintenanceIssues.length > 0
+                  )
                   .map((room) => (
-                    <div key={room.id} className="flex items-center justify-between p-3 bg-white rounded-lg">
+                    <div
+                      key={room.id}
+                      className="flex items-center justify-between p-3 bg-white rounded-lg"
+                    >
                       <div>
                         <p className="font-medium text-red-900">
                           Room {room.roomNumber} - {room.branch}
                         </p>
                         <p className="text-sm text-red-600">
-                          Issues: {room.maintenanceIssues.join(", ") || "General maintenance"}
+                          Issues:{" "}
+                          {room.maintenanceIssues.join(", ") ||
+                            "General maintenance"}
                         </p>
-                        <p className="text-xs text-red-500">Last inspection: {room.lastInspection}</p>
+                        <p className="text-xs text-red-500">
+                          Last inspection: {room.lastInspection}
+                        </p>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => handleViewRoom(room.id)}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewRoom(room.id)}
+                      >
                         <Wrench className="h-4 w-4 mr-2" />
                         Manage
                       </Button>
@@ -626,5 +711,5 @@ export default function RoomsPage() {
         )}
       </div>
     </DashboardLayout>
-  )
+  );
 }

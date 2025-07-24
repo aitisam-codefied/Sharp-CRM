@@ -57,8 +57,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export default function AdminDashboard() {
+  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const itemsPerPage = 5;
@@ -261,7 +263,9 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">👋</span>
-            <h1 className="text-2xl font-bold">Good Morning, Rohail!</h1>
+            <h1 className="text-2xl font-bold">
+              Good Morning, {user?.firstName} !
+            </h1>
           </div>
           <div className="flex gap-2">
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -300,7 +304,6 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                  
                     <div className="space-y-2">
                       <Label htmlFor="joinDate">Join Date</Label>
                       <Input id="joinDate" type="date" />

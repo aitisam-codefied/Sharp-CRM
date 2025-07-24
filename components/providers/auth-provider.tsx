@@ -1,79 +1,85 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { loginUser } from "@/services/authService";
 
 interface User {
-  id: string
-  email: string
-  role: "admin" | "manager" | "staff"
-  name: string
-  branch?: string
+  _id: string;
+  emailAddress: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  roles: string[];
+  status: string;
+  verified: boolean;
+  [key: string]: any; // for details, locations, etc.
 }
 
 interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<boolean>
-  logout: () => void
-  isLoading: boolean
+  user: User | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session
-    const userData = localStorage.getItem("sms_user")
-    if (userData) {
-      setUser(JSON.parse(userData))
-    }
-    setIsLoading(false)
-  }, [])
+    const userData = localStorage.getItem("sms_user");
+    const token = localStorage.getItem("sms_access_token");
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication
-    const mockUsers = {
-      "admin@sms.com": { id: "1", email: "admin@sms.com", role: "admin" as const, name: "System Admin" },
-      "manager@sms.com": {
-        id: "2",
-        email: "manager@sms.com",
-        role: "manager" as const,
-        name: "Branch Manager",
-        branch: "Manchester",
-      },
-      "staff@sms.com": {
-        id: "3",
-        email: "staff@sms.com",
-        role: "staff" as const,
-        name: "Staff Member",
-        branch: "Manchester",
-      },
+    if (userData && token) {
+      setUser(JSON.parse(userData));
     }
+    setIsLoading(false);
+  }, []);
 
-    const userData = mockUsers[email as keyof typeof mockUsers]
-    if (userData && password) {
-      setUser(userData)
-      localStorage.setItem("sms_user", JSON.stringify(userData))
-      return true
+  const login = async (emailAddress: string, password: string): Promise<boolean> => {
+    try {
+      const data = await loginUser({ emailAddress, password });
+
+      const userData = data.user;
+      const accessToken = data.tokens?.accessToken;
+      const refreshToken = data.tokens?.refreshToken;
+
+      if (userData && accessToken && refreshToken) {
+        setUser(userData);
+        localStorage.setItem("sms_user", JSON.stringify(userData));
+        localStorage.setItem("sms_access_token", accessToken);
+        localStorage.setItem("sms_refresh_token", refreshToken);
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-    return false
-  }
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("sms_user")
-  }
+    setUser(null);
+    localStorage.removeItem("sms_user");
+    localStorage.removeItem("sms_access_token");
+    localStorage.removeItem("sms_refresh_token");
+  };
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }
