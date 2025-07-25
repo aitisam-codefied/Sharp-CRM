@@ -23,26 +23,32 @@ export default function LoginPage() {
   const { toast } = useToast();
   const { login, user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      router.push(`/dashboard/admin/on-boarding`);
-    }
-  }, [user, router]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
 
     try {
-      const success = await login(emailAddress, password);
-      if (success) {
-        toast({
-          title: "Login successful",
-          description: "Welcome to Sharp Management System",
-        });
-      } else {
+      const userResponse = await login(emailAddress, password);
+
+      if (!userResponse) {
         setError("Invalid email or password");
+        return;
+      }
+
+      const roles = userResponse?.roles || [];
+      const isAdmin = roles.some((role: any) => role.name === "Admin");
+
+      if (!isAdmin) {
+        setError("You are not authorized");
+        return;
+      }
+
+      // If admin, proceed based on onboarding status
+      if (userResponse.isOnboarded) {
+        router.push("/dashboard/admin");
+      } else {
+        router.push("/dashboard/admin/on-boarding");
       }
     } catch (err) {
       setError("Login failed. Please try again.");

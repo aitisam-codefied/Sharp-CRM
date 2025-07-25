@@ -39,7 +39,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (emailAddress: string, password: string): Promise<boolean> => {
+  const login = async (
+    emailAddress: string,
+    password: string
+  ): Promise<any | null> => {
     try {
       const data = await loginUser({ emailAddress, password });
 
@@ -48,17 +51,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const refreshToken = data.tokens?.refreshToken;
 
       if (userData && accessToken && refreshToken) {
+        // Check if user has ADMIN role
+        const isAdmin = userData?.roles?.some(
+          (role: any) => role.name === "Admin"
+        );
+
+        if (!isAdmin) {
+          // Do NOT save to localStorage or setUser
+          return null;
+        }
+
+        // Authorized admin — safe to store in localStorage
         setUser(userData);
         localStorage.setItem("sms_user", JSON.stringify(userData));
         localStorage.setItem("sms_access_token", accessToken);
         localStorage.setItem("sms_refresh_token", refreshToken);
-        return true;
+
+        return userData;
       }
 
-      return false;
+      return null;
     } catch (error) {
       console.error("Login failed:", error);
-      return false;
+      return null;
     }
   };
 

@@ -36,19 +36,16 @@ const COMPANY_BUSINESS_TYPES = {
   MULTIPLE: "Multiple",
 };
 
-const ROOM_PREFERENCE_TYPES = {
-  SINGLE: "Single",
-  DOUBLE: "Double",
-  TRIPLE: "Triple",
-  QUAD: "Quad",
-  DORMITORY: "Dormitory",
+export const ROOM_PREFERENCE_TYPES = {
+  SINGLE: "Single Room",
+  SHARED: "Shared Room",
+  FAMILY: "Family Room",
 };
 
-const ROOM_STATUS_TYPES = {
-  VACANT: "Vacant",
+export const ROOM_STATUS_TYPES = {
   OCCUPIED: "Occupied",
+  VACANT: "Vacant",
   MAINTENANCE: "Maintenance",
-  RESERVED: "Reserved",
 };
 
 const ROOM_AMENITIES = [
@@ -95,6 +92,30 @@ interface Company {
   branches: Branch[];
 }
 
+export const OnBoardingFormValues = {
+  type: "",
+  name: "",
+  branches: [
+    {
+      name: "",
+      address: "",
+      locations: [
+        {
+          name: "",
+          rooms: [
+            {
+              roomNumber: "",
+              type: "",
+              capacity: 0,
+              amenities: [""],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+};
+
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -103,10 +124,9 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const totalSteps = 5; // Updated to 5 steps
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
-  // Initialize companies based on business type
   useEffect(() => {
     if (selectedBusinessType) {
       if (selectedBusinessType === COMPANY_BUSINESS_TYPES.SINGLE) {
@@ -234,7 +254,6 @@ export default function OnboardingPage() {
     setCompanies(updatedCompanies);
   };
 
-  // Room management functions
   const addRoom = (
     companyIndex: number,
     branchIndex: number,
@@ -378,7 +397,37 @@ export default function OnboardingPage() {
     }
 
     setIsLoading(true);
-    router.push("/dashboard/admin");
+
+    // Transform companies data to match OnBoardingFormValues format
+    const formattedData = companies.map((company) => ({
+      type: company.type,
+      name: company.name,
+      branches: company.branches.map((branch) => ({
+        name: branch.name,
+        address: branch.address,
+        locations: branch.locations.map((location) => ({
+          name: location.name,
+          rooms: location.rooms.map((room) => ({
+            roomNumber: room.roomNumber,
+            type: room.type,
+            capacity: room.capacity,
+            amenities: room.amenities.length > 0 ? room.amenities : [""],
+          })),
+        })),
+      })),
+    }));
+
+    // Log the formatted data to console
+    console.log(
+      "Onboarding Form Data:",
+      JSON.stringify(formattedData, null, 2)
+    );
+
+    // Simulate API call delay (optional, for UX)
+    setTimeout(() => {
+      setIsLoading(false);
+      router.push("/dashboard/admin");
+    }, 1000);
   };
 
   const renderStepContent = () => {
@@ -866,7 +915,7 @@ export default function OnboardingPage() {
                                         </div>
                                       </div>
 
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="grid grid-cols-1 gap-4">
                                         <div>
                                           <Label>Capacity *</Label>
                                           <Input
@@ -886,28 +935,6 @@ export default function OnboardingPage() {
                                               )
                                             }
                                             placeholder="Number of people"
-                                            className="mt-1"
-                                          />
-                                        </div>
-                                        <div>
-                                          <Label>Price (per month) *</Label>
-                                          <Input
-                                            type="number"
-                                            min="0"
-                                            value={room.price}
-                                            onChange={(e) =>
-                                              updateRoom(
-                                                companyIndex,
-                                                branchIndex,
-                                                locationIndex,
-                                                roomIndex,
-                                                "price",
-                                                Number.parseFloat(
-                                                  e.target.value
-                                                ) || 0
-                                              )
-                                            }
-                                            placeholder="Monthly rent"
                                             className="mt-1"
                                           />
                                         </div>
