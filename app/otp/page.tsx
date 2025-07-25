@@ -47,7 +47,7 @@ export default function OTPVerificationPage() {
           title: "OTP Verified",
           description: "Redirecting to reset password...",
         });
-        router.push(`/reset-password?otp=${otpString}`);
+       router.push(`/reset-password?otp=${otpString}`);
       },
       onError: () => {
         toast({

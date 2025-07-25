@@ -25,7 +25,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      router.push(`/dashboard/admin`);
+      router.push(`/dashboard/admin/on-boarding`);
     }
   }, [user, router]);
 
