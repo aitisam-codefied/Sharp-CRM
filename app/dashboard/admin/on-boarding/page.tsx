@@ -830,7 +830,7 @@ export default function OnboardingPage() {
                                       </Button>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                           <Label>Room Number *</Label>
                                           <Input
@@ -881,38 +881,7 @@ export default function OnboardingPage() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                        <div>
-                                          <Label>Status *</Label>
-                                          <Select
-                                            value={room.status}
-                                            onValueChange={(value) =>
-                                              updateRoom(
-                                                companyIndex,
-                                                branchIndex,
-                                                locationIndex,
-                                                roomIndex,
-                                                "status",
-                                                value
-                                              )
-                                            }
-                                          >
-                                            <SelectTrigger className="mt-1">
-                                              <SelectValue placeholder="Select status" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              {Object.values(
-                                                ROOM_STATUS_TYPES
-                                              ).map((status) => (
-                                                <SelectItem
-                                                  key={status}
-                                                  value={status}
-                                                >
-                                                  {status}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
+                                       
                                       </div>
 
                                       <div className="grid grid-cols-1 gap-4">
