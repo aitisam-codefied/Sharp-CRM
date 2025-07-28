@@ -1,6 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +31,8 @@ import {
   Bed,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AuthProvider, useAuth } from "@/components/providers/auth-provider";
+import api from "@/lib/axios";
 
 const COMPANY_BUSINESS_TYPES = {
   SINGLE: "Single",
@@ -118,14 +122,53 @@ export const OnBoardingFormValues = {
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedBusinessType, setSelectedBusinessType] = useState("");
   const router = useRouter();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user, updateUserCompanies } = useAuth();
 
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
+
+  // Get access token from context or local storage
+  const accessToken = localStorage.getItem("sms_access_token");
+
+  // Mutation for creating company
+  const createCompanyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await api.post("/company/create", data, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Company setup completed successfully!",
+      });
+
+      // 👇 Update context with the new company list
+      const newCompany = data.company; // Make sure this is the actual company object returned
+      const updatedCompanies = [...(user?.companies || []), newCompany];
+      updateUserCompanies(updatedCompanies);
+
+      queryClient.invalidateQueries({ queryKey: ["companies"] });
+      router.push("/dashboard/admin");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to create company.",
+        variant: "destructive",
+      });
+    },
+  });
 
   useEffect(() => {
     if (selectedBusinessType) {
@@ -396,7 +439,15 @@ export default function OnboardingPage() {
       return;
     }
 
-    setIsLoading(true);
+    if (!accessToken) {
+      toast({
+        title: "Authentication Error",
+        description: "No access token found. Please log in again.",
+        variant: "destructive",
+      });
+      router.push("/login");
+      return;
+    }
 
     // Transform companies data to match OnBoardingFormValues format
     const formattedData = companies.map((company) => ({
@@ -417,17 +468,8 @@ export default function OnboardingPage() {
       })),
     }));
 
-    // Log the formatted data to console
-    console.log(
-      "Onboarding Form Data:",
-      JSON.stringify(formattedData, null, 2)
-    );
-
-    // Simulate API call delay (optional, for UX)
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/dashboard/admin");
-    }, 1000);
+    // Trigger the mutation
+    createCompanyMutation.mutate(formattedData);
   };
 
   const renderStepContent = () => {
@@ -881,7 +923,6 @@ export default function OnboardingPage() {
                                             </SelectContent>
                                           </Select>
                                         </div>
-                                       
                                       </div>
 
                                       <div className="grid grid-cols-1 gap-4">
@@ -1047,10 +1088,12 @@ export default function OnboardingPage() {
           ) : (
             <Button
               onClick={handleSubmit}
-              disabled={!validateStep(currentStep) || isLoading}
+              disabled={
+                !validateStep(currentStep) || createCompanyMutation.isPending
+              }
               className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
             >
-              {isLoading ? (
+              {createCompanyMutation.isPending ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   Setting up...

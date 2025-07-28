@@ -46,7 +46,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -58,12 +58,254 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/axios";
+import { Checkbox } from "@/components/ui/checkbox";
+
+export const ROOM_PREFERENCE_TYPES = {
+  SINGLE: "Single Room",
+  SHARED: "Shared Room",
+  FAMILY: "Family Room",
+};
+
+const ROOM_AMENITIES = [
+  "Wi-Fi",
+  "Air Conditioning",
+  "Private Bathroom",
+  "Shared Bathroom",
+  "TV",
+  "Refrigerator",
+  "Microwave",
+  "Desk",
+  "Wardrobe",
+  "Balcony",
+  "Kitchen Access",
+  "Laundry Access",
+];
+
+interface Room {
+  roomNumber: string;
+  type: string;
+  capacity: number;
+  amenities: string[];
+}
+
+interface Location {
+  name: string;
+  rooms: Room[];
+}
+
+interface Branch {
+  name: string;
+  address: string;
+  locations: Location[];
+}
+
+interface Company {
+  _id: string;
+  name: string;
+}
 
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  // const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
+  const [branch, setBranch] = useState<Branch>({
+    name: "",
+    address: "",
+    locations: [
+      {
+        name: "",
+        rooms: [
+          {
+            roomNumber: "",
+            type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
+            amenities: [],
+          },
+        ],
+      },
+    ],
+  });
+  const { toast } = useToast();
   const itemsPerPage = 5;
+
+  // const { user } = useAuth();
+  const companies = user?.companies || [];
+
+  // Update branch name, address, or locations
+  const updateBranch = (field: keyof Branch, value: string) => {
+    setBranch((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Add a new location
+  const addLocation = () => {
+    setBranch((prev) => ({
+      ...prev,
+      locations: [
+        ...prev.locations,
+        {
+          name: "",
+          rooms: [
+            {
+              roomNumber: "",
+              type: ROOM_PREFERENCE_TYPES.SINGLE,
+              capacity: 1,
+              amenities: [],
+            },
+          ],
+        },
+      ],
+    }));
+  };
+
+  // Update a location's name
+  const updateLocation = (locationIndex: number, value: string) => {
+    setBranch((prev) => {
+      const updatedLocations = [...prev.locations];
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        name: value,
+      };
+      return { ...prev, locations: updatedLocations };
+    });
+  };
+
+  // Remove a location
+  const removeLocation = (locationIndex: number) => {
+    setBranch((prev) => ({
+      ...prev,
+      locations: prev.locations.filter((_, i) => i !== locationIndex),
+    }));
+  };
+
+  // Add a new room to a location
+  const addRoom = (locationIndex: number) => {
+    setBranch((prev) => {
+      const updatedLocations = [...prev.locations];
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        rooms: [
+          ...updatedLocations[locationIndex].rooms,
+          {
+            roomNumber: "",
+            type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
+            amenities: [],
+          },
+        ],
+      };
+      return { ...prev, locations: updatedLocations };
+    });
+  };
+
+  // Update a room's details
+  const updateRoom = (
+    locationIndex: number,
+    roomIndex: number,
+    field: keyof Room,
+    value: any
+  ) => {
+    setBranch((prev) => {
+      const updatedLocations = [...prev.locations];
+      const updatedRooms = [...updatedLocations[locationIndex].rooms];
+      updatedRooms[roomIndex] = {
+        ...updatedRooms[roomIndex],
+        [field]: value,
+      };
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        rooms: updatedRooms,
+      };
+      return { ...prev, locations: updatedLocations };
+    });
+  };
+
+  // Remove a room from a location
+  const removeRoom = (locationIndex: number, roomIndex: number) => {
+    setBranch((prev) => {
+      const updatedLocations = [...prev.locations];
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        rooms: updatedLocations[locationIndex].rooms.filter(
+          (_, i) => i !== roomIndex
+        ),
+      };
+      return { ...prev, locations: updatedLocations };
+    });
+  };
+
+  // Toggle room amenities
+  const toggleAmenity = (
+    locationIndex: number,
+    roomIndex: number,
+    amenity: string
+  ) => {
+    setBranch((prev) => {
+      const updatedLocations = [...prev.locations];
+      const updatedRooms = [...updatedLocations[locationIndex].rooms];
+      const room = { ...updatedRooms[roomIndex] };
+
+      // Create a copy of amenities
+      const amenities = [...room.amenities];
+      const amenityIndex = amenities.indexOf(amenity);
+
+      if (amenityIndex > -1) {
+        amenities.splice(amenityIndex, 1);
+      } else {
+        amenities.push(amenity);
+      }
+
+      // Update the room with new amenities
+      room.amenities = amenities;
+      updatedRooms[roomIndex] = room;
+
+      updatedLocations[locationIndex] = {
+        ...updatedLocations[locationIndex],
+        rooms: updatedRooms,
+      };
+
+      return {
+        ...prev,
+        locations: updatedLocations,
+      };
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = () => {
+    if (!selectedCompanyId) {
+      toast({
+        title: "Error",
+        description: "Please select a company.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Format data for console logging
+    const formattedData = {
+      companyId: selectedCompanyId,
+      branch: {
+        name: branch.name,
+        address: branch.address,
+        locations: branch.locations.map((location) => ({
+          name: location.name,
+          rooms: location.rooms.map((room) => ({
+            roomNumber: room.roomNumber,
+            type: room.type,
+            capacity: room.capacity,
+            amenities: room.amenities.length > 0 ? room.amenities : [""],
+          })),
+        })),
+      },
+    };
+
+    console.log(formattedData);
+    setIsAddDialogOpen(false);
+  };
 
   const stats = [
     {
@@ -275,46 +517,218 @@ export default function AdminDashboard() {
                   Add Branch
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Add New Staff Member</DialogTitle>
+                  <DialogTitle>Add New Branch</DialogTitle>
                   <DialogDescription>
-                    Enter the details for the new staff member
+                    Enter the details for the new branch
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" placeholder="Enter full name" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter email address"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" placeholder="Enter phone number" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="joinDate">Join Date</Label>
-                      <Input id="joinDate" type="date" />
-                    </div>
-                  </div>
+                  {/* Company Selection */}
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
-                    <Textarea
-                      id="notes"
-                      placeholder="Additional notes about the staff member"
+                    <Label htmlFor="company">Company *</Label>
+                    <Select
+                      value={selectedCompanyId}
+                      onValueChange={setSelectedCompanyId}
+                    >
+                      <SelectTrigger id="company">
+                        <SelectValue placeholder="Select a company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {companies.map((company) => (
+                          <SelectItem key={company._id} value={company._id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Branch Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="branch-name">Branch Name *</Label>
+                    <Input
+                      id="branch-name"
+                      value={branch.name}
+                      onChange={(e) => updateBranch("name", e.target.value)}
+                      placeholder="Enter branch name"
                     />
+                  </div>
+
+                  {/* Branch Address */}
+                  <div className="space-y-2">
+                    <Label htmlFor="branch-address">Branch Address *</Label>
+                    <Textarea
+                      id="branch-address"
+                      value={branch.address}
+                      onChange={(e) => updateBranch("address", e.target.value)}
+                      placeholder="Enter complete branch address"
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Locations */}
+                  <div className="space-y-4">
+                    <Label>Locations</Label>
+                    {branch.locations.map((location, locationIndex) => (
+                      <div
+                        key={locationIndex}
+                        className="space-y-4 border p-4 rounded-md"
+                      >
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            value={location.name}
+                            onChange={(e) =>
+                              updateLocation(locationIndex, e.target.value)
+                            }
+                            placeholder="e.g., Floor 1, East Wing, Reception"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeLocation(locationIndex)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        {/* Rooms */}
+                        <div className="space-y-4">
+                          {location.rooms.map((room, roomIndex) => (
+                            <div
+                              key={roomIndex}
+                              className="space-y-4 border p-4 rounded-md bg-gray-50"
+                            >
+                              <div className="flex justify-between items-center">
+                                <Label>Room {roomIndex + 1}</Label>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    removeRoom(locationIndex, roomIndex)
+                                  }
+                                  className="text-red-600 hover:text-red-700"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Room Number *</Label>
+                                  <Input
+                                    value={room.roomNumber}
+                                    onChange={(e) =>
+                                      updateRoom(
+                                        locationIndex,
+                                        roomIndex,
+                                        "roomNumber",
+                                        e.target.value
+                                      )
+                                    }
+                                    placeholder="e.g., 101, A-1"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label>Room Type *</Label>
+                                  <Select
+                                    value={room.type}
+                                    onValueChange={(value) =>
+                                      updateRoom(
+                                        locationIndex,
+                                        roomIndex,
+                                        "type",
+                                        value
+                                      )
+                                    }
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {Object.values(ROOM_PREFERENCE_TYPES).map(
+                                        (type) => (
+                                          <SelectItem key={type} value={type}>
+                                            {type}
+                                          </SelectItem>
+                                        )
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Capacity *</Label>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  value={room.capacity}
+                                  onChange={(e) =>
+                                    updateRoom(
+                                      locationIndex,
+                                      roomIndex,
+                                      "capacity",
+                                      Number.parseInt(e.target.value) || 1
+                                    )
+                                  }
+                                  placeholder="Number of people"
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label>Amenities</Label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                  {ROOM_AMENITIES.map((amenity) => (
+                                    <div
+                                      key={amenity}
+                                      className="flex items-center space-x-2"
+                                    >
+                                      <Checkbox
+                                        id={`amenity-${locationIndex}-${roomIndex}-${amenity}`}
+                                        checked={room.amenities.includes(
+                                          amenity
+                                        )}
+                                        onCheckedChange={() =>
+                                          toggleAmenity(
+                                            locationIndex,
+                                            roomIndex,
+                                            amenity
+                                          )
+                                        }
+                                      />
+                                      <Label
+                                        htmlFor={`amenity-${locationIndex}-${roomIndex}-${amenity}`}
+                                        className="text-sm font-normal"
+                                      >
+                                        {amenity}
+                                      </Label>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          <Button
+                            variant="outline"
+                            onClick={() => addRoom(locationIndex)}
+                            className="w-full border-dashed border-2 h-10"
+                            size="sm"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add Room
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      onClick={addLocation}
+                      className="w-full border-dashed border-2 h-10"
+                      size="sm"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Location
+                    </Button>
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -324,12 +738,13 @@ export default function AdminDashboard() {
                   >
                     Cancel
                   </Button>
-                  <Button>Add Branch</Button>
+                  <Button onClick={handleSubmit}>Add Branch</Button>
                 </div>
               </DialogContent>
             </Dialog>
           </div>
         </div>
+
         {/* Key Metrics */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (

@@ -4,6 +4,12 @@ import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginUser } from "@/services/authService";
 
+export interface Company {
+  _id: string;
+  name: string;
+  isOnboarded: boolean;
+}
+
 interface User {
   _id: string;
   emailAddress: string;
@@ -11,6 +17,7 @@ interface User {
   lastName: string;
   phoneNumber: string;
   roles: string[];
+  companies: Company[];
   status: string;
   verified: boolean;
   [key: string]: any; // for details, locations, etc.
@@ -20,6 +27,7 @@ interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateUserCompanies: (newCompanies: Company[]) => void;
   isLoading: boolean;
 }
 
@@ -77,6 +85,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateUserCompanies = (newCompanies: Company[]) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updatedUser = { ...prev, companies: newCompanies };
+      localStorage.setItem("sms_user", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("sms_user");
@@ -85,7 +102,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider
+      value={{ user, login, logout, isLoading, updateUserCompanies }}
+    >
       {children}
     </AuthContext.Provider>
   );

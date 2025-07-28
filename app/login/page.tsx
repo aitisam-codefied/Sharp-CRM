@@ -45,7 +45,7 @@ export default function LoginPage() {
       }
 
       // If admin, proceed based on onboarding status
-      if (userResponse.isOnboarded) {
+      if (userResponse?.isOnboarded) {
         router.push("/dashboard/admin");
       } else {
         router.push("/dashboard/admin/on-boarding");
