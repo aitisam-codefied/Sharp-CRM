@@ -1,27 +1,18 @@
-"use client";
-
-import type React from "react";
+// app/layout.tsx
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import {
-  QueryClient,
-  QueryClientProvider,
-  HydrationBoundary,
-} from "@tanstack/react-query";
+import ClientLayout from "./client-layout";
 
-const inter = Inter({ subsets: ["latin"] });
-
-// export const metadata: Metadata = {
-//   title: "Sharp Management System - Hotel Accommodation Management",
-//   description:
-//     "Comprehensive hotel accommodation management system for asylum seekers across 30 UK branches",
-//   generator: "v0.dev",
-// };
-
-const queryClient = new QueryClient();
+export const metadata: Metadata = {
+  title: "Sharp Management System - Hotel Accommodation Management",
+  description:
+    "Comprehensive hotel accommodation management system for asylum seekers across 30 UK branches",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    title: "Sharp CRM",
+    statusBarStyle: "default",
+  },
+};
 
 export default function RootLayout({
   children,
@@ -30,14 +21,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            {children}
-            <Toaster />
-          </AuthProvider>
-        </QueryClientProvider>
-      </body>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0f172a" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Sharp CRM" />
+      </head>
+      <ClientLayout>{children}</ClientLayout>
     </html>
   );
 }

@@ -282,7 +282,6 @@ export default function NotificationsPage() {
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Notifications" }]}
       title="Notification Management"
       description="Create, manage and track system notifications across all branches"
       actions={

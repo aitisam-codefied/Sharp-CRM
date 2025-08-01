@@ -45,10 +45,10 @@ export default function LoginPage() {
       }
 
       // If admin, proceed based on onboarding status
-      if (userResponse?.isOnboarded) {
-        router.push("/dashboard/admin");
-      } else {
+      if (!userResponse?.isOnboarded) {
         router.push("/dashboard/admin/on-boarding");
+      } else {
+        router.push("/dashboard/admin");
       }
     } catch (err) {
       setError("Login failed. Please try again.");

@@ -61,6 +61,8 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/axios";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useMutation } from "@tanstack/react-query";
+import { Toast } from "@/components/ui/toast";
 
 export const ROOM_PREFERENCE_TYPES = {
   SINGLE: "Single Room",
@@ -107,7 +109,7 @@ interface Company {
 }
 
 export default function AdminDashboard() {
-  const { user } = useAuth();
+  const { user, updateUserBranchesManually } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   // const [companies, setCompanies] = useState<Company[]>([]);
@@ -274,6 +276,35 @@ export default function AdminDashboard() {
     });
   };
 
+  // Define the API call function
+  const createBranch = async (branchData: any) => {
+    const response = await api.post("/branch/create", branchData);
+    return response.data;
+  };
+
+  // Hook to handle the mutation
+  const useCreateBranch = () => {
+    return useMutation({
+      mutationFn: createBranch,
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Branch created successfully!",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Error",
+          description:
+            error.response?.data?.message || "Failed to create branch",
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const { mutate, isPending } = useCreateBranch();
+
   // Handle form submission
   const handleSubmit = () => {
     if (!selectedCompanyId) {
@@ -285,8 +316,8 @@ export default function AdminDashboard() {
       return;
     }
 
-    // Format data for console logging
-    const formattedData = {
+    // Format data for API
+    const branchData = {
       companyId: selectedCompanyId,
       branch: {
         name: branch.name,
@@ -303,8 +334,16 @@ export default function AdminDashboard() {
       },
     };
 
-    console.log(formattedData);
-    setIsAddDialogOpen(false);
+    // Execute the mutation
+    mutate(branchData, {
+      onSuccess: () => {
+        console.log("Branch created:", branchData);
+        updateUserBranchesManually(branchData);
+        setIsAddDialogOpen(false);
+      },
+    });
+
+    return { isPending };
   };
 
   const stats = [
@@ -506,7 +545,7 @@ export default function AdminDashboard() {
           <div className="flex items-center gap-2">
             <span className="text-2xl">👋</span>
             <h1 className="text-2xl font-bold">
-              Good Morning, {user?.firstName} !
+              Good Morning, {user?.fullName} !
             </h1>
           </div>
           <div className="flex gap-2">

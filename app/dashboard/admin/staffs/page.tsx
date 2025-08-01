@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -37,7 +39,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Users,
   Search,
@@ -52,26 +53,116 @@ import {
   Mail,
   Calendar,
   CheckCircle,
-  Download,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/components/providers/auth-provider";
+import api from "@/lib/axios";
+
+const createStaff = async (staffData: any) => {
+  const response = await api.post("/user/create", staffData);
+  return response.data;
+};
 
 export default function StaffManagementPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState("all");
-  const [selectedRole, setSelectedRole] = useState("all");
-  const [selectedStatus, setSelectedStatus] = useState("all");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [selectedBranches, setSelectedBranches] = useState([]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState(
+    user?.companies?.[0]?._id || ""
+  );
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    joinDate: "",
+  });
 
-  const staffMembers = [
+  const roles = ["Manager", "AssistantManager", "Staff"];
+  const isGeneralManager = selectedRoles.includes("Manager");
+  const isAssistantManagerOrStaff = selectedRoles.some(
+    (role) => role === "AssistantManager" || role === "Staff"
+  );
+
+  // Filter branches based on selected company
+  const allBranches =
+    user?.companies
+      ?.filter((company) => !selectedCompany || company._id === selectedCompany)
+      ?.flatMap((company) => company.branches || [])
+      ?.map((branch) => ({
+        id: branch._id,
+        name: branch.name,
+        locations:
+          branch.locations?.map((loc) => ({
+            id: loc._id,
+            name: loc.name,
+          })) || [],
+      })) || [];
+
+  const branches = Array.from(
+    new Set(allBranches.map((branch) => branch.name))
+  );
+
+  // Filter locations based on selected branches
+  const locations = allBranches
+    .filter((branch) => selectedBranches.includes(branch.name))
+    .flatMap((branch) => branch.locations.map((loc) => loc.name) || []);
+
+  const handleRoleChange = (value) => {
+    setSelectedRoles((prev) =>
+      prev.includes(value)
+        ? prev.filter((role) => role !== value)
+        : [...prev, value]
+    );
+    setSelectedBranches([]);
+    setSelectedLocations([]);
+  };
+
+  const handleBranchChange = (value) => {
+    if (isGeneralManager) {
+      setSelectedBranches((prev) =>
+        prev.includes(value)
+          ? prev.filter((branch) => branch !== value)
+          : [...prev, value]
+      );
+    } else {
+      setSelectedBranches([value]);
+    }
+    setSelectedLocations([]);
+  };
+
+  const handleLocationChange = (value) => {
+    if (isAssistantManagerOrStaff) {
+      setSelectedLocations((prev) =>
+        prev.includes(value)
+          ? prev.filter((loc) => loc !== value)
+          : [...prev, value]
+      );
+    } else {
+      setSelectedLocations([value]);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  const [staffMembers, setStaffMembers] = useState([
     {
       id: "STF001",
       name: "Sarah Johnson",
       email: "sarah.johnson@sms.com",
       phone: "+44 7700 900123",
       role: "Manager",
-      branch: "Manchester",
+      branch: branches[0] || "Unknown",
       status: "active",
       joinDate: "2023-01-15",
       lastLogin: "2024-01-15 09:30",
@@ -84,7 +175,7 @@ export default function StaffManagementPage() {
       email: "ahmed.hassan@sms.com",
       phone: "+44 7700 900124",
       role: "Staff",
-      branch: "Manchester",
+      branch: branches[1] || "Unknown",
       status: "active",
       joinDate: "2023-03-20",
       lastLogin: "2024-01-15 08:15",
@@ -97,56 +188,14 @@ export default function StaffManagementPage() {
       email: "emma.wilson@sms.com",
       phone: "+44 7700 900125",
       role: "Staff",
-      branch: "Birmingham",
+      branch: branches[0] || "Unknown",
       status: "active",
       joinDate: "2023-02-10",
       lastLogin: "2024-01-14 16:45",
       hoursThisWeek: 35,
       avatar: "/placeholder.svg?height=40&width=40",
     },
-    {
-      id: "STF004",
-      name: "David Brown",
-      email: "david.brown@sms.com",
-      phone: "+44 7700 900126",
-      role: "Security",
-      branch: "London Central",
-      status: "inactive",
-      joinDate: "2022-11-05",
-      lastLogin: "2024-01-10 22:00",
-      hoursThisWeek: 0,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "STF005",
-      name: "Lisa Chen",
-      email: "lisa.chen@sms.com",
-      phone: "+44 7700 900127",
-      role: "Cook",
-      branch: "Liverpool",
-      status: "active",
-      joinDate: "2023-06-12",
-      lastLogin: "2024-01-15 06:00",
-      hoursThisWeek: 42,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-  ];
-
-  const branches = [
-    "Manchester",
-    "Birmingham",
-    "London Central",
-    "Liverpool",
-    "Leeds",
-  ];
-  const roles = [
-    "Manager",
-    "Staff",
-    "Security",
-    "Cook",
-    "Cleaner",
-    "Maintenance",
-  ];
+  ]);
 
   const filteredStaff = staffMembers.filter((staff) => {
     const matchesSearch =
@@ -155,15 +204,20 @@ export default function StaffManagementPage() {
       staff.id.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesBranch =
-      selectedBranch === "all" || staff.branch === selectedBranch;
-    const matchesRole = selectedRole === "all" || staff.role === selectedRole;
+      selectedBranches.length === 0 ||
+      selectedBranches.includes("all") ||
+      selectedBranches.includes(staff.branch);
+    const matchesRole =
+      selectedRoles.length === 0 ||
+      selectedRoles.includes("all") ||
+      selectedRoles.includes(staff.role);
     const matchesStatus =
       selectedStatus === "all" || staff.status === selectedStatus;
 
     return matchesSearch && matchesBranch && matchesRole && matchesStatus;
   });
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
@@ -176,7 +230,7 @@ export default function StaffManagementPage() {
     }
   };
 
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role) => {
     switch (role) {
       case "Manager":
         return "bg-blue-100 text-blue-800";
@@ -189,23 +243,78 @@ export default function StaffManagementPage() {
     }
   };
 
-  const handleAddStaff = () => {
-    toast({
-      title: "Staff Member Added",
-      description:
-        "New staff member has been successfully added to the system.",
-    });
-    setIsAddDialogOpen(false);
+  const mutation = useMutation({
+    mutationFn: createStaff,
+    onSuccess: (data) => {
+      toast({
+        title: "Staff Member Added",
+        description: `Staff member ${
+          data.data?.fullName || "new staff"
+        } has been successfully added.`,
+      });
+      console.log(data);
+      queryClient.invalidateQueries(["staffList"]);
+      setIsAddDialogOpen(false);
+      setSelectedRoles([]);
+      setSelectedBranches([]);
+      setSelectedLocations([]);
+      setSelectedCompany(user?.companies?.[0]?._id || "");
+      setFormData({ name: "", email: "", phone: "", joinDate: "" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error Adding Staff",
+        description:
+          error.response?.data?.error ||
+          "Failed to add staff member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddStaff = (newStaff) => {
+    const branchIds = selectedBranches
+      .map((branchName) => {
+        const branch = allBranches.find((b) => b.name === branchName);
+        return branch ? branch.id : null;
+      })
+      .filter((id) => id !== null);
+
+    const locationIds = selectedLocations
+      .map((locationName) => {
+        const branch = allBranches.find((b) =>
+          b.locations.some((loc) => loc.name === locationName)
+        );
+        const location = branch?.locations.find(
+          (loc) => loc.name === locationName
+        );
+        return location ? location.id : null;
+      })
+      .filter((id) => id !== null);
+
+    const backendData = {
+      companyId: selectedCompany, // Add company ID to backend data
+      fullName: newStaff.name,
+      emailAddress: newStaff.email,
+      phoneNumber: newStaff.phone,
+      joinDate: newStaff.joinDate,
+      roles: newStaff.roles,
+      branchId: branchIds,
+      locations: locationIds,
+    };
+
+    mutation.mutate(backendData);
   };
 
-  const handleEditStaff = (staffId: string) => {
+  const handleEditStaff = (staffId) => {
     toast({
       title: "Edit Staff",
       description: `Opening edit form for staff ID: ${staffId}`,
     });
   };
 
-  const handleDeleteStaff = (staffId: string) => {
+  const handleDeleteStaff = (staffId) => {
+    setStaffMembers(staffMembers.filter((staff) => staff.id !== staffId));
     toast({
       title: "Staff Member Removed",
       description: `Staff member ${staffId} has been removed from the system.`,
@@ -213,11 +322,17 @@ export default function StaffManagementPage() {
     });
   };
 
-  const handleViewProfile = (staffId: string) => {
+  const handleViewProfile = (staffId) => {
     toast({
       title: "View Profile",
       description: `Opening detailed profile for staff ID: ${staffId}`,
     });
+  };
+
+  const getOneMonthAgoDate = () => {
+    const now = new Date();
+    now.setMonth(now.getMonth() - 1);
+    return now.toISOString().split("T")[0];
   };
 
   return (
@@ -227,12 +342,12 @@ export default function StaffManagementPage() {
         <div className="flex gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" disabled={mutation.isPending}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Staff
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add New Staff Member</DialogTitle>
                 <DialogDescription>
@@ -240,10 +355,41 @@ export default function StaffManagementPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
+                {user?.companies?.length > 1 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="company">Company</Label>
+                    <Select
+                      onValueChange={(value) => {
+                        setSelectedCompany(value);
+                        setSelectedBranches([]);
+                        setSelectedLocations([]);
+                      }}
+                      value={selectedCompany}
+                      disabled={mutation.isPending}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {user?.companies?.map((company) => (
+                          <SelectItem key={company._id} value={company._id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" placeholder="Enter full name" />
+                    <Input
+                      id="name"
+                      placeholder="Enter full name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      disabled={mutation.isPending}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
@@ -251,24 +397,51 @@ export default function StaffManagementPage() {
                       id="email"
                       type="email"
                       placeholder="Enter email address"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      disabled={mutation.isPending}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" placeholder="Enter phone number" />
+                    <Input
+                      id="phone"
+                      placeholder="Enter phone number"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      disabled={mutation.isPending}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Role</Label>
-                    <Select>
+                    <Label htmlFor="role">Role(s)</Label>
+                    <Select
+                      onValueChange={handleRoleChange}
+                      value=""
+                      disabled={mutation.isPending}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
+                        <SelectValue
+                          placeholder={
+                            selectedRoles.length > 0
+                              ? selectedRoles.join(", ")
+                              : "Select role(s)"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {roles.map((role) => (
-                          <SelectItem key={role} value={role.toLowerCase()}>
-                            {role}
+                          <SelectItem key={role} value={role}>
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedRoles.includes(role)}
+                                readOnly
+                                className="mr-2"
+                              />
+                              {role}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -277,15 +450,38 @@ export default function StaffManagementPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="branch">Branch</Label>
-                    <Select>
+                    <Label htmlFor="branch">Branch(es)</Label>
+                    <Select
+                      onValueChange={handleBranchChange}
+                      value=""
+                      disabled={
+                        selectedRoles.length === 0 ||
+                        (user?.companies?.length > 1 && !selectedCompany) ||
+                        mutation.isPending
+                      }
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select branch" />
+                        <SelectValue
+                          placeholder={
+                            selectedBranches.length > 0
+                              ? selectedBranches.join(", ")
+                              : "Select branch(es)"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {branches.map((branch) => (
-                          <SelectItem key={branch} value={branch.toLowerCase()}>
-                            {branch}
+                          <SelectItem key={branch} value={branch}>
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedBranches.includes(branch)}
+                                readOnly
+                                className="mr-2"
+                                disabled={!isGeneralManager}
+                              />
+                              {branch}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -293,25 +489,96 @@ export default function StaffManagementPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="joinDate">Join Date</Label>
-                    <Input id="joinDate" type="date" />
+                    <Input
+                      id="joinDate"
+                      type="date"
+                      value={formData.joinDate}
+                      onChange={handleInputChange}
+                      disabled={mutation.isPending}
+                      min={getOneMonthAgoDate()}
+                    />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Additional notes about the staff member"
-                  />
-                </div>
+                {isAssistantManagerOrStaff && (
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Location(s)</Label>
+                    <Select
+                      onValueChange={handleLocationChange}
+                      value=""
+                      disabled={
+                        selectedBranches.length === 0 || mutation.isPending
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            selectedLocations.length > 0
+                              ? selectedLocations.join(", ")
+                              : "Select location(s)"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {locations.map((location) => (
+                          <SelectItem key={location} value={location}>
+                            <div className="flex items-center">
+                              <input
+                                type="checkbox"
+                                checked={selectedLocations.includes(location)}
+                                readOnly
+                                className="mr-2"
+                              />
+                              {location}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
               <div className="flex justify-end gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => setIsAddDialogOpen(false)}
+                  onClick={() => {
+                    setIsAddDialogOpen(false);
+                    setSelectedRoles([]);
+                    setSelectedBranches([]);
+                    setSelectedLocations([]);
+                    setSelectedCompany(user?.companies?.[0]?._id || "");
+                    setFormData({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      joinDate: "",
+                    });
+                  }}
+                  disabled={mutation.isPending}
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleAddStaff}>Add Staff Member</Button>
+                <Button
+                  onClick={() =>
+                    handleAddStaff({
+                      ...formData,
+                      roles: selectedRoles,
+                      branches: selectedBranches,
+                      locations: selectedLocations,
+                    })
+                  }
+                  disabled={
+                    !formData.name ||
+                    !formData.email ||
+                    !formData.phone ||
+                    !formData.joinDate ||
+                    selectedRoles.length === 0 ||
+                    selectedBranches.length === 0 ||
+                    (user?.companies?.length > 1 && !selectedCompany) ||
+                    mutation.isPending
+                  }
+                >
+                  {mutation.isPending ? "Adding..." : "Add Staff Member"}
+                </Button>
               </div>
             </DialogContent>
           </Dialog>
@@ -319,14 +586,13 @@ export default function StaffManagementPage() {
       }
     >
       <div className="space-y-6">
-        {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Staff</p>
-                  <p className="text-2xl font-bold">248</p>
+                  <p className="text-2xl font-bold">{staffMembers.length}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -369,7 +635,6 @@ export default function StaffManagementPage() {
           </Card>
         </div>
 
-        {/* Filters and Search */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -393,7 +658,10 @@ export default function StaffManagementPage() {
                   />
                 </div>
               </div>
-              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+              <Select
+                value={selectedBranches[0] || "all"}
+                onValueChange={(value) => setSelectedBranches([value])}
+              >
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Branches" />
                 </SelectTrigger>
@@ -406,7 +674,10 @@ export default function StaffManagementPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={selectedRole} onValueChange={setSelectedRole}>
+              <Select
+                value={selectedRoles[0] || "all"}
+                onValueChange={(value) => setSelectedRoles([value])}
+              >
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Roles" />
                 </SelectTrigger>
@@ -436,7 +707,6 @@ export default function StaffManagementPage() {
               </Button>
             </div>
 
-            {/* Staff Table */}
             <div className="rounded-md border">
               <Table>
                 <TableHeader>

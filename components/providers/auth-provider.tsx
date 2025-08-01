@@ -4,17 +4,28 @@ import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginUser } from "@/services/authService";
 
+interface Location {
+  _id: string;
+  name: string;
+}
+
+interface Branch {
+  _id: string;
+  name: string;
+  locations: Location[];
+}
+
 export interface Company {
   _id: string;
   name: string;
   isOnboarded: boolean;
+  branches: Branch[];
 }
 
 interface User {
   _id: string;
   emailAddress: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phoneNumber: string;
   roles: string[];
   companies: Company[];
@@ -28,6 +39,10 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserCompanies: (newCompanies: Company[]) => void;
+  updateUserBranchesManually: (newBranchData: {
+    companyId: string;
+    branch: Branch;
+  }) => void;
   isLoading: boolean;
 }
 
@@ -94,6 +109,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateUserBranchesManually = (newBranchData: {
+    companyId: string;
+    branch: Branch; // adjust type if needed
+  }) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+
+      const updatedCompanies = prev.companies.map((company) => {
+        if (company._id === newBranchData.companyId) {
+          return {
+            ...company,
+            branches: [...company.branches, newBranchData.branch], // add the new branch
+          };
+        }
+        return company;
+      });
+
+      const updatedUser = {
+        ...prev,
+        companies: updatedCompanies,
+      };
+
+      localStorage.setItem("sms_user", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("sms_user");
@@ -103,7 +145,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, isLoading, updateUserCompanies }}
+      value={{
+        user,
+        login,
+        logout,
+        isLoading,
+        updateUserCompanies,
+        updateUserBranchesManually,
+      }}
     >
       {children}
     </AuthContext.Provider>
