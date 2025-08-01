@@ -488,6 +488,14 @@ export default function OnboardingPage() {
                 Select the type that best describes your business structure
               </p>
             </div>
+            <div className="flex justify-center">
+              <Badge
+                variant="destructive"
+                className="text-sm px-4 py-1 rounded-full"
+              >
+                This is a one-time process and can't be changed later
+              </Badge>
+            </div>
 
             <div className="grid gap-4 md:grid-cols-3">
               {Object.entries(COMPANY_BUSINESS_TYPES).map(([key, value]) => (

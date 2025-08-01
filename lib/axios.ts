@@ -33,26 +33,30 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("sms_refresh_token");
+        if (!refreshToken) throw new Error("No refresh token");
 
-        const res = await axios.post(`${BASE_URL}/auth/refresh-token`, {
-          refreshToken,
-        });
+        const res = await axios.post(
+          `${BASE_URL}/auth/refresh-token`,
+          { refreshToken },
+          { withCredentials: true }
+        );
 
-        const newAccessToken = res.data.tokens?.accessToken;
-        const newRefreshToken = res.data.tokens?.refreshToken;
+        const { accessToken, refreshToken: newRefreshToken } =
+          res.data.tokens || {};
 
-        if (newAccessToken && newRefreshToken) {
-          localStorage.setItem("sms_access_token", newAccessToken);
+        if (accessToken && newRefreshToken) {
+          localStorage.setItem("sms_access_token", accessToken);
           localStorage.setItem("sms_refresh_token", newRefreshToken);
 
-          // Update token in header and retry original request
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }
+
+        throw new Error("Missing tokens in refresh response");
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
-        localStorage.clear(); // log user out on refresh fail
-        window.location.href = "/login"; // redirect to login
+        localStorage.clear();
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

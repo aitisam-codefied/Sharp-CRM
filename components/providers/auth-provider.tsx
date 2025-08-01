@@ -18,6 +18,7 @@ interface Branch {
 export interface Company {
   _id: string;
   name: string;
+  type: string;
   isOnboarded: boolean;
   branches: Branch[];
 }
@@ -43,6 +44,7 @@ interface AuthContextType {
     companyId: string;
     branch: Branch;
   }) => void;
+  removeBranchFromCompany: (companyId: string, branchId: string) => void;
   isLoading: boolean;
 }
 
@@ -136,6 +138,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const removeBranchFromCompany = (companyId: string, branchId: string) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+
+      const updatedCompanies = prev.companies.map((company) => {
+        if (company._id === companyId) {
+          return {
+            ...company,
+            branches: company.branches.filter(
+              (branch) => branch._id !== branchId
+            ),
+          };
+        }
+        return company;
+      });
+
+      const updatedUser = { ...prev, companies: updatedCompanies };
+      localStorage.setItem("sms_user", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("sms_user");
@@ -152,6 +176,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         updateUserCompanies,
         updateUserBranchesManually,
+        removeBranchFromCompany,
       }}
     >
       {children}

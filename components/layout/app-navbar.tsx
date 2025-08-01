@@ -55,6 +55,7 @@ export function AppNavbar() {
   };
 
   const currentSection = (() => {
+    if (pathname.includes("/company")) return "company";
     if (
       pathname.includes("/staffs") ||
       pathname.includes("/scheduler") ||
@@ -92,6 +93,11 @@ export function AppNavbar() {
 
   const mainNavItems = [
     { title: "Dashboard", href: "/dashboard/admin", key: "dashboard" },
+    {
+      title: "Company",
+      href: "/dashboard/admin/company",
+      key: "company",
+    },
     {
       title: "Staff Management",
       href: "/dashboard/admin/staffs",

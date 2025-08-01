@@ -57,13 +57,24 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import api from "@/lib/axios";
+import { useDeleteStaff } from "@/hooks/useDeleteStaff";
 
 const createStaff = async (staffData: any) => {
   const response = await api.post("/user/create", staffData);
   return response.data;
 };
 
-// New API fetch function
+const updateStaff = async ({
+  id,
+  staffData,
+}: {
+  id: string;
+  staffData: any;
+}) => {
+  const response = await api.patch(`/user/${id}`, staffData);
+  return response.data;
+};
+
 const fetchStaffMembers = async () => {
   const response = await api.get("/user/list");
   return response.data;
@@ -82,6 +93,8 @@ export default function StaffManagementPage() {
     user?.companies?.[0]?._id || ""
   );
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editStaffId, setEditStaffId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -89,19 +102,20 @@ export default function StaffManagementPage() {
     joinDate: "",
   });
 
+  const { mutate: deleteStaffMutation, isPending: isDeleting } =
+    useDeleteStaff();
+
   const roles = ["Manager", "AssistantManager", "Staff"];
   const isGeneralManager = selectedRoles.includes("Manager");
   const isAssistantManagerOrStaff = selectedRoles.some(
     (role) => role === "AssistantManager" || role === "Staff"
   );
 
-  // Fetch staff members using React Query
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["staffList"],
     queryFn: fetchStaffMembers,
   });
 
-  // Filter branches based on selected company
   const allBranches =
     user?.companies
       ?.filter((company) => !selectedCompany || company._id === selectedCompany)
@@ -120,7 +134,6 @@ export default function StaffManagementPage() {
     new Set(allBranches.map((branch) => branch.name))
   );
 
-  // Filter locations based on selected branches
   const locations = allBranches
     .filter((branch) => selectedBranches.includes(branch.name))
     .flatMap((branch) => branch.locations.map((loc) => loc.name) || []);
@@ -167,7 +180,6 @@ export default function StaffManagementPage() {
     });
   };
 
-  // Map API data to staff members format
   const staffMembers =
     data?.users?.map((staff: any) => ({
       id: staff._id,
@@ -181,7 +193,7 @@ export default function StaffManagementPage() {
       lastLogin: staff.updatedAt
         ? new Date(staff.updatedAt).toLocaleString()
         : "N/A",
-      hoursThisWeek: 0, // Not available in API response, set to 0
+      hoursThisWeek: 0,
       avatar: "/placeholder.svg?height=40&width=40",
     })) || [];
 
@@ -231,7 +243,7 @@ export default function StaffManagementPage() {
     }
   };
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: createStaff,
     onSuccess: (data) => {
       toast({
@@ -242,11 +254,7 @@ export default function StaffManagementPage() {
       });
       queryClient.invalidateQueries(["staffList"]);
       setIsAddDialogOpen(false);
-      setSelectedRoles([]);
-      setSelectedBranches([]);
-      setSelectedLocations([]);
-      setSelectedCompany(user?.companies?.[0]?._id || "");
-      setFormData({ name: "", email: "", phone: "", joinDate: "" });
+      resetForm();
     },
     onError: (error: any) => {
       toast({
@@ -258,6 +266,39 @@ export default function StaffManagementPage() {
       });
     },
   });
+
+  const updateMutation = useMutation({
+    mutationFn: updateStaff,
+    onSuccess: (data) => {
+      toast({
+        title: "Staff Member Updated",
+        description: `Staff member ${
+          data.data?.fullName || "staff"
+        } has been successfully updated.`,
+      });
+      queryClient.invalidateQueries(["staffList"]);
+      setIsEditDialogOpen(false);
+      resetForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Updating Staff",
+        description:
+          error.response?.data?.error ||
+          "Failed to update staff member. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetForm = () => {
+    setSelectedRoles([]);
+    setSelectedBranches([]);
+    setSelectedLocations([]);
+    setSelectedCompany(user?.companies?.[0]?._id || "");
+    setFormData({ name: "", email: "", phone: "", joinDate: "" });
+    setEditStaffId(null);
+  };
 
   const handleAddStaff = (newStaff: any) => {
     const branchIds = selectedBranches
@@ -290,29 +331,81 @@ export default function StaffManagementPage() {
       locations: locationIds,
     };
 
-    mutation.mutate(backendData);
+    createMutation.mutate(backendData);
   };
 
-  const handleEditStaff = (staffId: any) => {
-    toast({
-      title: "Edit Staff",
-      description: `Opening edit form for staff ID: ${staffId}`,
-    });
+  const handleEditStaff = (staffId: string) => {
+    const staff = staffMembers.find((s: any) => s.id === staffId);
+    if (staff) {
+      setEditStaffId(staffId);
+      setFormData({
+        name: staff.name,
+        email: staff.email,
+        phone: staff.phone,
+        joinDate: staff.joinDate,
+      });
+      setSelectedRoles(staff.roles);
+      setSelectedBranches([staff.branch]);
+      setSelectedCompany(
+        user?.companies?.find((c) =>
+          c.branches?.some((b) => b.name === staff.branch)
+        )?._id || ""
+      );
+      setIsEditDialogOpen(true);
+    }
   };
 
-  const handleDeleteStaff = (staffId: any) => {
-    // Note: Delete functionality not implemented as no delete API was provided
-    toast({
-      title: "Delete Not Implemented",
-      description: `Delete functionality for staff ID: ${staffId} is not implemented yet.`,
-      variant: "destructive",
-    });
+  const handleUpdateStaff = () => {
+    if (!editStaffId) return;
+
+    const branchIds = selectedBranches
+      .map((branchName) => {
+        const branch = allBranches.find((b) => b.name === branchName);
+        return branch ? branch.id : null;
+      })
+      .filter((id) => id !== null);
+
+    const locationIds = selectedLocations
+      .map((locationName) => {
+        const branch = allBranches.find((b) =>
+          b.locations.some((loc) => loc.name === locationName)
+        );
+        const location = branch?.locations.find(
+          (loc) => loc.name === locationName
+        );
+        return location ? location.id : null;
+      })
+      .filter((id) => id !== null);
+
+    const backendData = {
+      companyId: selectedCompany,
+      fullName: formData.name,
+      emailAddress: formData.email,
+      phoneNumber: formData.phone,
+      joinDate: formData.joinDate,
+      roles: selectedRoles,
+      branchId: branchIds,
+      locations: locationIds,
+    };
+
+    updateMutation.mutate({ id: editStaffId, staffData: backendData });
   };
 
-  const handleViewProfile = (staffId: any) => {
-    toast({
-      title: "View Profile",
-      description: `Opening detailed profile for staff ID: ${staffId}`,
+  const handleDeleteStaff = (staffId: string) => {
+    deleteStaffMutation(staffId, {
+      onSuccess: () => {
+        toast({
+          title: "Staff deleted",
+          description: `Staff with ID ${staffId} was deleted successfully.`,
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error deleting staff",
+          description: "Something went wrong while deleting the staff member.",
+          variant: "destructive",
+        });
+      },
     });
   };
 
@@ -329,7 +422,7 @@ export default function StaffManagementPage() {
         <div className="flex gap-2">
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" disabled={mutation.isPending}>
+              <Button size="sm" disabled={createMutation.isPending}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Staff
               </Button>
@@ -352,7 +445,7 @@ export default function StaffManagementPage() {
                         setSelectedLocations([]);
                       }}
                       value={selectedCompany}
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select company" />
@@ -375,7 +468,7 @@ export default function StaffManagementPage() {
                       placeholder="Enter full name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                     />
                   </div>
                   <div className="space-y-2">
@@ -386,7 +479,7 @@ export default function StaffManagementPage() {
                       placeholder="Enter email address"
                       value={formData.email}
                       onChange={handleInputChange}
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                     />
                   </div>
                 </div>
@@ -398,7 +491,7 @@ export default function StaffManagementPage() {
                       placeholder="Enter phone number"
                       value={formData.phone}
                       onChange={handleInputChange}
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                     />
                   </div>
                   <div className="space-y-2">
@@ -406,7 +499,7 @@ export default function StaffManagementPage() {
                     <Select
                       onValueChange={handleRoleChange}
                       value=""
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                     >
                       <SelectTrigger>
                         <SelectValue
@@ -444,7 +537,7 @@ export default function StaffManagementPage() {
                       disabled={
                         selectedRoles.length === 0 ||
                         (user?.companies?.length > 1 && !selectedCompany) ||
-                        mutation.isPending
+                        createMutation.isPending
                       }
                     >
                       <SelectTrigger>
@@ -481,7 +574,7 @@ export default function StaffManagementPage() {
                       type="date"
                       value={formData.joinDate}
                       onChange={handleInputChange}
-                      disabled={mutation.isPending}
+                      disabled={createMutation.isPending}
                       min={getOneMonthAgoDate()}
                     />
                   </div>
@@ -493,7 +586,8 @@ export default function StaffManagementPage() {
                       onValueChange={handleLocationChange}
                       value=""
                       disabled={
-                        selectedBranches.length === 0 || mutation.isPending
+                        selectedBranches.length === 0 ||
+                        createMutation.isPending
                       }
                     >
                       <SelectTrigger>
@@ -529,18 +623,9 @@ export default function StaffManagementPage() {
                   variant="outline"
                   onClick={() => {
                     setIsAddDialogOpen(false);
-                    setSelectedRoles([]);
-                    setSelectedBranches([]);
-                    setSelectedLocations([]);
-                    setSelectedCompany(user?.companies?.[0]?._id || "");
-                    setFormData({
-                      name: "",
-                      email: "",
-                      phone: "",
-                      joinDate: "",
-                    });
+                    resetForm();
                   }}
-                  disabled={mutation.isPending}
+                  disabled={createMutation.isPending}
                 >
                   Cancel
                 </Button>
@@ -561,10 +646,10 @@ export default function StaffManagementPage() {
                     selectedRoles.length === 0 ||
                     selectedBranches.length === 0 ||
                     (user?.companies?.length > 1 && !selectedCompany) ||
-                    mutation.isPending
+                    createMutation.isPending
                   }
                 >
-                  {mutation.isPending ? "Adding..." : "Add Staff Member"}
+                  {createMutation.isPending ? "Adding..." : "Add Staff Member"}
                 </Button>
               </div>
             </DialogContent>
@@ -780,13 +865,6 @@ export default function StaffManagementPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => handleViewProfile(staff.id)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
                                 onClick={() => handleEditStaff(staff.id)}
                               >
                                 <Edit className="h-4 w-4" />
@@ -823,6 +901,229 @@ export default function StaffManagementPage() {
             )}
           </CardContent>
         </Card>
+
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Staff Member</DialogTitle>
+              <DialogDescription>
+                Update the details for the staff member
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {user?.companies?.length > 1 && (
+                <div className="space-y-2">
+                  <Label htmlFor="company">Company</Label>
+                  <Select
+                    onValueChange={(value) => {
+                      setSelectedCompany(value);
+                      setSelectedBranches([]);
+                      setSelectedLocations([]);
+                    }}
+                    value={selectedCompany}
+                    disabled={updateMutation.isPending}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {user?.companies?.map((company) => (
+                        <SelectItem key={company._id} value={company._id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input
+                    id="name"
+                    placeholder="Enter full name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    disabled={updateMutation.isPending}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter email address"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    disabled={updateMutation.isPending}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    placeholder="Enter phone number"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    disabled={updateMutation.isPending}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role(s)</Label>
+                  <Select
+                    onValueChange={handleRoleChange}
+                    value=""
+                    disabled={updateMutation.isPending}
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          selectedRoles.length > 0
+                            ? selectedRoles.join(", ")
+                            : "Select role(s)"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedRoles.includes(role)}
+                              readOnly
+                              className="mr-2"
+                            />
+                            {role}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="branch">Branch(es)</Label>
+                  <Select
+                    onValueChange={handleBranchChange}
+                    value=""
+                    disabled={
+                      selectedRoles.length === 0 ||
+                      (user?.companies?.length > 1 && !selectedCompany) ||
+                      updateMutation.isPending
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          selectedBranches.length > 0
+                            ? selectedBranches.join(", ")
+                            : "Select branch(es)"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch} value={branch}>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedBranches.includes(branch)}
+                              readOnly
+                              className="mr-2"
+                              disabled={!isGeneralManager}
+                            />
+                            {branch}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="joinDate">Join Date</Label>
+                  <Input
+                    id="joinDate"
+                    type="date"
+                    value={formData.joinDate}
+                    onChange={handleInputChange}
+                    disabled={updateMutation.isPending}
+                    min={getOneMonthAgoDate()}
+                  />
+                </div>
+              </div>
+              {isAssistantManagerOrStaff && (
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location(s)</Label>
+                  <Select
+                    onValueChange={handleLocationChange}
+                    value=""
+                    disabled={
+                      selectedBranches.length === 0 || updateMutation.isPending
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue
+                        placeholder={
+                          selectedLocations.length > 0
+                            ? selectedLocations.join(", ")
+                            : "Select location(s)"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map((location) => (
+                        <SelectItem key={location} value={location}>
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedLocations.includes(location)}
+                              readOnly
+                              className="mr-2"
+                            />
+                            {location}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditDialogOpen(false);
+                  resetForm();
+                }}
+                disabled={updateMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateStaff}
+                disabled={
+                  !formData.name ||
+                  !formData.email ||
+                  !formData.phone ||
+                  !formData.joinDate ||
+                  selectedRoles.length === 0 ||
+                  selectedBranches.length === 0 ||
+                  (user?.companies?.length > 1 && !selectedCompany) ||
+                  updateMutation.isPending
+                }
+              >
+                {updateMutation.isPending
+                  ? "Updating..."
+                  : "Update Staff Member"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
