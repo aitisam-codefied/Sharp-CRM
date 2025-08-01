@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
@@ -63,6 +63,12 @@ const createStaff = async (staffData: any) => {
   return response.data;
 };
 
+// New API fetch function
+const fetchStaffMembers = async () => {
+  const response = await api.get("/user/list");
+  return response.data;
+};
+
 export default function StaffManagementPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -89,6 +95,12 @@ export default function StaffManagementPage() {
     (role) => role === "AssistantManager" || role === "Staff"
   );
 
+  // Fetch staff members using React Query
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["staffList"],
+    queryFn: fetchStaffMembers,
+  });
+
   // Filter branches based on selected company
   const allBranches =
     user?.companies
@@ -113,21 +125,21 @@ export default function StaffManagementPage() {
     .filter((branch) => selectedBranches.includes(branch.name))
     .flatMap((branch) => branch.locations.map((loc) => loc.name) || []);
 
-  const handleRoleChange = (value) => {
-    setSelectedRoles((prev) =>
+  const handleRoleChange = (value: any) => {
+    setSelectedRoles((prev: any) =>
       prev.includes(value)
-        ? prev.filter((role) => role !== value)
+        ? prev.filter((role: any) => role !== value)
         : [...prev, value]
     );
     setSelectedBranches([]);
     setSelectedLocations([]);
   };
 
-  const handleBranchChange = (value) => {
+  const handleBranchChange = (value: any) => {
     if (isGeneralManager) {
-      setSelectedBranches((prev) =>
+      setSelectedBranches((prev: any) =>
         prev.includes(value)
-          ? prev.filter((branch) => branch !== value)
+          ? prev.filter((branch: any) => branch !== value)
           : [...prev, value]
       );
     } else {
@@ -136,11 +148,11 @@ export default function StaffManagementPage() {
     setSelectedLocations([]);
   };
 
-  const handleLocationChange = (value) => {
+  const handleLocationChange = (value: any) => {
     if (isAssistantManagerOrStaff) {
-      setSelectedLocations((prev) =>
+      setSelectedLocations((prev: any) =>
         prev.includes(value)
-          ? prev.filter((loc) => loc !== value)
+          ? prev.filter((loc: any) => loc !== value)
           : [...prev, value]
       );
     } else {
@@ -148,56 +160,32 @@ export default function StaffManagementPage() {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     setFormData({
       ...formData,
       [e.target.id]: e.target.value,
     });
   };
 
-  const [staffMembers, setStaffMembers] = useState([
-    {
-      id: "STF001",
-      name: "Sarah Johnson",
-      email: "sarah.johnson@sms.com",
-      phone: "+44 7700 900123",
-      role: "Manager",
-      branch: branches[0] || "Unknown",
-      status: "active",
-      joinDate: "2023-01-15",
-      lastLogin: "2024-01-15 09:30",
-      hoursThisWeek: 38,
+  // Map API data to staff members format
+  const staffMembers =
+    data?.users?.map((staff: any) => ({
+      id: staff._id,
+      name: staff.fullName,
+      email: staff.emailAddress,
+      phone: staff.phoneNumber,
+      roles: staff.roles?.map((r: any) => r.name) || [],
+      branch: staff.branchId[0]?.name || "Unknown",
+      status: staff.status.toLowerCase(),
+      joinDate: new Date(staff.joinDate).toISOString().split("T")[0],
+      lastLogin: staff.updatedAt
+        ? new Date(staff.updatedAt).toLocaleString()
+        : "N/A",
+      hoursThisWeek: 0, // Not available in API response, set to 0
       avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "STF002",
-      name: "Ahmed Hassan",
-      email: "ahmed.hassan@sms.com",
-      phone: "+44 7700 900124",
-      role: "Staff",
-      branch: branches[1] || "Unknown",
-      status: "active",
-      joinDate: "2023-03-20",
-      lastLogin: "2024-01-15 08:15",
-      hoursThisWeek: 40,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    {
-      id: "STF003",
-      name: "Emma Wilson",
-      email: "emma.wilson@sms.com",
-      phone: "+44 7700 900125",
-      role: "Staff",
-      branch: branches[0] || "Unknown",
-      status: "active",
-      joinDate: "2023-02-10",
-      lastLogin: "2024-01-14 16:45",
-      hoursThisWeek: 35,
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-  ]);
+    })) || [];
 
-  const filteredStaff = staffMembers.filter((staff) => {
+  const filteredStaff = staffMembers.filter((staff: any) => {
     const matchesSearch =
       staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -217,7 +205,7 @@ export default function StaffManagementPage() {
     return matchesSearch && matchesBranch && matchesRole && matchesStatus;
   });
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: any) => {
     switch (status) {
       case "active":
         return "bg-green-100 text-green-800";
@@ -230,13 +218,13 @@ export default function StaffManagementPage() {
     }
   };
 
-  const getRoleColor = (role) => {
+  const getRoleColor = (role: any) => {
     switch (role) {
       case "Manager":
         return "bg-blue-100 text-blue-800";
-      case "Security":
+      case "Staff":
         return "bg-purple-100 text-purple-800";
-      case "Cook":
+      case "AssistantManager":
         return "bg-green-100 text-green-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -252,7 +240,6 @@ export default function StaffManagementPage() {
           data.data?.fullName || "new staff"
         } has been successfully added.`,
       });
-      console.log(data);
       queryClient.invalidateQueries(["staffList"]);
       setIsAddDialogOpen(false);
       setSelectedRoles([]);
@@ -261,7 +248,7 @@ export default function StaffManagementPage() {
       setSelectedCompany(user?.companies?.[0]?._id || "");
       setFormData({ name: "", email: "", phone: "", joinDate: "" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Error Adding Staff",
         description:
@@ -272,7 +259,7 @@ export default function StaffManagementPage() {
     },
   });
 
-  const handleAddStaff = (newStaff) => {
+  const handleAddStaff = (newStaff: any) => {
     const branchIds = selectedBranches
       .map((branchName) => {
         const branch = allBranches.find((b) => b.name === branchName);
@@ -293,7 +280,7 @@ export default function StaffManagementPage() {
       .filter((id) => id !== null);
 
     const backendData = {
-      companyId: selectedCompany, // Add company ID to backend data
+      companyId: selectedCompany,
       fullName: newStaff.name,
       emailAddress: newStaff.email,
       phoneNumber: newStaff.phone,
@@ -306,23 +293,23 @@ export default function StaffManagementPage() {
     mutation.mutate(backendData);
   };
 
-  const handleEditStaff = (staffId) => {
+  const handleEditStaff = (staffId: any) => {
     toast({
       title: "Edit Staff",
       description: `Opening edit form for staff ID: ${staffId}`,
     });
   };
 
-  const handleDeleteStaff = (staffId) => {
-    setStaffMembers(staffMembers.filter((staff) => staff.id !== staffId));
+  const handleDeleteStaff = (staffId: any) => {
+    // Note: Delete functionality not implemented as no delete API was provided
     toast({
-      title: "Staff Member Removed",
-      description: `Staff member ${staffId} has been removed from the system.`,
+      title: "Delete Not Implemented",
+      description: `Delete functionality for staff ID: ${staffId} is not implemented yet.`,
       variant: "destructive",
     });
   };
 
-  const handleViewProfile = (staffId) => {
+  const handleViewProfile = (staffId: any) => {
     toast({
       title: "View Profile",
       description: `Opening detailed profile for staff ID: ${staffId}`,
@@ -592,7 +579,9 @@ export default function StaffManagementPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Total Staff</p>
-                  <p className="text-2xl font-bold">{staffMembers.length}</p>
+                  <p className="text-2xl font-bold">
+                    {isLoading ? "..." : data?.count || 0}
+                  </p>
                 </div>
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
@@ -646,188 +635,191 @@ export default function StaffManagementPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name, email, or ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
+            {isError && (
+              <div className="text-center py-8 text-red-600">
+                Error loading staff members: {error?.message || "Unknown error"}
               </div>
-              <Select
-                value={selectedBranches[0] || "all"}
-                onValueChange={(value) => setSelectedBranches([value])}
-              >
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Branches</SelectItem>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={selectedRoles[0] || "all"}
-                onValueChange={(value) => setSelectedRoles([value])}
-              >
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Roles</SelectItem>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
-            </div>
-
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Staff Member</TableHead>
-                    <TableHead>Role & Branch</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Hours This Week</TableHead>
-                    <TableHead>Last Login</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredStaff.map((staff) => (
-                    <TableRow key={staff.id}>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage
-                              src={staff.avatar || "/placeholder.svg"}
-                              alt={staff.name}
-                            />
-                            <AvatarFallback>
-                              {staff.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <div className="font-medium">{staff.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {staff.id}
-                            </div>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Badge className={getRoleColor(staff.role)}>
-                            {staff.role}
-                          </Badge>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {staff.branch}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="flex items-center text-sm">
-                            <Mail className="h-3 w-3 mr-1" />
-                            {staff.email}
-                          </div>
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {staff.phone}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(staff.status)}>
-                          {staff.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
-                          <span className="font-medium">
-                            {staff.hoursThisWeek}h
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground">
-                          {staff.lastLogin}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewProfile(staff.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditStaff(staff.id)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteStaff(staff.id)}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {filteredStaff.length === 0 && (
+            )}
+            {isLoading && (
               <div className="text-center py-8">
-                <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">
-                  No staff members found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search criteria or add a new staff member.
-                </p>
+                <p>Loading staff members...</p>
               </div>
+            )}
+            {!isLoading && !isError && (
+              <>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by name, email, or ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  <Select
+                    value={selectedBranches[0] || "all"}
+                    onValueChange={(value) => setSelectedBranches([value])}
+                  >
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Branches" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Branches</SelectItem>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch} value={branch}>
+                          {branch}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={selectedRoles[0] || "all"}
+                    onValueChange={(value) => setSelectedRoles([value])}
+                  >
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Roles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Roles</SelectItem>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={selectedStatus}
+                    onValueChange={setSelectedStatus}
+                  >
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    More Filters
+                  </Button>
+                </div>
+
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Staff Member</TableHead>
+                        <TableHead>Role & Branch</TableHead>
+                        <TableHead>Contact</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Last Login</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredStaff.map((staff: any) => (
+                        <TableRow key={staff.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div>
+                                <div className="font-medium">{staff.name}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex flex-col gap-1">
+                                {staff.roles.map(
+                                  (role: string, idx: number) => (
+                                    <Badge
+                                      key={idx}
+                                      className={`w-fit ${getRoleColor(role)}`}
+                                    >
+                                      {role}
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {staff.branch}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-sm">
+                                <Mail className="h-3 w-3 mr-1" />
+                                {staff.email}
+                              </div>
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Phone className="h-3 w-3 mr-1" />
+                                {staff.phone}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(staff.status)}>
+                              {staff.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm text-muted-foreground">
+                              {staff.lastLogin}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleViewProfile(staff.id)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditStaff(staff.id)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteStaff(staff.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {filteredStaff.length === 0 && !isLoading && (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">
+                      No staff members found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search criteria or add a new staff
+                      member.
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
