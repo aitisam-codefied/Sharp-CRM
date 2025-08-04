@@ -26,6 +26,7 @@ import {
   Menu,
   X,
   LogOutIcon,
+  Building,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -93,11 +94,7 @@ export function AppNavbar() {
 
   const mainNavItems = [
     { title: "Dashboard", href: "/dashboard/admin", key: "dashboard" },
-    {
-      title: "Company",
-      href: "/dashboard/admin/company",
-      key: "company",
-    },
+
     {
       title: "Staff Management",
       href: "/dashboard/admin/staffs",
@@ -322,6 +319,12 @@ export function AppNavbar() {
                   <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard/admin/company">
+                  <Building className="mr-2 h-4 w-4" />
+                  <span>Companies</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -383,11 +386,20 @@ export function AppNavbar() {
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
+                router.push("/dashboard/admin/company");
+              }}
+              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
+            >
+              <Building className="mr-2 h-4 w-4" /> Companies
+            </button>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
                 router.push("/dashboard/admin/settings");
               }}
-              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2"
+              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
             >
-              Settings
+              <Settings className="mr-2 h-4 w-4" /> Settings
             </button>
             <button
               onClick={() => {
