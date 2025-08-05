@@ -4,7 +4,7 @@ import withPWA from 'next-pwa';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // output: 'export',
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -17,11 +17,13 @@ const nextConfig = {
   // You can add more Next.js settings here as needed
 };
 
-const pwaConfig = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: false,
-});
+export default nextConfig
 
-export default pwaConfig(nextConfig);
+// const pwaConfig = withPWA({
+//   dest: 'public',
+//   register: true,
+//   skipWaiting: true,
+//   disable: false,
+// });
+
+// export default pwaConfig(nextConfig);

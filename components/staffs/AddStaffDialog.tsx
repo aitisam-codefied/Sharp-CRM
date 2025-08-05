@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
@@ -23,6 +23,9 @@ import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import api from "@/lib/axios";
+import { useCompanies } from "@/hooks/useCompnay";
+import { useBranches } from "@/hooks/useGetBranches";
+import { useLocations } from "@/hooks/useGetLocations";
 
 const createStaff = async (staffData: any) => {
   const response = await api.post("/user/create", staffData);
@@ -31,6 +34,9 @@ const createStaff = async (staffData: any) => {
 
 export default function AddStaffDialog() {
   const { user } = useAuth();
+  const { data: companies } = useCompanies();
+  const { data: branches } = useBranches();
+  const { data: locations } = useLocations();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -59,27 +65,23 @@ export default function AddStaffDialog() {
     (role) => role === "AssistantManager" || role === "Staff"
   );
 
-  const allBranches =
-    user?.companies
-      ?.filter((company) => !selectedCompany || company._id === selectedCompany)
-      ?.flatMap((company) => company.branches || [])
-      ?.map((branch) => ({
-        id: branch._id,
-        name: branch.name,
-        locations:
-          branch.locations?.map((loc) => ({
-            id: loc._id,
-            name: loc.name,
-          })) || [],
-      })) || [];
+  // Filter branches by selected company
+  const filteredBranches =
+    branches?.filter(
+      (branch) => !selectedCompany || branch.companyId._id === selectedCompany
+    ) || [];
 
-  const branches = Array.from(
-    new Set(allBranches.map((branch) => branch.name))
-  );
-
-  const locations = allBranches
-    .filter((branch) => selectedBranches.includes(branch.name))
-    .flatMap((branch) => branch.locations.map((loc) => loc.name) || []);
+  // Filter locations by selected branches
+  const filteredLocations =
+    locations?.filter((location) => {
+      const selectedBranchIds = filteredBranches
+        .filter((b) => selectedBranches.includes(b.name))
+        .map((b) => b._id);
+      return (
+        selectedBranches.length === 0 ||
+        selectedBranchIds.includes(location.branchId)
+      );
+    }) || [];
 
   const createMutation = useMutation({
     mutationFn: createStaff,
@@ -185,20 +187,17 @@ export default function AddStaffDialog() {
 
     const branchIds = selectedBranches
       .map((branchName) => {
-        const branch = allBranches.find((b) => b.name === branchName);
-        return branch ? branch.id : null;
+        const branch = filteredBranches.find((b) => b.name === branchName);
+        return branch ? branch._id : null;
       })
       .filter((id) => id !== null);
 
     const locationIds = selectedLocations
       .map((locationName) => {
-        const branch = allBranches.find((b) =>
-          b.locations.some((loc) => loc.name === locationName)
-        );
-        const location = branch?.locations.find(
+        const location = filteredLocations.find(
           (loc) => loc.name === locationName
         );
-        return location ? location.id : null;
+        return location ? location._id : null;
       })
       .filter((id) => id !== null);
 
@@ -244,7 +243,7 @@ export default function AddStaffDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {user?.companies?.length > 1 && (
+          {companies?.length > 1 && (
             <div className="space-y-2">
               <Label htmlFor="company">Company</Label>
               <Select
@@ -260,7 +259,7 @@ export default function AddStaffDialog() {
                   <SelectValue placeholder="Select company" />
                 </SelectTrigger>
                 <SelectContent>
-                  {user?.companies?.map((company) => (
+                  {companies?.map((company) => (
                     <SelectItem key={company._id} value={company._id}>
                       {company.name}
                     </SelectItem>
@@ -354,7 +353,7 @@ export default function AddStaffDialog() {
                 value=""
                 disabled={
                   selectedRoles.length === 0 ||
-                  (user?.companies?.length > 1 && !selectedCompany) ||
+                  (companies?.length > 1 && !selectedCompany) ||
                   createMutation.isPending
                 }
               >
@@ -368,17 +367,17 @@ export default function AddStaffDialog() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
+                  {filteredBranches.map((branch) => (
+                    <SelectItem key={branch._id} value={branch.name}>
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={selectedBranches.includes(branch)}
+                          checked={selectedBranches.includes(branch.name)}
                           readOnly
                           className="mr-2"
                           disabled={!isGeneralManager}
                         />
-                        {branch}
+                        {branch.name}
                       </div>
                     </SelectItem>
                   ))}
@@ -420,16 +419,16 @@ export default function AddStaffDialog() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {locations.map((location) => (
-                    <SelectItem key={location} value={location}>
+                  {filteredLocations.map((location) => (
+                    <SelectItem key={location._id} value={location.name}>
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={selectedLocations.includes(location)}
+                          checked={selectedLocations.includes(location.name)}
                           readOnly
                           className="mr-2"
                         />
-                        {location}
+                        {location.name}
                       </div>
                     </SelectItem>
                   ))}
@@ -458,7 +457,7 @@ export default function AddStaffDialog() {
               !formData.joinDate ||
               selectedRoles.length === 0 ||
               selectedBranches.length === 0 ||
-              (user?.companies?.length > 1 && !selectedCompany) ||
+              (companies?.length > 1 && !selectedCompany) ||
               createMutation.isPending
             }
           >

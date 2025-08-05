@@ -1,6 +1,6 @@
 "use client";
-import { useState } from "react";
-import { useCompanies } from "@/hooks/useCompnay"; // Fix typo if needed: should be useCompany
+import { useEffect, useState } from "react";
+import { useCompanies } from "@/hooks/useCompnay"; // Fix typo: should be useCompany
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -42,13 +42,28 @@ interface Company {
 }
 
 export default function CompanyTable() {
-  const { data: companies = [], isLoading, isError } = useCompanies();
+  const { data: companiesData = [], isLoading, isError } = useCompanies();
+  const [companies, setCompanies] = useState<Company[]>(companiesData);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  // Sync companies state with fetched data
+  useEffect(() => {
+    setCompanies(companiesData);
+  }, [companiesData]);
+
+  // Handle company updates (e.g., when a branch is added)
+  const handleCompanyUpdate = (updatedCompany: Company) => {
+    setCompanies((prev) =>
+      prev.map((company) =>
+        company._id === updatedCompany._id ? updatedCompany : company
+      )
+    );
+  };
 
   const getCompanyStats = (company: Company) => {
     const totalBranches = company.branches.length;
@@ -196,6 +211,7 @@ export default function CompanyTable() {
           setViewModalOpen(false);
           setSelectedCompany(null);
         }}
+        onCompanyUpdate={handleCompanyUpdate}
       />
 
       <EditCompanyModal
@@ -206,6 +222,11 @@ export default function CompanyTable() {
           setEditingCompany(null);
         }}
         onSave={(updatedCompany) => {
+          setCompanies((prev) =>
+            prev.map((company) =>
+              company._id === updatedCompany._id ? updatedCompany : company
+            )
+          );
           setEditModalOpen(false);
           setEditingCompany(null);
         }}

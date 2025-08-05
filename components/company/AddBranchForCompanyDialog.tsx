@@ -20,11 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/components/providers/auth-provider";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateBranch } from "@/hooks/useCreateBranch";
 import { Plus, Trash2 } from "lucide-react";
-import { useCompanies } from "@/hooks/useCompnay";
 
 export const ROOM_PREFERENCE_TYPES = {
   SINGLE: "Single Room",
@@ -65,15 +63,19 @@ interface Branch {
   locations: Location[];
 }
 
-interface Company {
-  _id: string;
-  name: string;
-}
-
-export default function AddBranchDialog() {
-  const { user, updateUserBranchesManually } = useAuth();
+export default function AddBranchForCompanyDialog({
+  companyId,
+  onBranchCreated,
+}: {
+  companyId: string;
+  onBranchCreated: (branch: {
+    _id: string;
+    name: string;
+    address: string;
+    locations: Location[];
+  }) => void;
+}) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const [branch, setBranch] = useState<Branch>({
     name: "",
     address: "",
@@ -93,8 +95,6 @@ export default function AddBranchDialog() {
   });
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
-
-  const { data } = useCompanies();
 
   const updateBranch = (field: keyof Branch, value: string) => {
     setBranch((prev) => ({ ...prev, [field]: value }));
@@ -224,17 +224,17 @@ export default function AddBranchDialog() {
   };
 
   const handleSubmit = () => {
-    if (!selectedCompanyId) {
+    if (!branch.name || !branch.address) {
       toast({
         title: "Error",
-        description: "Please select a company.",
+        description: "Branch name and address are required.",
         variant: "destructive",
       });
       return;
     }
 
     const branchData = {
-      companyId: selectedCompanyId,
+      companyId,
       branch: {
         name: branch.name,
         address: branch.address,
@@ -251,10 +251,41 @@ export default function AddBranchDialog() {
     };
 
     mutate(branchData, {
-      onSuccess: () => {
-        console.log("Branch created:", branchData);
-        updateUserBranchesManually(branchData);
+      onSuccess: (data) => {
+        toast({
+          title: "Branch Created Successfully",
+        });
+        onBranchCreated({
+          _id: data._id, // Assuming the API returns the new branch ID
+          name: branch.name,
+          address: branch.address,
+          locations: branch.locations,
+        });
         setIsAddDialogOpen(false);
+        setBranch({
+          name: "",
+          address: "",
+          locations: [
+            {
+              name: "",
+              rooms: [
+                {
+                  roomNumber: "",
+                  type: ROOM_PREFERENCE_TYPES.SINGLE,
+                  capacity: 1,
+                  amenities: [],
+                },
+              ],
+            },
+          ],
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to create branch",
+          variant: "destructive",
+        });
       },
     });
   };
@@ -275,24 +306,6 @@ export default function AddBranchDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="company">Company *</Label>
-            <Select
-              value={selectedCompanyId}
-              onValueChange={setSelectedCompanyId}
-            >
-              <SelectTrigger id="company">
-                <SelectValue placeholder="Select a company" />
-              </SelectTrigger>
-              <SelectContent>
-                {data?.map((company) => (
-                  <SelectItem key={company._id} value={company._id}>
-                    {company.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="branch-name">Branch Name *</Label>
             <Input

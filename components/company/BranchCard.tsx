@@ -41,10 +41,12 @@ export default function BranchCard({
   branch,
   companyId,
   onBranchUpdate,
+  onClose,
 }: {
   branch: Branch;
   companyId: string;
   onBranchUpdate: (updatedBranch: Branch) => void;
+  onClose: () => void;
 }) {
   const { toast } = useToast();
   const { removeBranchFromCompany } = useAuth();
@@ -99,6 +101,7 @@ export default function BranchCard({
         });
         removeBranchFromCompany(companyId, branch._id);
         setDeleteDialogOpen(false);
+        onClose();
       },
       onError: () => {
         toast({

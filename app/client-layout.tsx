@@ -17,7 +17,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Sharp Management System - Hotel Accommodation Management",
   description: "Comprehensive hotel accommodation management system for asylum seekers across 30 UK branches",
-  manifest: '/manifest.json',
+  // manifest: '/manifest.json',
 };
 
 const queryClient = new QueryClient();

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -74,6 +74,10 @@ export default function StaffTable() {
     queryFn: fetchStaffMembers,
   });
 
+  useEffect(() => {
+    console.log("user table data", data?.users);
+  });
+
   const { mutate: deleteStaffMutation, isPending: isDeleting } =
     useDeleteStaff();
 
@@ -97,7 +101,24 @@ export default function StaffTable() {
       email: staff.emailAddress,
       phone: staff.phoneNumber,
       roles: staff.roles?.map((r: any) => r.name) || [],
-      branch: staff.branchId[0]?.name || "Unknown",
+      locations:
+        Array.isArray(staff.locations) && staff.locations.length > 0
+          ? staff.locations.map((l: any) => l.name)
+          : [],
+      branch:
+        Array.isArray(staff.branchId) && staff.branchId.length > 0
+          ? staff.branchId
+              .map((b: any) => b.name || "Assigned Branch Has Been Deleted")
+              .join(", ")
+          : "Assigned Branch Has Been Deleted",
+      companyId:
+        Array.isArray(staff.companies) && staff.companies.length > 0
+          ? staff.companies[0]._id
+          : null,
+      company:
+        Array.isArray(staff.companies) && staff.companies.length > 0
+          ? staff.companies.map((b: any) => b.name).join(", ")
+          : "Unknown",
       status: staff.status.toLowerCase(),
       joinDate: new Date(staff.joinDate).toISOString().split("T")[0],
       lastLogin: staff.updatedAt
@@ -171,10 +192,35 @@ export default function StaffTable() {
                 const branch = allBranches.find((b: any) => b.id === branchId);
                 return { _id: branchId, name: branch?.name || "Unknown" };
               }),
+              locations: data.locations.map((locId: string) => {
+                const branch = user?.companies
+                  ?.flatMap((c: any) => c.branches || [])
+                  ?.find((b: any) =>
+                    b.locations?.some((l: any) => l._id === locId)
+                  );
+
+                const location = branch?.locations?.find(
+                  (l: any) => l._id === locId
+                );
+                return location?.name || "Unknown";
+              }),
+              companies: [
+                {
+                  _id: data.companyId,
+                  name:
+                    user?.companies?.find(
+                      (company: any) => company._id === data.companyId
+                    )?.name || "Unknown",
+                },
+              ],
             }
           : s
       ),
     }));
+
+    // ✅ THIS LINE TRIGGERS RE-RUN OF `staffMembers` transformation
+    queryClient.invalidateQueries({ queryKey: ["staffList"] });
+
     setEditStaff(null);
   };
 
@@ -315,7 +361,14 @@ export default function StaffTable() {
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div>
-                              <div className="font-medium">{staff.name}</div>
+                              <div className="font-medium text-md capitalize">
+                                {staff.name}
+                              </div>
+                              {staff.company && (
+                                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 capitalize">
+                                  {staff.company}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -331,9 +384,34 @@ export default function StaffTable() {
                                 </Badge>
                               ))}
                             </div>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {staff.branch}
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center text-sm">
+                                <MapPin className="h-3 w-3 mr-1" />
+                                {staff.branch.includes(
+                                  "Assigned Branch Has Been Deleted"
+                                ) ? (
+                                  <span className="text-red-600 font-semibold">
+                                    {staff.branch}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground">
+                                    {staff.branch}
+                                  </span>
+                                )}
+                              </div>
+                              {staff.branch.includes(
+                                "Assigned Branch Has Been Deleted"
+                              ) && (
+                                <div>
+                                  <Button
+                                    variant="default"
+                                    className="text-xs bg-red-400 text-white px-2 h-auto"
+                                    onClick={() => handleEditStaff(staff)}
+                                  >
+                                    Assign Branch
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </TableCell>
@@ -350,7 +428,11 @@ export default function StaffTable() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(staff.status)}>
+                          <Badge
+                            className={`capitalize ${getStatusColor(
+                              staff.status
+                            )}`}
+                          >
                             {staff.status}
                           </Badge>
                         </TableCell>
