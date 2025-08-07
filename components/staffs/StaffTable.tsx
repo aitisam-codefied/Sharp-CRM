@@ -51,6 +51,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useDeleteStaff } from "@/hooks/useDeleteStaff";
 import api from "@/lib/axios";
 import EditStaffDialog from "./EditStaffDialog";
+import { useBranches } from "@/hooks/useGetBranches";
 
 const fetchStaffMembers = async () => {
   const response = await api.get("/user/list");
@@ -82,17 +83,23 @@ export default function StaffTable() {
     useDeleteStaff();
 
   const roles = ["Manager", "AssistantManager", "Staff"];
-  const allBranches =
-    user?.companies
-      ?.flatMap((company: any) => company.branches || [])
-      ?.map((branch: any) => ({
-        id: branch._id,
-        name: branch.name,
-      })) || [];
+  const {
+    data: branchData,
+    isLoading: isBranchLoading,
+    isError: isBranchError,
+  } = useBranches();
 
-  const branches = Array.from(
-    new Set(allBranches.map((branch: any) => branch.name))
-  );
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+    })) || [];
+
+  const branches = allBranches.map((b) => b.name);
+
+  // useEffect(() => {
+  //   console.log("branchesssss", branches);
+  // });
 
   const staffMembers =
     data?.users?.map((staff: any) => ({
@@ -301,7 +308,7 @@ export default function StaffTable() {
                   <SelectContent>
                     <SelectItem value="all">All Branches</SelectItem>
                     {branches.map((branch) => (
-                      <SelectItem key={branch} value={branch}>
+                      <SelectItem key={branch._id} value={branch}>
                         {branch}
                       </SelectItem>
                     ))}

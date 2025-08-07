@@ -27,9 +27,12 @@ import { Plus, Trash2 } from "lucide-react";
 import { useCompanies } from "@/hooks/useCompnay";
 
 export const ROOM_PREFERENCE_TYPES = {
-  SINGLE: "Single Room",
-  SHARED: "Shared Room",
-  FAMILY: "Family Room",
+  SINGLE: "Single Room (Capacity 1)",
+  DOUBLE: "Double Room (Capacity 2)",
+  TWIN: "Twin Room (Capacity 2 - 2 single beds)",
+  TRIPLE: "Triple Room (Capacity 3)",
+  QUAD: "Quad Room (Capacity 4)",
+  QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
 const ROOM_AMENITIES = [
@@ -243,7 +246,6 @@ export default function AddBranchDialog() {
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
-            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -397,22 +399,7 @@ export default function AddBranchDialog() {
                           </Select>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Capacity *</Label>
-                        <Input
-                          type="number"
-                          value={room.capacity}
-                          onChange={(e) =>
-                            updateRoom(
-                              locationIndex,
-                              roomIndex,
-                              "capacity",
-                              Number.parseInt(e.target.value)
-                            )
-                          }
-                          placeholder="Number of people"
-                        />
-                      </div>
+
                       <div className="space-y-2">
                         <Label>Amenities</Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

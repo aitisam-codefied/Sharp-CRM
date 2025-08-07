@@ -12,7 +12,6 @@ export interface Room {
 
 export interface Location {
   _id: string;
-  branchId: string;
   name: string;
   rooms: Room[];
 }
@@ -33,19 +32,15 @@ export interface Company {
   updatedAt: string;
 }
 
-export const useLocations = () => {
+export const getCompanyById = (id: any) => {
   return useQuery({
-    queryKey: ["locations"],
-    queryFn: async (): Promise<Location[]> => {
-      const res = await api.get("/location/list");
+    queryKey: ["company"],
+    queryFn: async (): Promise<Company[]> => {
+      const res = await api.get(`/company/${id}`);
       if (res.data.success) {
-        console.log(
-          "Raw API locations response:",
-          JSON.stringify(res.data, null, 2)
-        );
-        return res.data.locations;
+        return res.data;
       } else {
-        throw new Error("Failed to fetch locations");
+        throw new Error("Failed to fetch companies");
       }
     },
   });

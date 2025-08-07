@@ -25,9 +25,12 @@ import { useCreateBranch } from "@/hooks/useCreateBranch";
 import { Plus, Trash2 } from "lucide-react";
 
 export const ROOM_PREFERENCE_TYPES = {
-  SINGLE: "Single Room",
-  SHARED: "Shared Room",
-  FAMILY: "Family Room",
+  SINGLE: "Single Room (Capacity 1)",
+  DOUBLE: "Double Room (Capacity 2)",
+  TWIN: "Twin Room (Capacity 2 - 2 single beds)",
+  TRIPLE: "Triple Room (Capacity 3)",
+  QUAD: "Quad Room (Capacity 4)",
+  QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
 const ROOM_AMENITIES = [
@@ -48,7 +51,6 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
-  capacity: number;
   amenities: string[];
 }
 
@@ -86,7 +88,6 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
-            capacity: 1,
             amenities: [],
           },
         ],
@@ -111,7 +112,6 @@ export default function AddBranchForCompanyDialog({
             {
               roomNumber: "",
               type: ROOM_PREFERENCE_TYPES.SINGLE,
-              capacity: 1,
               amenities: [],
             },
           ],
@@ -148,7 +148,6 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
-            capacity: 1,
             amenities: [],
           },
         ],
@@ -243,7 +242,6 @@ export default function AddBranchForCompanyDialog({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
-            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -252,15 +250,17 @@ export default function AddBranchForCompanyDialog({
 
     mutate(branchData, {
       onSuccess: (data) => {
+        const createdBranch = data.createdBranch;
         toast({
           title: "Branch Created Successfully",
         });
-        onBranchCreated({
-          _id: data._id, // Assuming the API returns the new branch ID
-          name: branch.name,
-          address: branch.address,
-          locations: branch.locations,
-        });
+        // onBranchCreated({
+        //   _id: data._id, // Assuming the API returns the new branch ID
+        //   name: branch.name,
+        //   address: branch.address,
+        //   locations: branch.locations,
+        // });
+        onBranchCreated(createdBranch);
         setIsAddDialogOpen(false);
         setBranch({
           name: "",
@@ -272,7 +272,6 @@ export default function AddBranchForCompanyDialog({
                 {
                   roomNumber: "",
                   type: ROOM_PREFERENCE_TYPES.SINGLE,
-                  capacity: 1,
                   amenities: [],
                 },
               ],
@@ -410,22 +409,7 @@ export default function AddBranchForCompanyDialog({
                           </Select>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label>Capacity *</Label>
-                        <Input
-                          type="number"
-                          value={room.capacity}
-                          onChange={(e) =>
-                            updateRoom(
-                              locationIndex,
-                              roomIndex,
-                              "capacity",
-                              Number.parseInt(e.target.value)
-                            )
-                          }
-                          placeholder="Number of people"
-                        />
-                      </div>
+
                       <div className="space-y-2">
                         <Label>Amenities</Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

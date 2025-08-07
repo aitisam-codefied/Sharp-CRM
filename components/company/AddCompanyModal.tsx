@@ -25,9 +25,12 @@ const COMPANY_BUSINESS_TYPES = {
 };
 
 export const ROOM_PREFERENCE_TYPES = {
-  SINGLE: "Single Room",
-  SHARED: "Shared Room",
-  FAMILY: "Family Room",
+  SINGLE: "Single Room (Capacity 1)",
+  DOUBLE: "Double Room (Capacity 2)",
+  TWIN: "Twin Room (Capacity 2 - 2 single beds)",
+  TRIPLE: "Triple Room (Capacity 3)",
+  QUAD: "Quad Room (Capacity 4)",
+  QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
 export const ROOM_STATUS_TYPES = {
@@ -398,7 +401,6 @@ export default function AddCompanyModal({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
-            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),

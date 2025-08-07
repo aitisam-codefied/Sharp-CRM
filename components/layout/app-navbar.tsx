@@ -27,6 +27,7 @@ import {
   X,
   LogOutIcon,
   Building,
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -287,9 +288,6 @@ export function AppNavbar() {
         </nav>
 
         <div className="hidden xl:flex items-center gap-3">
-          <Button variant="ghost" size="sm">
-            <Settings className="h-4 w-4" />
-          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 rounded-full">
@@ -307,16 +305,16 @@ export function AppNavbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end">
               <div className="p-2">
-                <p className="text-sm font-medium">{user?.firstName}</p>
+                <p className="text-sm font-medium">{user?.fullName}</p>
                 <p className="text-xs text-muted-foreground">
                   {user?.emailAddress}
                 </p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/admin/settings">
-                  <Settings className="mr-2 h-4 w-4" />
-                  <span>Settings</span>
+                <Link href="/dashboard/admin/profile">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>

@@ -1,9 +1,9 @@
 import axios from "axios";
 
 const BASE_URL = "http://localhost:5001/api/v1";
-
+const accessToken = localStorage.getItem("sms_access_token");
 const api = axios.create({
-  baseURL: "http://localhost:5001/api/v1",
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -25,7 +25,7 @@ api.interceptors.request.use(
 // Response interceptor – handle expired token
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  async (error:any) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -33,13 +33,22 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = localStorage.getItem("sms_refresh_token");
-        if (!refreshToken) throw new Error("No refresh token");
+        const oldaccessToken = localStorage.getItem("sms_access_token");
+        // console.log("old access token", oldaccessToken); // <--debug
+        // console.log("Refresh token:", refreshToken);// <--debug
+        if (!refreshToken) throw new Error("No refresh token found");
 
         const res = await axios.post(
           `${BASE_URL}/auth/refresh-token`,
-          { refreshToken },
-          { withCredentials: true }
+          {},
+          {
+            withCredentials: true,
+            headers: {
+              "x-refresh-token": refreshToken,
+            },
+          }
         );
+        // console.log("res", res); //<--debug
 
         const { accessToken, refreshToken: newRefreshToken } =
           res.data.tokens || {};
@@ -48,6 +57,9 @@ api.interceptors.response.use(
           localStorage.setItem("sms_access_token", accessToken);
           localStorage.setItem("sms_refresh_token", newRefreshToken);
 
+          // console.log("newwww access token", accessToken); //<--debug
+
+          // ✅ Correct way to retry original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return api(originalRequest);
         }

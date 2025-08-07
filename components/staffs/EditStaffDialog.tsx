@@ -32,6 +32,7 @@ const updateStaff = async ({
   id: string;
   staffData: any;
 }) => {
+  console.log("Sending staff update:", staffData);
   const response = await api.patch(`/user/${id}`, staffData);
   return response.data;
 };
@@ -63,7 +64,7 @@ export default function EditStaffDialog({
 
   const filteredBranches =
     branches?.filter(
-      (branch: any) => branch.companyId._id === selectedCompany
+      (branch: any) => branch.companyId?._id === selectedCompany
     ) || [];
 
   const [selectedBranches, setSelectedBranches] = useState<string[]>(
@@ -76,7 +77,7 @@ export default function EditStaffDialog({
     locations?.filter((location: any) => {
       const selectedBranchIds = filteredBranches
         .filter((b: any) => selectedBranches.includes(b.name))
-        .map((b: any) => b._id);
+        .map((b: any) => b?._id);
       return selectedBranchIds.includes(location.branchId);
     }) || [];
 
@@ -233,13 +234,13 @@ export default function EditStaffDialog({
         const location = filteredLocations.find(
           (l: any) => l.name === locationName
         );
-        return location ? location._id : null;
+        return location ? location?._id : null;
       })
       .filter(Boolean);
 
     const backendData = {
       ...(changedFields.includes("companyId") && {
-        companyId: selectedCompany,
+        companyId: [selectedCompany],
       }),
       ...(changedFields.includes("name") && { fullName: formData.name }),
       ...(changedFields.includes("email") && { emailAddress: formData.email }),
@@ -300,7 +301,7 @@ export default function EditStaffDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {companies.map((company: any) => (
-                    <SelectItem key={company._id} value={company._id}>
+                    <SelectItem key={company?._id} value={company?._id}>
                       {company.name}
                     </SelectItem>
                   ))}
@@ -415,7 +416,7 @@ export default function EditStaffDialog({
               </SelectTrigger>
               <SelectContent>
                 {filteredBranches.map((branch: any) => (
-                  <SelectItem key={branch._id} value={branch.name}>
+                  <SelectItem key={branch?._id} value={branch.name}>
                     <div className="flex items-center">
                       <input
                         type="checkbox"
@@ -451,7 +452,7 @@ export default function EditStaffDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {filteredLocations.map((location: any) => (
-                    <SelectItem key={location._id} value={location.name}>
+                    <SelectItem key={location?._id} value={location.name}>
                       <div className="flex items-center">
                         <input
                           type="checkbox"

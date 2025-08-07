@@ -66,22 +66,55 @@ export default function AddStaffDialog() {
   );
 
   // Filter branches by selected company
+  // const filteredBranches =
+  //   branches?.filter(
+  //     (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
+  //   ) || [];
+
+  // // Filter locations by selected branches
+  // const filteredLocations =
+  //   locations?.filter((location) => {
+  //     const selectedBranchIds = filteredBranches
+  //       .filter((b) => selectedBranches.includes(b.name))
+  //       .map((b) => b._id);
+  //     return (
+  //       selectedBranches.length === 0 ||
+  //       selectedBranchIds.includes(location.branchId)
+  //     );
+  //   }) || [];
+
   const filteredBranches =
     branches?.filter(
-      (branch) => !selectedCompany || branch.companyId._id === selectedCompany
+      (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
     ) || [];
 
-  // Filter locations by selected branches
   const filteredLocations =
     locations?.filter((location) => {
+      if (selectedBranches.length === 0) {
+        return true; // Show all locations if no branches selected
+      }
       const selectedBranchIds = filteredBranches
         .filter((b) => selectedBranches.includes(b.name))
         .map((b) => b._id);
-      return (
-        selectedBranches.length === 0 ||
-        selectedBranchIds.includes(location.branchId)
-      );
+      console.log("selectedBranchIds:", selectedBranchIds);
+      console.log("location.branchId:", location.branchId);
+      return selectedBranchIds.includes(location.branchId);
     }) || [];
+
+  useEffect(() => {
+    console.log("selectedBranches:", selectedBranches);
+    console.log("filteredBranches:", filteredBranches);
+    console.log("locations:", locations);
+    console.log("filteredLocations:", filteredLocations);
+  }, [selectedBranches, filteredBranches, locations, filteredLocations]);
+
+  useEffect(() => {
+    console.log("locationssss", filteredLocations);
+  });
+
+  useEffect(() => {
+    console.log("Raw locations data:", JSON.stringify(locations, null, 2));
+  }, [locations]);
 
   const createMutation = useMutation({
     mutationFn: createStaff,

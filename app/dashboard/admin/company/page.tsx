@@ -6,12 +6,13 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { computeFromManifest } from "next/dist/build/utils";
 
 export default function CompanyPage() {
   const { user } = useAuth();
   const [addCompanyModalOpen, setAddCompanyModalOpen] = useState(false);
 
-  const showAddCompanyButton = user?.companies.some(
+  const showAddCompanyButton = user?.companies?.some(
     (company) => company.type === "Multiple"
   );
 

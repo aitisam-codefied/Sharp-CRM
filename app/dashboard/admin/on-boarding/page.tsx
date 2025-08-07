@@ -41,9 +41,12 @@ const COMPANY_BUSINESS_TYPES = {
 };
 
 export const ROOM_PREFERENCE_TYPES = {
-  SINGLE: "Single Room",
-  SHARED: "Shared Room",
-  FAMILY: "Family Room",
+  SINGLE: "Single Room (Capacity 1)",
+  DOUBLE: "Double Room (Capacity 2)",
+  TWIN: "Twin Room (Capacity 2 - 2 single beds)",
+  TRIPLE: "Triple Room (Capacity 3)",
+  QUAD: "Quad Room (Capacity 4)",
+  QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
 export const ROOM_STATUS_TYPES = {
@@ -110,7 +113,6 @@ export const OnBoardingFormValues = {
             {
               roomNumber: "",
               type: "",
-              capacity: 0,
               amenities: [""],
             },
           ],
@@ -154,8 +156,8 @@ export default function OnboardingPage() {
 
       // 👇 Update context with the new company list
       const newCompany = data.company; // Make sure this is the actual company object returned
-      const updatedCompanies = [...(user?.companies || []), newCompany];
-      updateUserCompanies(updatedCompanies);
+      // const updatedCompanies = [...(user?.companies || []), newCompany];
+      updateUserCompanies(newCompany);
 
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       router.push("/dashboard/admin");
@@ -461,7 +463,6 @@ export default function OnboardingPage() {
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
-            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -930,31 +931,6 @@ export default function OnboardingPage() {
                                               ))}
                                             </SelectContent>
                                           </Select>
-                                        </div>
-                                      </div>
-
-                                      <div className="grid grid-cols-1 gap-4">
-                                        <div>
-                                          <Label>Capacity *</Label>
-                                          <Input
-                                            type="number"
-                                            min="1"
-                                            value={room.capacity}
-                                            onChange={(e) =>
-                                              updateRoom(
-                                                companyIndex,
-                                                branchIndex,
-                                                locationIndex,
-                                                roomIndex,
-                                                "capacity",
-                                                Number.parseInt(
-                                                  e.target.value
-                                                ) || 1
-                                              )
-                                            }
-                                            placeholder="Number of people"
-                                            className="mt-1"
-                                          />
                                         </div>
                                       </div>
 

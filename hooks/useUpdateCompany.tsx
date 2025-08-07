@@ -27,26 +27,28 @@ export interface Company {
   updatedAt: string;
 }
 
+// useUpdateCompany.ts
 export const useUpdateCompany = (
+  companyId: string,
   onSuccessCallback: (updated: Company) => void
 ) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: Company) => {
-      const response = await api.patch(`/company/${data._id}`, data, {
+    mutationFn: async (data: { name: string }) => {
+      const response = await api.patch(`/company/${companyId}`, data, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("sms_access_token")}`,
         },
       });
-      return response.data;
+      return response.data.company; // directly return updated company
     },
     onSuccess: (updatedCompany) => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       toast({
         title: "Success",
-        description: "Company updated successfully",
+        description: "Company name updated successfully",
       });
       onSuccessCallback(updatedCompany);
     },
