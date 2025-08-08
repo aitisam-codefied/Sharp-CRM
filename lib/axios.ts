@@ -37,8 +37,8 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("sms_refresh_token");
         const oldaccessToken = localStorage.getItem("sms_access_token");
-        // console.log("old access token", oldaccessToken); // <--debug
-        // console.log("Refresh token:", refreshToken);// <--debug
+        console.log("old access token", oldaccessToken); // <--debug
+        console.log("Refresh token:", refreshToken);// <--debug
         if (!refreshToken) throw new Error("No refresh token found");
 
         const res = await axios.post(
@@ -51,7 +51,7 @@ api.interceptors.response.use(
             },
           }
         );
-        // console.log("res", res); //<--debug
+        console.log("res", res); //<--debug
 
         const { accessToken, refreshToken: newRefreshToken } =
           res.data.tokens || {};
@@ -60,7 +60,7 @@ api.interceptors.response.use(
           localStorage.setItem("sms_access_token", accessToken);
           localStorage.setItem("sms_refresh_token", newRefreshToken);
 
-          // console.log("newwww access token", accessToken); //<--debug
+          console.log("newwww access token", accessToken); //<--debug
 
           // ✅ Correct way to retry original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
