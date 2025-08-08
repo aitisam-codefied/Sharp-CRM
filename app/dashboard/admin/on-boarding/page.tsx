@@ -1,40 +1,20 @@
 "use client";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Building2,
-  MapPin,
-  Plus,
-  Trash2,
-  CheckCircle,
-  ArrowRight,
-  ArrowLeft,
-  Home,
-  Briefcase,
-  Bed,
-} from "lucide-react";
+import { Building2, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AuthProvider, useAuth } from "@/components/providers/auth-provider";
+import { useAuth } from "@/components/providers/auth-provider";
 import api from "@/lib/axios";
+import BusinessTypeStep from "../../../../components/onBoarding/BusinessTypeStep";
+import CompanyInfoStep from "../../../../components/onBoarding/CompanyInfoStep";
+import BranchInfoStep from "../../../../components/onBoarding/BranchInfoStep";
+import LocationSetupStep from "../../../../components/onBoarding/LocationSetupStep";
+import RoomConfigStep from "../../../../components/onBoarding/RoomConfigStep";
 
-const COMPANY_BUSINESS_TYPES = {
+export const COMPANY_BUSINESS_TYPES = {
   SINGLE: "Single",
   FRANCHISE: "Franchise",
   MULTIPLE: "Multiple",
@@ -55,7 +35,7 @@ export const ROOM_STATUS_TYPES = {
   MAINTENANCE: "Maintenance",
 };
 
-const ROOM_AMENITIES = [
+export const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
   "Private Bathroom",
@@ -93,7 +73,7 @@ interface Branch {
   locations: Location[];
 }
 
-interface Company {
+export interface Company {
   name: string;
   type: string;
   branches: Branch[];
@@ -134,10 +114,8 @@ export default function OnboardingPage() {
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
-  // Get access token from context or local storage
   const accessToken = localStorage.getItem("sms_access_token");
 
-  // Mutation for creating company
   const createCompanyMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await api.post("/company/create", data, {
@@ -154,11 +132,8 @@ export default function OnboardingPage() {
         description: "Company setup completed successfully!",
       });
 
-      // 👇 Update context with the new company list
-      const newCompany = data.company; // Make sure this is the actual company object returned
-      // const updatedCompanies = [...(user?.companies || []), newCompany];
+      const newCompany = data.company;
       updateUserCompanies(newCompany);
-
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       router.push("/dashboard/admin");
     },
@@ -225,6 +200,17 @@ export default function OnboardingPage() {
 
   const addBranch = (companyIndex: number) => {
     const updatedCompanies = [...companies];
+    if (
+      selectedBusinessType === COMPANY_BUSINESS_TYPES.SINGLE &&
+      updatedCompanies[companyIndex].branches.length >= 1
+    ) {
+      toast({
+        title: "Limit Reached",
+        description: "Single company type can only have one branch.",
+        variant: "destructive",
+      });
+      return;
+    }
     const newBranch: Branch = {
       id: `branch-${Date.now()}`,
       name:
@@ -383,14 +369,24 @@ export default function OnboardingPage() {
       case 2:
         return companies.every((company) => company.name.trim() !== "");
       case 3:
-        return companies.every(
-          (company) =>
+        return companies.every((company) => {
+          if (company.type === COMPANY_BUSINESS_TYPES.SINGLE) {
+            return (
+              company.branches.length === 1 &&
+              company.branches.every(
+                (branch) =>
+                  branch.name.trim() !== "" && branch.address.trim() !== ""
+              )
+            );
+          }
+          return (
             company.branches.length > 0 &&
             company.branches.every(
               (branch) =>
                 branch.name.trim() !== "" && branch.address.trim() !== ""
             )
-        );
+          );
+        });
       case 4:
         return companies.every((company) =>
           company.branches.every((branch) => branch.locations.length > 0)
@@ -451,7 +447,6 @@ export default function OnboardingPage() {
       return;
     }
 
-    // Transform companies data to match OnBoardingFormValues format
     const formattedData = companies.map((company) => ({
       type: company.type,
       name: company.name,
@@ -469,7 +464,6 @@ export default function OnboardingPage() {
       })),
     }));
 
-    // Trigger the mutation
     createCompanyMutation.mutate(formattedData);
   };
 
@@ -477,530 +471,50 @@ export default function OnboardingPage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Briefcase className="h-8 w-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Choose Your Business Type
-              </h2>
-              <p className="text-gray-600">
-                Select the type that best describes your business structure
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <Badge
-                variant="destructive"
-                className="text-sm px-4 py-1 rounded-full"
-              >
-                This is a one-time process and can't be changed later
-              </Badge>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-3">
-              {Object.entries(COMPANY_BUSINESS_TYPES).map(([key, value]) => (
-                <Card
-                  key={key}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedBusinessType === value
-                      ? "ring-2 ring-red-500 bg-red-50"
-                      : ""
-                  }`}
-                  onClick={() => setSelectedBusinessType(value)}
-                >
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Building2 className="h-6 w-6 text-red-500" />
-                    </div>
-                    <h3 className="font-semibold mb-2">{value}</h3>
-                    <p className="text-sm text-gray-600">
-                      {key === "SINGLE" && "One company with one branch"}
-                      {key === "FRANCHISE" &&
-                        "One company with multiple branches (same name)"}
-                      {key === "MULTIPLE" &&
-                        "Multiple companies with different branches"}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <BusinessTypeStep
+            selectedBusinessType={selectedBusinessType}
+            setSelectedBusinessType={setSelectedBusinessType}
+          />
         );
-
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="h-8 w-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Company Information
-              </h2>
-              <p className="text-gray-600">
-                {selectedBusinessType === COMPANY_BUSINESS_TYPES.MULTIPLE
-                  ? "Add your companies"
-                  : "Enter your company details"}
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {companies.map((company, companyIndex) => (
-                <Card key={companyIndex}>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-lg">
-                      {selectedBusinessType === COMPANY_BUSINESS_TYPES.MULTIPLE
-                        ? `Company ${companyIndex + 1}`
-                        : "Company Details"}
-                    </CardTitle>
-                    {selectedBusinessType === COMPANY_BUSINESS_TYPES.MULTIPLE &&
-                      companies.length > 1 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeCompany(companyIndex)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor={`company-name-${companyIndex}`}>
-                        Company Name *
-                      </Label>
-                      <Input
-                        id={`company-name-${companyIndex}`}
-                        value={company.name}
-                        onChange={(e) =>
-                          updateCompany(companyIndex, "name", e.target.value)
-                        }
-                        placeholder="Enter company name"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">{company.type}</Badge>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-
-              {selectedBusinessType === COMPANY_BUSINESS_TYPES.MULTIPLE && (
-                <Button
-                  variant="outline"
-                  onClick={addCompany}
-                  className="w-full border-dashed border-2 h-12 bg-transparent"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Another Company
-                </Button>
-              )}
-            </div>
-          </div>
+          <CompanyInfoStep
+            companies={companies}
+            selectedBusinessType={selectedBusinessType}
+            addCompany={addCompany}
+            updateCompany={updateCompany}
+            removeCompany={removeCompany}
+          />
         );
-
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="h-8 w-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Branch Information
-              </h2>
-              <p className="text-gray-600">Add branches for your companies</p>
-            </div>
-
-            <div className="space-y-6">
-              {companies.map((company, companyIndex) => (
-                <Card key={companyIndex}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      {company.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {company.branches.map((branch, branchIndex) => (
-                      <Card
-                        key={branch.id}
-                        className="border-l-4 border-l-red-500"
-                      >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                          <CardTitle className="text-base">
-                            Branch {branchIndex + 1}
-                          </CardTitle>
-                          {company.branches.length > 1 && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                removeBranch(companyIndex, branchIndex)
-                              }
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div>
-                            <Label
-                              htmlFor={`branch-name-${companyIndex}-${branchIndex}`}
-                            >
-                              Branch Name *
-                            </Label>
-                            <Input
-                              id={`branch-name-${companyIndex}-${branchIndex}`}
-                              value={branch.name}
-                              onChange={(e) =>
-                                updateBranch(
-                                  companyIndex,
-                                  branchIndex,
-                                  "name",
-                                  e.target.value
-                                )
-                              }
-                              placeholder={
-                                selectedBusinessType ===
-                                COMPANY_BUSINESS_TYPES.FRANCHISE
-                                  ? company.name
-                                  : "Enter branch name"
-                              }
-                              disabled={
-                                selectedBusinessType ===
-                                COMPANY_BUSINESS_TYPES.FRANCHISE
-                              }
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label
-                              htmlFor={`branch-address-${companyIndex}-${branchIndex}`}
-                            >
-                              Branch Address *
-                            </Label>
-                            <Textarea
-                              id={`branch-address-${companyIndex}-${branchIndex}`}
-                              value={branch.address}
-                              onChange={(e) =>
-                                updateBranch(
-                                  companyIndex,
-                                  branchIndex,
-                                  "address",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Enter complete branch address"
-                              className="mt-1"
-                              rows={3}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-
-                    <Button
-                      variant="outline"
-                      onClick={() => addBranch(companyIndex)}
-                      className="w-full border-dashed border-2 h-12"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Branch
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <BranchInfoStep
+            companies={companies}
+            selectedBusinessType={selectedBusinessType}
+            addBranch={addBranch}
+            updateBranch={updateBranch}
+            removeBranch={removeBranch}
+          />
         );
-
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Home className="h-8 w-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Location Setup
-              </h2>
-              <p className="text-gray-600">
-                Add locations within each branch (e.g., Floor 1, East Wing)
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {companies.map((company, companyIndex) => (
-                <Card key={companyIndex}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      {company.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {company.branches.map((branch, branchIndex) => (
-                      <Card
-                        key={branch.id}
-                        className="border-l-4 border-l-red-500"
-                      >
-                        <CardHeader>
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            {branch.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {branch.locations.map((location, locationIndex) => (
-                            <div key={location.id} className="flex gap-2">
-                              <Input
-                                value={location.name}
-                                onChange={(e) =>
-                                  updateLocation(
-                                    companyIndex,
-                                    branchIndex,
-                                    locationIndex,
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="e.g., Floor 1, East Wing, Reception"
-                                className="flex-1"
-                              />
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  removeLocation(
-                                    companyIndex,
-                                    branchIndex,
-                                    locationIndex
-                                  )
-                                }
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
-
-                          <Button
-                            variant="outline"
-                            onClick={() =>
-                              addLocation(companyIndex, branchIndex)
-                            }
-                            className="w-full border-dashed border-2 h-10"
-                            size="sm"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add Location
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <LocationSetupStep
+            companies={companies}
+            addLocation={addLocation}
+            updateLocation={updateLocation}
+            removeLocation={removeLocation}
+          />
         );
-
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Bed className="h-8 w-8 text-red-500" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Room Configuration
-              </h2>
-              <p className="text-gray-600">
-                Set up rooms for each location with details and amenities
-              </p>
-            </div>
-
-            <div className="space-y-6">
-              {companies.map((company, companyIndex) => (
-                <Card key={companyIndex}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      {company.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {company.branches.map((branch, branchIndex) => (
-                      <Card
-                        key={branch.id}
-                        className="border-l-4 border-l-red-500"
-                      >
-                        <CardHeader>
-                          <CardTitle className="text-base flex items-center gap-2">
-                            <MapPin className="h-4 w-4" />
-                            {branch.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          {branch.locations.map((location, locationIndex) => (
-                            <Card
-                              key={location.id}
-                              className="border-l-4 border-l-blue-500"
-                            >
-                              <CardHeader>
-                                <CardTitle className="text-sm flex items-center gap-2">
-                                  <Home className="h-4 w-4" />
-                                  {location.name}
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="space-y-4">
-                                {location.rooms.map((room, roomIndex) => (
-                                  <Card key={room.id} className="bg-gray-50">
-                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                                      <CardTitle className="text-sm">
-                                        Room {roomIndex + 1}
-                                      </CardTitle>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                          removeRoom(
-                                            companyIndex,
-                                            branchIndex,
-                                            locationIndex,
-                                            roomIndex
-                                          )
-                                        }
-                                        className="text-red-600 hover:text-red-700"
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                          <Label>Room Number *</Label>
-                                          <Input
-                                            value={room.roomNumber}
-                                            onChange={(e) =>
-                                              updateRoom(
-                                                companyIndex,
-                                                branchIndex,
-                                                locationIndex,
-                                                roomIndex,
-                                                "roomNumber",
-                                                e.target.value
-                                              )
-                                            }
-                                            placeholder="e.g., 101, A-1"
-                                            className="mt-1"
-                                          />
-                                        </div>
-                                        <div>
-                                          <Label>Room Type *</Label>
-                                          <Select
-                                            value={room.type}
-                                            onValueChange={(value) =>
-                                              updateRoom(
-                                                companyIndex,
-                                                branchIndex,
-                                                locationIndex,
-                                                roomIndex,
-                                                "type",
-                                                value
-                                              )
-                                            }
-                                          >
-                                            <SelectTrigger className="mt-1">
-                                              <SelectValue placeholder="Select type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              {Object.values(
-                                                ROOM_PREFERENCE_TYPES
-                                              ).map((type) => (
-                                                <SelectItem
-                                                  key={type}
-                                                  value={type}
-                                                >
-                                                  {type}
-                                                </SelectItem>
-                                              ))}
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                      </div>
-
-                                      <div>
-                                        <Label className="text-sm font-medium mb-3 block">
-                                          Amenities
-                                        </Label>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                          {ROOM_AMENITIES.map((amenity) => (
-                                            <div
-                                              key={amenity}
-                                              className="flex items-center space-x-2"
-                                            >
-                                              <Checkbox
-                                                id={`amenity-${companyIndex}-${branchIndex}-${locationIndex}-${roomIndex}-${amenity}`}
-                                                checked={room.amenities.includes(
-                                                  amenity
-                                                )}
-                                                onCheckedChange={() =>
-                                                  toggleAmenity(
-                                                    companyIndex,
-                                                    branchIndex,
-                                                    locationIndex,
-                                                    roomIndex,
-                                                    amenity
-                                                  )
-                                                }
-                                              />
-                                              <Label
-                                                htmlFor={`amenity-${companyIndex}-${branchIndex}-${locationIndex}-${roomIndex}-${amenity}`}
-                                                className="text-sm font-normal"
-                                              >
-                                                {amenity}
-                                              </Label>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                ))}
-
-                                <Button
-                                  variant="outline"
-                                  onClick={() =>
-                                    addRoom(
-                                      companyIndex,
-                                      branchIndex,
-                                      locationIndex
-                                    )
-                                  }
-                                  className="w-full border-dashed border-2 h-10"
-                                  size="sm"
-                                >
-                                  <Plus className="h-4 w-4 mr-2" />
-                                  Add Room
-                                </Button>
-                              </CardContent>
-                            </Card>
-                          ))}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          <RoomConfigStep
+            companies={companies}
+            addRoom={addRoom}
+            updateRoom={updateRoom}
+            removeRoom={removeRoom}
+            toggleAmenity={toggleAmenity}
+          />
         );
-
       default:
         return null;
     }
@@ -1008,7 +522,6 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
@@ -1027,7 +540,6 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-2">
@@ -1042,13 +554,11 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white rounded-lg shadow-sm border p-8">
           {renderStepContent()}
         </div>
 
-        {/* Navigation */}
         <div className="flex justify-between mt-8">
           <Button
             variant="outline"
