@@ -1,7 +1,10 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5001/api/v1";
-const accessToken = localStorage.getItem("sms_access_token");
+// const BASE_URL = "http://localhost:5001/api/v1";
+const BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? "http://localhost:5001/api/v1"
+    : "https://quickcashgaming.com/sharp-sms-test/api/v1";
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -25,7 +28,7 @@ api.interceptors.request.use(
 // Response interceptor – handle expired token
 api.interceptors.response.use(
   (response) => response,
-  async (error:any) => {
+  async (error: any) => {
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && !originalRequest._retry) {

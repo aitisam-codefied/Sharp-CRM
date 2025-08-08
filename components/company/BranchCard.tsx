@@ -158,14 +158,36 @@ export default function BranchCard({
     onBranchUpdate(updatedBranch);
   };
 
+  const handleLocationUpdate = (updatedLocation: {
+    _id: string;
+    name: string;
+    rooms: Array<{
+      _id: string;
+      roomNumber: string;
+      type: string;
+      capacity: number;
+      amenities: string[];
+    }>;
+  }) => {
+    const updatedBranch = {
+      ...branch,
+      locations: branch.locations.map((loc) =>
+        loc._id === updatedLocation._id ? updatedLocation : loc
+      ),
+    };
+    onBranchUpdate(updatedBranch);
+  };
+
+  const handleLocationDelete = (locationId: string) => {
+    const updatedBranch = {
+      ...branch,
+      locations: branch.locations.filter((loc) => loc._id !== locationId),
+    };
+    onBranchUpdate(updatedBranch);
+  };
+
   const totalRooms = branch.locations?.reduce(
     (acc, location) => acc + location.rooms?.length,
-    0
-  );
-  const totalCapacity = branch.locations?.reduce(
-    (acc, location) =>
-      acc +
-      location.rooms?.reduce((roomAcc, room) => roomAcc + room.capacity, 0),
     0
   );
 
@@ -344,7 +366,12 @@ export default function BranchCard({
                   key={location._id}
                   className="transform transition-all duration-200"
                 >
-                  <LocationCard location={location} isEditable={isEditable} />
+                  <LocationCard
+                    location={location}
+                    isEditable={isEditable}
+                    onLocationUpdate={handleLocationUpdate}
+                    onLocationDelete={handleLocationDelete}
+                  />
                 </div>
               ))}
             </div>

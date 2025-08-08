@@ -23,12 +23,17 @@ export interface Company {
   branches: Branch[];
 }
 
+export interface Roles {
+  _id: string;
+  name: any;
+}
+
 interface User {
   _id: string;
   emailAddress: string;
   fullName: string;
   phoneNumber: string;
-  roles: string[];
+  roles: Roles[];
   companies: Company[];
   status: string;
   verified: boolean;
