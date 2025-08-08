@@ -137,127 +137,139 @@ export default function CompanyTable() {
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50/80 hover:bg-gray-50">
-                  <TableHead className="font-semibold text-gray-700">
-                    Company Name
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
-                    Branches
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
-                    Locations
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
-                    Total Rooms
-                  </TableHead>
-                  
-                  <TableHead className="font-semibold text-gray-700">
-                    Created
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-700">
-                    Actions
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companies.map((company) => {
-                  const stats = getCompanyStats(company);
-                  return (
-                    <TableRow
-                      key={company._id}
-                      className="hover:bg-blue-50/50 transition-all duration-200 border-b border-gray-100"
-                    >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-[#f87d7d] rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                            {company?.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {company.name}
+            {companies.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                <div className="bg-gray-100 p-4 rounded-full mb-4">
+                  <Building className="h-8 w-8 text-gray-400" />
+                </div>
+                <p className="text-lg font-medium">No companies registered</p>
+                <p className="text-sm text-gray-400 mt-1">
+                  Start by adding your first company.
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/80 hover:bg-gray-50">
+                    <TableHead className="font-semibold text-gray-700">
+                      Company Name
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Branches
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Locations
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Total Rooms
+                    </TableHead>
+
+                    <TableHead className="font-semibold text-gray-700">
+                      Created
+                    </TableHead>
+                    <TableHead className="font-semibold text-gray-700">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {companies.map((company) => {
+                    const stats = getCompanyStats(company);
+                    return (
+                      <TableRow
+                        key={company._id}
+                        className="hover:bg-blue-50/50 transition-all duration-200 border-b border-gray-100"
+                      >
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-[#f87d7d] rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                              {company?.name?.charAt(0).toUpperCase()}
                             </div>
-                            <div className="text-sm text-gray-500 capitalize">
-                              {company.type}
+                            <div>
+                              <div className="font-semibold text-gray-900">
+                                {company.name}
+                              </div>
+                              <div className="text-sm text-gray-500 capitalize">
+                                {company.type}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border-emerald-300 font-medium"
-                        >
-                          {stats.totalBranches}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300 font-medium"
-                        >
-                          {stats.totalLocations}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="secondary"
-                          className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 font-medium"
-                        >
-                          {stats.totalRooms}
-                        </Badge>
-                      </TableCell>
-                 
-                      <TableCell>
-                        <div className="text-sm text-gray-600">
-                          {new Date(company.createdAt).toLocaleDateString()}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedCompany(company);
-                              setIsEditable(false);
-                              setViewModalOpen(true);
-                            }}
-                            className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-800 border-emerald-300 font-medium"
                           >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setSelectedCompany(company);
-                              setIsEditable(true);
-                              setViewModalOpen(true);
-                            }}
-                            className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600 transition-colors"
+                            {stats.totalBranches}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border-blue-300 font-medium"
                           >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setDeletingCompany(company);
-                              setDeleteDialogOpen(true);
-                            }}
-                            className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+                            {stats.totalLocations}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border-purple-300 font-medium"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                            {stats.totalRooms}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="text-sm text-gray-600">
+                            {new Date(company.createdAt).toLocaleDateString()}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedCompany(company);
+                                setIsEditable(false);
+                                setViewModalOpen(true);
+                              }}
+                              className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setSelectedCompany(company);
+                                setIsEditable(true);
+                                setViewModalOpen(true);
+                              }}
+                              className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600 transition-colors"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setDeletingCompany(company);
+                                setDeleteDialogOpen(true);
+                              }}
+                              className="h-8 w-8 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </div>
         </CardContent>
       </Card>
