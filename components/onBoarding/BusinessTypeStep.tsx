@@ -26,7 +26,7 @@ export default function BusinessTypeStep({
         </p>
       </div>
       <div className="flex justify-center">
-        <Badge variant="destructive" className="text-sm px-4 py-1 rounded-full">
+        <Badge variant="destructive" className="text-sm px-4 py-1 rounded-full text-center">
           This is a one-time process and can't be changed later
         </Badge>
       </div>
