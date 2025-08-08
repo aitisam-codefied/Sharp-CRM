@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useUpdateLocation } from "@/hooks/useUpdateLocation";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
+import AddRoomForLocationDialog from "./AddRoomForLocationDialog";
 
 interface Location {
   _id: string;
@@ -151,6 +152,19 @@ export default function LocationCard({
     });
   };
 
+  const handleRoomCreated = (newRoom: {
+    _id: string;
+    roomNumber: string;
+    type: string;
+    amenities: string[];
+  }) => {
+    const updatedLocation = {
+      ...location,
+      rooms: [...location.rooms, newRoom],
+    };
+    onLocationUpdate?.(updatedLocation);
+  };
+
   return (
     <>
       <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -213,17 +227,24 @@ export default function LocationCard({
                 </div>
               </div>
             </div>
+
             <div className="flex items-center gap-2">
               {isEditable && editingLocationId !== location._id && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleDeleteLocation}
-                  disabled={deleteLocationMutation.isPending}
-                  className="h-10 w-10 bg-[#F87D7D] hover:bg-white hover:text-red-500 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
+                <>
+                  <AddRoomForLocationDialog
+                    locationId={location._id}
+                    onRoomCreated={handleRoomCreated}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleDeleteLocation}
+                    disabled={deleteLocationMutation.isPending}
+                    className="h-10 w-10 bg-[#F87D7D] hover:bg-white hover:text-red-500 text-white rounded-xl backdrop-blur-sm transition-all duration-200"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                </>
               )}
             </div>
           </div>
