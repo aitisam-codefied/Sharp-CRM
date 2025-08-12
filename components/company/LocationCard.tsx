@@ -34,6 +34,8 @@ import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import AddRoomForLocationDialog from "./AddRoomForLocationDialog";
 import { useDeleteRoom } from "@/hooks/useDeleteRoom";
 import EditRoomDialog from "./EditRoomDialog";
+import RoomCard from "./RoomCard";
+import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 
 interface Location {
   _id: string;
@@ -288,89 +290,24 @@ export default function LocationCard({
           {location.rooms?.length > 0 ? (
             <div className="space-y-4">
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                {location.rooms.map((room) => {
-                  const roomTypeColor = getRoomTypeColor(room.type);
-                  return (
-                    <Card
-                      key={room._id}
-                      className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 overflow-hidden"
-                    >
-                      <div className="p-5">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <h6 className="font-bold text-gray-900 text-lg">
-                                Room {room.roomNumber}
-                              </h6>
-                              <Badge
-                                variant="outline"
-                                className={`${roomTypeColor} text-xs font-medium mt-1`}
-                              >
-                                {room.type}
-                              </Badge>
-                            </div>
-                          </div>
-
-                          {/* Edit/Delete Room Actions */}
-                          {isEditable && (
-                            <div className="flex gap-2">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setSelectedRoom(room); // store in state
-                                  setEditRoomDialogOpen(true);
-                                }}
-                                className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  setRoomToDelete({
-                                    _id: room._id,
-                                    roomNumber: room.roomNumber,
-                                  });
-                                  setDeleteRoomDialogOpen(true);
-                                }}
-                                className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-
-                        {room.amenities?.length > 0 && (
-                          <div className="border-t border-gray-200 pt-4">
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-sm font-semibold text-gray-700">
-                                Amenities
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {room.amenities.map((amenity) => {
-                                const IconComponent = getAmenityIcon(amenity);
-                                return (
-                                  <Badge
-                                    key={amenity}
-                                    variant="secondary"
-                                    className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 transition-all duration-200 text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
-                                  >
-                                    <IconComponent className="h-3 w-3" />
-                                    {amenity}
-                                  </Badge>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
-                  );
-                })}
+                {location.rooms.map((room) => (
+                  <RoomCard
+                    key={room._id}
+                    room={room}
+                    isEditable={isEditable}
+                    onEditRoom={() => {
+                      setSelectedRoom(room);
+                      setEditRoomDialogOpen(true);
+                    }}
+                    onDeleteRoom={() => {
+                      setRoomToDelete({
+                        _id: room._id,
+                        roomNumber: room.roomNumber,
+                      });
+                      setDeleteRoomDialogOpen(true);
+                    }}
+                  />
+                ))}
               </div>
             </div>
           ) : (
@@ -390,88 +327,43 @@ export default function LocationCard({
       </Card>
 
       {isEditable && (
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent className="bg-gradient-to-br from-white to-red-50 border-red-200 max-w-md">
-            <AlertDialogHeader>
-              <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Trash2 className="h-10 w-10 text-red-600" />
-              </div>
-              <AlertDialogTitle className="text-center text-2xl font-bold text-gray-900">
-                Delete Location?
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-center text-gray-600 text-lg leading-relaxed">
-                This action cannot be undone. This will permanently delete the
-                location{" "}
-                <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
-                  "{location.name}"
-                </span>{" "}
-                and all its associated data.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="grid grid-cols-2 gap-3 items-center justify-center pt-6">
-              <AlertDialogCancel className="bg-gray-100 hover:bg-gray-200 px-6 py-2 rounded-lg font-semibold">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={confirmDeleteLocation}
-                disabled={deleteLocationMutation.isPending}
-                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-6 py-2 rounded-lg font-semibold shadow-lg"
-              >
-                {deleteLocationMutation.isPending ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Deleting...
-                  </div>
-                ) : (
-                  "Delete Location"
-                )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteConfirmationDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          title="Delete Location?"
+          description={
+            <>
+              This action cannot be undone. This will permanently delete the
+              location{" "}
+              <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
+                "{location.name}"
+              </span>{" "}
+              and all its associated data.
+            </>
+          }
+          onConfirm={confirmDeleteLocation}
+          isPending={deleteLocationMutation.isPending}
+          confirmText="Delete Location"
+        />
       )}
 
-      <AlertDialog
+      <DeleteConfirmationDialog
         open={deleteRoomDialogOpen}
         onOpenChange={setDeleteRoomDialogOpen}
-      >
-        <AlertDialogContent className="bg-gradient-to-br from-white to-red-50 border-red-200 max-w-md">
-          <AlertDialogHeader>
-            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Trash2 className="h-10 w-10 text-red-600" />
-            </div>
-            <AlertDialogTitle className="text-center text-2xl font-bold text-gray-900">
-              Delete Room?
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-gray-600 text-lg leading-relaxed">
-              This action cannot be undone. This will permanently delete room{" "}
-              <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
-                "{roomToDelete?.roomNumber}"
-              </span>{" "}
-              from this location.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="grid grid-cols-2 gap-3 items-center justify-center pt-6">
-            <AlertDialogCancel className="bg-gray-100 hover:bg-gray-200 px-6 py-2 rounded-lg font-semibold">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDeleteRoom}
-              disabled={deleteRoomMutation.isPending}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-6 py-2 rounded-lg font-semibold shadow-lg"
-            >
-              {deleteRoomMutation.isPending ? (
-                <div className="flex items-center gap-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Deleting...
-                </div>
-              ) : (
-                "Delete Room"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        title="Delete Room?"
+        description={
+          <>
+            This action cannot be undone. This will permanently delete room{" "}
+            <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
+              "{roomToDelete?.roomNumber}"
+            </span>{" "}
+            from this location.
+          </>
+        }
+        onConfirm={confirmDeleteRoom}
+        isPending={deleteRoomMutation.isPending}
+        confirmText="Delete Room"
+      />
 
       {selectedRoom && (
         <EditRoomDialog
