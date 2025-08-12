@@ -122,14 +122,15 @@ export default function AddRoomForLocationDialog({
 
     mutate(roomData, {
       onSuccess: (data) => {
+        console.log("Created room response:", data);
         toast({
           title: "Room Created Successfully",
         });
         onRoomCreated({
-          _id: data._id,
-          roomNumber: data.roomNumber,
-          type: data.type,
-          amenities: data.amenities,
+          _id: data.room._id,
+          roomNumber: data.room.roomNumber,
+          type: data.room.type,
+          amenities: data.room.amenities,
         });
         setIsAddDialogOpen(false);
         setRoom({

@@ -31,7 +31,6 @@ interface Company {
         _id: string;
         roomNumber: string;
         type: string;
-        capacity: number;
         amenities: string[];
       }>;
     }>;
@@ -78,21 +77,8 @@ export default function CompanyTable() {
         ),
       0
     );
-    const totalCapacity = company.branches?.reduce(
-      (acc, branch) =>
-        acc +
-        branch.locations?.reduce(
-          (locAcc, location) =>
-            locAcc +
-            location.rooms?.reduce(
-              (roomAcc, room) => roomAcc + room.capacity,
-              0
-            ),
-          0
-        ),
-      0
-    );
-    return { totalBranches, totalLocations, totalRooms, totalCapacity };
+
+    return { totalBranches, totalLocations, totalRooms };
   };
 
   if (isLoading) {

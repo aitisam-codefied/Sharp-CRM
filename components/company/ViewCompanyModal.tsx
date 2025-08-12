@@ -33,7 +33,6 @@ interface Company {
         _id: string;
         roomNumber: string;
         type: string;
-        capacity: number;
         amenities: string[];
       }>;
     }>;
@@ -113,7 +112,6 @@ export default function ViewCompanyModal({
         _id: string;
         roomNumber: string;
         type: string;
-        capacity: number;
         amenities: string[];
       }>;
     }>;
@@ -156,7 +154,7 @@ export default function ViewCompanyModal({
         _id: string;
         roomNumber: string;
         type: string;
-        capacity: number;
+
         amenities: string[];
       }>;
     }>;

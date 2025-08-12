@@ -15,7 +15,7 @@ import {
   X,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,8 @@ import {
 import { useUpdateLocation } from "@/hooks/useUpdateLocation";
 import { useDeleteLocation } from "@/hooks/useDeleteLocation";
 import AddRoomForLocationDialog from "./AddRoomForLocationDialog";
+import { useDeleteRoom } from "@/hooks/useDeleteRoom";
+import EditRoomDialog from "./EditRoomDialog";
 
 interface Location {
   _id: string;
@@ -84,6 +86,7 @@ export default function LocationCard({
   onLocationUpdate?: (updatedLocation: Location) => void;
   onLocationDelete?: (locationId: string) => void;
 }) {
+  const [locations, setLocation] = useState<Location>(location);
   const { toast } = useToast();
   const updateLocationMutation = useUpdateLocation();
   const deleteLocationMutation = useDeleteLocation();
@@ -92,6 +95,14 @@ export default function LocationCard({
   );
   const [editLocationName, setEditLocationName] = useState(location.name);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const deleteRoomMutation = useDeleteRoom();
+  const [editRoomDialogOpen, setEditRoomDialogOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<any>(null);
+  const [deleteRoomDialogOpen, setDeleteRoomDialogOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<{
+    _id: string;
+    roomNumber: string;
+  } | null>(null);
 
   const handleEditLocation = () => {
     setEditingLocationId(location._id);
@@ -163,6 +174,29 @@ export default function LocationCard({
       rooms: [...location.rooms, newRoom],
     };
     onLocationUpdate?.(updatedLocation);
+  };
+
+  const confirmDeleteRoom = () => {
+    if (!roomToDelete) return;
+    deleteRoomMutation.mutate(roomToDelete._id, {
+      onSuccess: () => {
+        toast({ title: "Room deleted successfully" });
+        const updatedLocation = {
+          ...location,
+          rooms: location.rooms.filter((room) => room._id !== roomToDelete._id),
+        };
+        onLocationUpdate?.(updatedLocation);
+        setDeleteRoomDialogOpen(false);
+      },
+      onError: () => {
+        toast({
+          title: "Error",
+          description: "Failed to delete room",
+          variant: "destructive",
+        });
+        setDeleteRoomDialogOpen(false);
+      },
+    });
   };
 
   return (
@@ -276,6 +310,37 @@ export default function LocationCard({
                               </Badge>
                             </div>
                           </div>
+
+                          {/* Edit/Delete Room Actions */}
+                          {isEditable && (
+                            <div className="flex gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setSelectedRoom(room); // store in state
+                                  setEditRoomDialogOpen(true);
+                                }}
+                                className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  setRoomToDelete({
+                                    _id: room._id,
+                                    roomNumber: room.roomNumber,
+                                  });
+                                  setDeleteRoomDialogOpen(true);
+                                }}
+                                className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
 
                         {room.amenities?.length > 0 && (
@@ -364,6 +429,65 @@ export default function LocationCard({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+      )}
+
+      <AlertDialog
+        open={deleteRoomDialogOpen}
+        onOpenChange={setDeleteRoomDialogOpen}
+      >
+        <AlertDialogContent className="bg-gradient-to-br from-white to-red-50 border-red-200 max-w-md">
+          <AlertDialogHeader>
+            <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Trash2 className="h-10 w-10 text-red-600" />
+            </div>
+            <AlertDialogTitle className="text-center text-2xl font-bold text-gray-900">
+              Delete Room?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-600 text-lg leading-relaxed">
+              This action cannot be undone. This will permanently delete room{" "}
+              <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
+                "{roomToDelete?.roomNumber}"
+              </span>{" "}
+              from this location.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="grid grid-cols-2 gap-3 items-center justify-center pt-6">
+            <AlertDialogCancel className="bg-gray-100 hover:bg-gray-200 px-6 py-2 rounded-lg font-semibold">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteRoom}
+              disabled={deleteRoomMutation.isPending}
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-6 py-2 rounded-lg font-semibold shadow-lg"
+            >
+              {deleteRoomMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Deleting...
+                </div>
+              ) : (
+                "Delete Room"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {selectedRoom && (
+        <EditRoomDialog
+          room={selectedRoom}
+          open={editRoomDialogOpen}
+          onOpenChange={setEditRoomDialogOpen}
+          onRoomUpdated={(updatedRoom) => {
+            const updatedLocation = {
+              ...location,
+              rooms: location.rooms.map((r) =>
+                r._id === updatedRoom._id ? updatedRoom : r
+              ),
+            };
+            onLocationUpdate?.(updatedLocation);
+          }}
+        />
       )}
     </>
   );
