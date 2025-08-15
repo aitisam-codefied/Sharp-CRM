@@ -93,10 +93,10 @@ export default function EditRoomDialog({
         onSuccess: (data) => {
           toast({ title: "Room updated successfully" });
           onRoomUpdated({
-            _id: data.data._id,
-            roomNumber: data.data.roomNumber,
-            type: data.data.type,
-            amenities: data.data.amenities,
+            _id: data.updatedRoom._id,
+            roomNumber: data.updatedRoom.roomNumber,
+            type: data.updatedRoom.type,
+            amenities: data.updatedRoom.amenities,
           });
           onOpenChange(false);
         },
