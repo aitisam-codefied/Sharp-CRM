@@ -231,6 +231,15 @@ export default function AddLocationForBranchDialog({
     });
   };
 
+  const isFormValid =
+    location.name.trim() !== "" &&
+    location.rooms.every(
+      (room) =>
+        room.roomNumber.trim() !== "" &&
+        room.type.trim() !== "" &&
+        room.amenities.length > 0
+    );
+
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
@@ -353,7 +362,7 @@ export default function AddLocationForBranchDialog({
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || !isFormValid}>
             {isPending ? "Adding..." : "Add Location"}
           </Button>
         </div>
