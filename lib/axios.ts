@@ -4,7 +4,7 @@ import axios from "axios";
 const BASE_URL =
   process.env.NODE_ENV === "development"
     ? "http://localhost:5001/api/v1"
-    : "https://quickcashgaming.com/sharp-sms-test/api/v1";
+    : "https://test.supasystem.co.uk/api/v1";
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
@@ -38,7 +38,7 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("sms_refresh_token");
         const oldaccessToken = localStorage.getItem("sms_access_token");
         console.log("old access token", oldaccessToken); // <--debug
-        console.log("Refresh token:", refreshToken);// <--debug
+        console.log("Refresh token:", refreshToken); // <--debug
         if (!refreshToken) throw new Error("No refresh token found");
 
         const res = await axios.post(
