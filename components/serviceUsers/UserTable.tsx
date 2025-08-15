@@ -25,11 +25,12 @@ import {
   Mail,
   Trash2,
 } from "lucide-react";
-import { ServiceUser } from "@/lib/types";
+import { Branch, Room, ServiceUser } from "@/lib/types";
 import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
 import { UserDetailsModal } from "./UserDetailsModal";
+import { EditUserModal } from "./EditUserModal";
 
 interface UserTableProps {
   users: ServiceUser[]; // Now contains nested structure
@@ -37,8 +38,10 @@ interface UserTableProps {
   selectedBranch: string;
   selectedStatus: string; // We'll map to priorityLevel
   selectedNationality: string;
-  onViewUser: (index: number) => void; // Pass index instead of id
-  onEditUser: (index: number) => void;
+  branches:Branch[],
+  allLocations:Location[],
+  allRooms:Room[],
+  nationalities:string[],
 }
 
 export function UserTable({
@@ -47,8 +50,10 @@ export function UserTable({
   selectedBranch,
   selectedStatus,
   selectedNationality,
-  onViewUser,
-  onEditUser,
+  branches,
+  allLocations,
+  allRooms,
+  nationalities
 }: UserTableProps) {
   const deleteGuest = useDeleteGuest();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -59,6 +64,10 @@ export function UserTable({
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedViewUser, setSelectedViewUser] = useState<ServiceUser | null>(
+    null
+  );
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedEditUserId, setSelectedEditUserId] = useState<string | null>(
     null
   );
 
@@ -221,12 +230,18 @@ export function UserTable({
                           onClick={() => {
                             setSelectedViewUser(users[idx]);
                             setViewModalOpen(true);
-                            onViewUser(idx);
                           }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedEditUserId(users[idx]._id);
+                            setEditModalOpen(true);
+                          }}
+                        >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -269,6 +284,16 @@ export function UserTable({
         user={selectedViewUser}
         isOpen={viewModalOpen}
         onOpenChange={setViewModalOpen}
+      />
+
+      <EditUserModal
+        isOpen={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        userId={selectedEditUserId}
+        branches={branches} // Assuming these are passed to UserTable
+        allLocations={allLocations}
+        allRooms={allRooms}
+        nationalities={nationalities}
       />
 
       {/* Delete Confirmation Dialog */}

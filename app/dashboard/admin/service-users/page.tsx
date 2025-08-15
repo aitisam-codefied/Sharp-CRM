@@ -51,13 +51,6 @@ export default function ServiceUsersPage() {
     setIsNewUserOpen(false);
   };
 
-  const handleViewUser = (userId: string) => {
-    toast({
-      title: "View Service User",
-      description: `Opening detailed profile for ${userId}`,
-    });
-  };
-
   const handleEditUser = (userId: string) => {
     toast({
       title: "Edit Service User",
@@ -114,8 +107,10 @@ export default function ServiceUsersPage() {
           selectedBranch={selectedBranch}
           selectedStatus={selectedStatus}
           selectedNationality={selectedNationality}
-          onViewUser={handleViewUser}
-          onEditUser={handleEditUser}
+          branches={branches}
+          allLocations={locations}
+          allRooms={[]} // Add your rooms data here
+          nationalities={nationalities}
         />
       </div>
     </DashboardLayout>

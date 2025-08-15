@@ -114,9 +114,9 @@ export interface ServiceUser {
   address: string;
   emergencyContacts: {
     _id: string;
-    fullName: string;
-    relationship: string;
-    phoneNumber: string;
+    fullName: any;
+    relationship: any;
+    phoneNumber: any;
   }[];
   medicalCondition: string;
   allergies: string;

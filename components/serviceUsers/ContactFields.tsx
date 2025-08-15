@@ -20,27 +20,24 @@ export function ContactFields({
       <Controller
         name={`details.${index}.emergencyContacts`}
         control={control}
-        render={({ field }) => (
-          <div className="space-y-2">
-            {field.value.map((_: any, contactIndex: number) => (
-              <div key={contactIndex} className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
+        render={({ field }) => {
+          const contacts = Array.isArray(field.value) ? field.value : [];
+          return (
+            <div className="space-y-2">
+              {contacts.map((_, contactIndex) => (
+                <div key={contactIndex} className="grid grid-cols-3 gap-4">
                   <Input
                     placeholder="Contact Name"
                     {...register(
                       `details.${index}.emergencyContacts.${contactIndex}.fullName`
                     )}
                   />
-                </div>
-                <div className="space-y-2">
                   <Input
                     placeholder="Relationship"
                     {...register(
                       `details.${index}.emergencyContacts.${contactIndex}.relationship`
                     )}
                   />
-                </div>
-                <div className="space-y-2">
                   <Input
                     placeholder="Phone Number"
                     {...register(
@@ -48,10 +45,10 @@ export function ContactFields({
                     )}
                   />
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          );
+        }}
       />
     </div>
   );

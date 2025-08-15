@@ -40,7 +40,7 @@ export function DocumentFields({
         control={control}
         render={({ field }) => (
           <div className="space-y-2">
-            {field.value.map((doc: any, docIndex: number) => (
+            {field.value?.map((doc: any, docIndex: number) => (
               <div key={docIndex} className="grid grid-cols-2 gap-4">
                 {/* Document Type Select */}
                 <Controller
@@ -55,7 +55,7 @@ export function DocumentFields({
                         <SelectValue placeholder="Select document type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.values(USER_DOCUMENT_TYPES).map((docType) => (
+                        {Object.values(USER_DOCUMENT_TYPES)?.map((docType) => (
                           <SelectItem key={docType} value={docType}>
                             {docType}
                           </SelectItem>
