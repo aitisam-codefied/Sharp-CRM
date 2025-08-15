@@ -107,10 +107,6 @@ export default function ServiceUsersPage() {
           selectedBranch={selectedBranch}
           selectedStatus={selectedStatus}
           selectedNationality={selectedNationality}
-          branches={branches}
-          allLocations={locations}
-          allRooms={[]} // Add your rooms data here
-          nationalities={nationalities}
         />
       </div>
     </DashboardLayout>

@@ -30,7 +30,6 @@ import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
 import { UserDetailsModal } from "./UserDetailsModal";
-import { EditUserModal } from "./EditUserModal";
 
 interface UserTableProps {
   users: ServiceUser[]; // Now contains nested structure
@@ -38,10 +37,10 @@ interface UserTableProps {
   selectedBranch: string;
   selectedStatus: string; // We'll map to priorityLevel
   selectedNationality: string;
-  branches:Branch[],
-  allLocations:Location[],
-  allRooms:Room[],
-  nationalities:string[],
+  branches: Branch[];
+  allLocations: Location[];
+  allRooms: Room[];
+  nationalities: string[];
 }
 
 export function UserTable({
@@ -53,7 +52,7 @@ export function UserTable({
   branches,
   allLocations,
   allRooms,
-  nationalities
+  nationalities,
 }: UserTableProps) {
   const deleteGuest = useDeleteGuest();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -284,16 +283,6 @@ export function UserTable({
         user={selectedViewUser}
         isOpen={viewModalOpen}
         onOpenChange={setViewModalOpen}
-      />
-
-      <EditUserModal
-        isOpen={editModalOpen}
-        onOpenChange={setEditModalOpen}
-        userId={selectedEditUserId}
-        branches={branches} // Assuming these are passed to UserTable
-        allLocations={allLocations}
-        allRooms={allRooms}
-        nationalities={nationalities}
       />
 
       {/* Delete Confirmation Dialog */}
