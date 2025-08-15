@@ -213,10 +213,7 @@ export default function OnboardingPage() {
     }
     const newBranch: Branch = {
       id: `branch-${Date.now()}`,
-      name:
-        selectedBusinessType === COMPANY_BUSINESS_TYPES.FRANCHISE
-          ? updatedCompanies[companyIndex].name
-          : "",
+      name: "",
       address: "",
       locations: [],
     };

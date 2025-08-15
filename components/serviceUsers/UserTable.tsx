@@ -29,6 +29,7 @@ import { ServiceUser } from "@/lib/types";
 import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
+import { UserDetailsModal } from "./UserDetailsModal";
 
 interface UserTableProps {
   users: ServiceUser[]; // Now contains nested structure
@@ -55,6 +56,11 @@ export function UserTable({
     id: string;
     fullName: string;
   } | null>(null);
+
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedViewUser, setSelectedViewUser] = useState<ServiceUser | null>(
+    null
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -212,15 +218,15 @@ export function UserTable({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onViewUser(idx)}
+                          onClick={() => {
+                            setSelectedViewUser(users[idx]);
+                            setViewModalOpen(true);
+                            onViewUser(idx);
+                          }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => onEditUser(idx)}
-                        >
+                        <Button variant="ghost" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
@@ -257,6 +263,13 @@ export function UserTable({
           )}
         </CardContent>
       </Card>
+
+      {/* User Details Modal */}
+      <UserDetailsModal
+        user={selectedViewUser}
+        isOpen={viewModalOpen}
+        onOpenChange={setViewModalOpen}
+      />
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog

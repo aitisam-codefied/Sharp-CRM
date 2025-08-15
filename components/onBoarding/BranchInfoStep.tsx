@@ -87,16 +87,16 @@ export default function BranchInfoStep({
                             e.target.value
                           )
                         }
-                        placeholder={
-                          selectedBusinessType ===
-                          COMPANY_BUSINESS_TYPES.FRANCHISE
-                            ? company.name
-                            : "Enter branch name"
-                        }
-                        disabled={
-                          selectedBusinessType ===
-                          COMPANY_BUSINESS_TYPES.FRANCHISE
-                        }
+                        // placeholder={
+                        //   selectedBusinessType ===
+                        //   COMPANY_BUSINESS_TYPES.FRANCHISE
+                        //     ? company.name
+                        //     : "Enter branch name"
+                        // }
+                        // disabled={
+                        //   selectedBusinessType ===
+                        //   COMPANY_BUSINESS_TYPES.FRANCHISE
+                        // }
                         className="mt-1"
                       />
                     </div>
