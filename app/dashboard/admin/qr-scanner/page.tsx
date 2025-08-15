@@ -56,16 +56,16 @@ export default function QRScannerPage() {
   const filteredQRCodes = selectedBranch
     ? qrcodes.filter((qr: QRCode) => qr.branchId._id === selectedBranch)
     : qrcodes;
-  const filteredQRCodeLogs = selectedBranch
-    ? qrCodeLogs.filter((log: QRCodeLog) => log.branchId._id === selectedBranch)
-    : qrCodeLogs;
+  // const filteredQRCodeLogs = selectedBranch
+  //   ? qrCodeLogs.filter((log: QRCodeLog) => log.branchId._id === selectedBranch)
+  //   : qrCodeLogs;
 
   useEffect(() => {
     console.log("qrcodes", qrcodes);
     console.log("filteredQRCodes", filteredQRCodes);
     console.log("qrCodeLogs", qrCodeLogs);
-    console.log("filteredQRCodeLogs", filteredQRCodeLogs);
-  }, [qrcodes, filteredQRCodes, qrCodeLogs, filteredQRCodeLogs]);
+    // console.log("filteredQRCodeLogs", filteredQRCodeLogs);
+  }, [qrcodes, filteredQRCodes, qrCodeLogs]);
 
   return (
     <DashboardLayout
@@ -108,7 +108,7 @@ export default function QRScannerPage() {
           </CardHeader>
           <CardContent>
             <QRCodeLogsDisplay
-              qrCodeLogs={filteredQRCodeLogs}
+              qrCodeLogs={qrCodeLogs}
               isLoading={isLogsPending}
             />
           </CardContent>
