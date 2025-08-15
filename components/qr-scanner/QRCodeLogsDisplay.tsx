@@ -80,15 +80,15 @@ export function QRCodeLogsDisplay({
           {allActions.map((action) => (
             <li
               key={action._id}
-              className="text-xs p-2 rounded-md gap-2 bg-muted"
+              className="text-xs p-2 rounded-md gap-2 bg-gray-50"
             >
               <div className="flex flex-col items-start gap-2">
                 <span className="text-xs py-1 text-black rounded-full">
                   [{formatDate(action.timestamp)}]
                 </span>
-                <span className="font-medium text-sm text-black">
+                <span className="font-normal text-sm text-black">
                   {action.staffName}:{" "}
-                  <Badge className="text-[10px] bg-black text-gray-100">
+                  <Badge className="text-[10px] bg-muted-foreground text-white">
                     {action.actionType}
                   </Badge>
                 </span>
