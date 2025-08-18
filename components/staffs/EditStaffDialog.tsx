@@ -132,12 +132,23 @@ export default function EditStaffDialog({
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
       onClose();
     },
+    // onError: (error: any) => {
+    //   toast({
+    //     title: "Error Updating Staff",
+    //     description:
+    //       error.response?.data?.error ||
+    //       "Failed to update staff member. Please try again.",
+    //     variant: "destructive",
+    //   });
+    // },
     onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to update staff member. Please try again.";
       toast({
-        title: "Error Updating Staff",
-        description:
-          error.response?.data?.error ||
-          "Failed to update staff member. Please try again.",
+        title: "Error",
+        description: message,
         variant: "destructive",
       });
     },

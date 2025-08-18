@@ -241,7 +241,7 @@ export default function AddStaffDialog() {
       phoneNumber: formData.phone,
       joinDate: formData.joinDate,
       roles: selectedRoles,
-      branchId: branchIds,
+      branches: branchIds,
       locations: locationIds,
     };
 
