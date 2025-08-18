@@ -30,6 +30,7 @@ import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
 import { UserDetailsModal } from "./UserDetailsModal";
+import { EditUserModal } from "./EditUserModal";
 
 interface UserTableProps {
   users: ServiceUser[]; // Now contains nested structure
@@ -66,7 +67,7 @@ export function UserTable({
     null
   );
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedEditUserId, setSelectedEditUserId] = useState<string | null>(
+  const [selectedEditUser, setSelectedEditUser] = useState<ServiceUser | null>(
     null
   );
 
@@ -237,7 +238,7 @@ export function UserTable({
                           variant="ghost"
                           size="sm"
                           onClick={() => {
-                            setSelectedEditUserId(users[idx]._id);
+                            setSelectedEditUser(users[idx]);
                             setEditModalOpen(true);
                           }}
                         >
@@ -283,6 +284,17 @@ export function UserTable({
         user={selectedViewUser}
         isOpen={viewModalOpen}
         onOpenChange={setViewModalOpen}
+      />
+
+      {/* Edit User Modal */}
+      <EditUserModal
+        user={selectedEditUser}
+        isOpen={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        branches={branches}
+        // allLocations={allLocations}
+        allRooms={allRooms}
+        nationalities={nationalities}
       />
 
       {/* Delete Confirmation Dialog */}

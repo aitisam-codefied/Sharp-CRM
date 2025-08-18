@@ -64,7 +64,7 @@ export function QRCodeLogsDisplay({
     .flatMap((log) =>
       log.actions.map((action) => ({
         ...action,
-        staffName: log.staffId.fullName,
+        staffName: log.staffId?.fullName,
       }))
     )
     .sort(

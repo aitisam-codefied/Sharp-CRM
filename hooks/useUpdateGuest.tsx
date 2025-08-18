@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { GuestFormData } from "@/lib/types";
+import { GuestFormData, ServiceUser } from "@/lib/types";
 import api from "@/lib/axios";
 
 export const useUpdateGuest = () => {
@@ -12,7 +12,7 @@ export const useUpdateGuest = () => {
       data,
     }: {
       id: string;
-      data: Partial<GuestFormData>;
+      data: Partial<ServiceUser>;
     }) => {
       const response = await api.patch(`/guest/${id}`, data);
       return response.data;

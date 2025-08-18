@@ -376,31 +376,57 @@ export default function OnboardingPage() {
               )
             );
           }
+          const branchNames = company.branches.map((b) =>
+            b.name.trim().toLowerCase()
+          );
+          const uniqueBranches =
+            new Set(branchNames).size === branchNames.length;
           return (
             company.branches.length > 0 &&
             company.branches.every(
               (branch) =>
                 branch.name.trim() !== "" && branch.address.trim() !== ""
-            )
+            ) &&
+            uniqueBranches
           );
         });
       case 4:
         return companies.every((company) =>
-          company.branches.every((branch) => branch.locations.length > 0)
+          company.branches.every((branch) => {
+            const locationNames = branch.locations.map((l) =>
+              l.name.trim().toLowerCase()
+            );
+            const uniqueLocations =
+              new Set(locationNames).size === locationNames.length;
+            return (
+              branch.locations.length > 0 &&
+              branch.locations.every(
+                (location) => location.name.trim() !== ""
+              ) &&
+              uniqueLocations
+            );
+          })
         );
       case 5:
         return companies.every((company) =>
           company.branches.every((branch) =>
-            branch.locations.every((location) =>
-              location.rooms.every(
-                (room) =>
-                  room.roomNumber.trim() !== "" &&
-                  room.capacity > 0 &&
-                  room.price >= 0 &&
-                  room.type &&
-                  room.status
-              )
-            )
+            branch.locations.every((location) => {
+              const roomNumbers = location.rooms.map((r) =>
+                r.roomNumber.trim().toLowerCase()
+              );
+              const uniqueRooms =
+                new Set(roomNumbers).size === roomNumbers.length;
+              return (
+                location.rooms.every(
+                  (room) =>
+                    room.roomNumber.trim() !== "" &&
+                    room.capacity > 0 &&
+                    room.price >= 0 &&
+                    room.type &&
+                    room.status
+                ) && uniqueRooms
+              );
+            })
           )
         );
       default:
@@ -408,13 +434,63 @@ export default function OnboardingPage() {
     }
   };
 
+  // const validateStep = (step: number) => {
+  //   switch (step) {
+  //     case 1:
+  //       return selectedBusinessType !== "";
+  //     case 2:
+  //       return companies.every((company) => company.name.trim() !== "");
+  //     case 3:
+  //       return companies.every((company) => {
+  //         if (company.type === COMPANY_BUSINESS_TYPES.SINGLE) {
+  //           return (
+  //             company.branches.length === 1 &&
+  //             company.branches.every(
+  //               (branch) =>
+  //                 branch.name.trim() !== "" && branch.address.trim() !== ""
+  //             )
+  //           );
+  //         }
+  //         return (
+  //           company.branches.length > 0 &&
+  //           company.branches.every(
+  //             (branch) =>
+  //               branch.name.trim() !== "" && branch.address.trim() !== ""
+  //           )
+  //         );
+  //       });
+  //     case 4:
+  //       return companies.every((company) =>
+  //         company.branches.every((branch) => branch.locations.length > 0)
+  //       );
+  //     case 5:
+  //       return companies.every((company) =>
+  //         company.branches.every((branch) =>
+  //           branch.locations.every((location) =>
+  //             location.rooms.every(
+  //               (room) =>
+  //                 room.roomNumber.trim() !== "" &&
+  //                 room.capacity > 0 &&
+  //                 room.price >= 0 &&
+  //                 room.type &&
+  //                 room.status
+  //             )
+  //           )
+  //         )
+  //       );
+  //     default:
+  //       return false;
+  //   }
+  // };
+
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(currentStep + 1);
     } else {
       toast({
         title: "Incomplete Information",
-        description: "Please fill in all required fields before proceeding.",
+        description:
+          "Please fill in all required fields and ensure no duplicates before proceeding.",
         variant: "destructive",
       });
     }
@@ -428,7 +504,8 @@ export default function OnboardingPage() {
     if (!validateStep(5)) {
       toast({
         title: "Incomplete Information",
-        description: "Please complete all steps before submitting.",
+        description:
+          "Please complete all steps and ensure no duplicates before submitting.",
         variant: "destructive",
       });
       return;

@@ -6,11 +6,18 @@ import { UserStats } from "@/components/serviceUsers/UserStats";
 import { UserFilters } from "@/components/serviceUsers/UserFilters";
 import { UserTable } from "@/components/serviceUsers/UserTable";
 import { NewUserDialog } from "@/components/serviceUsers/NewUserDialog";
-import { ServiceUser, Branch, Location, GuestFormData } from "@/lib/types";
+import {
+  ServiceUser,
+  Branch,
+  Location,
+  GuestFormData,
+  Room,
+} from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
 import { useGetGuests } from "@/hooks/useGetGuests";
+import { useRooms } from "@/hooks/useGetRooms";
 
 export default function ServiceUsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,6 +29,7 @@ export default function ServiceUsersPage() {
 
   const { data: branchesData } = useBranches();
   const { data: locationsData } = useLocations();
+  const { data: roomsData } = useRooms();
   const { data: guestsData, isPending } = useGetGuests();
 
   useEffect(() => {
@@ -30,6 +38,7 @@ export default function ServiceUsersPage() {
 
   const branches: Branch[] = branchesData || [];
   const locations: Location[] = locationsData || [];
+  const rooms: Room[] = roomsData || [];
   const guests: GuestFormData[] = guestsData || [];
 
   const nationalities = [
@@ -107,6 +116,9 @@ export default function ServiceUsersPage() {
           selectedBranch={selectedBranch}
           selectedStatus={selectedStatus}
           selectedNationality={selectedNationality}
+          branches={branches}
+          allRooms={rooms}
+          nationalities={nationalities}
         />
       </div>
     </DashboardLayout>

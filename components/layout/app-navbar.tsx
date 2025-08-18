@@ -82,8 +82,8 @@ export function AppNavbar() {
       return "system";
     if (
       pathname.includes("/service-users") ||
-      pathname.includes("/rooms") ||
-      pathname.includes("/new-user") ||
+      // pathname.includes("/rooms") ||
+      // pathname.includes("/new-user") ||
       pathname.includes("/in-transit")
     )
       return "users";
@@ -218,18 +218,18 @@ export function AppNavbar() {
         icon: UserIcon,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-      {
-        title: "Room Management",
-        href: "/dashboard/admin/rooms",
-        icon: BedDouble,
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-      },
-      {
-        title: "User Registration",
-        href: "/dashboard/admin/new-user",
-        icon: UserPlus,
-        color: "bg-green-100 text-green-700 border-green-200",
-      },
+      // {
+      //   title: "Room Management",
+      //   href: "/dashboard/admin/rooms",
+      //   icon: BedDouble,
+      //   color: "bg-blue-100 text-blue-700 border-blue-200",
+      // },
+      // {
+      //   title: "User Registration",
+      //   href: "/dashboard/admin/new-user",
+      //   icon: UserPlus,
+      //   color: "bg-green-100 text-green-700 border-green-200",
+      // },
       {
         title: "In-Transit User",
         href: "/dashboard/admin/in-transit",

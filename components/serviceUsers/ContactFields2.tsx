@@ -4,22 +4,17 @@ import { Input } from "@/components/ui/input";
 import { GuestFormData } from "@/lib/types";
 
 interface ContactFieldsProps {
-  index: number;
   control: any;
   register: any;
 }
 
-export function ContactFields({
-  index,
-  control,
-  register,
-}: ContactFieldsProps) {
-  console.log("Index:", index);
+export function ContactFields2({ control, register }: ContactFieldsProps) {
+  console.log("Index:");
   return (
     <div className="space-y-2 mt-4">
       <Label>Emergency Contacts</Label>
       <Controller
-        name={`details.${index}.emergencyContacts`}
+        name={`emergencyContacts`}
         control={control}
         render={({ field }) => {
           console.log("Field value:", field.value);
@@ -30,20 +25,18 @@ export function ContactFields({
                 <div key={contactIndex} className="grid grid-cols-3 gap-4">
                   <Input
                     placeholder="Contact Name"
-                    {...register(
-                      `details.${index}.emergencyContacts.${contactIndex}.fullName`
-                    )}
+                    {...register(`emergencyContacts.${contactIndex}.fullName`)}
                   />
                   <Input
                     placeholder="Relationship"
                     {...register(
-                      `details.${index}.emergencyContacts.${contactIndex}.relationship`
+                      `emergencyContacts.${contactIndex}.relationship`
                     )}
                   />
                   <Input
                     placeholder="Phone Number"
                     {...register(
-                      `details.${index}.emergencyContacts.${contactIndex}.phoneNumber`
+                      `emergencyContacts.${contactIndex}.phoneNumber`
                     )}
                   />
                 </div>
