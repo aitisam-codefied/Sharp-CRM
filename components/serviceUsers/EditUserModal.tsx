@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Dialog,
@@ -51,6 +51,7 @@ export function EditUserModal({
 }: EditUserModalProps) {
   const { toast } = useToast();
   const updateGuest = useUpdateGuest();
+  const [branchChanged, setBranchChanged] = useState(false);
 
   // Initialize form with ServiceUser fields
   const {
@@ -144,6 +145,8 @@ export function EditUserModal({
     }
   }, [user, reset]);
 
+  const initialBranch = user?.branch?._id || "";
+
   useEffect(() => {
     if (user) {
       reset({
@@ -152,16 +155,11 @@ export function EditUserModal({
           ? new Date(user.dateOfBirth).toISOString().split("T")[0]
           : "",
       });
+      setBranchChanged(false); // reset jab modal open ho
     }
   }, [user, reset]);
 
   const selectedBranch = watch("branch._id");
-
-  // const getFilteredRooms = (branchId: string) => {
-  //   return allRooms?.filter((room) => room.branch?._id === branchId) || [];
-  // };
-
-  // const filteredRooms = getFilteredRooms(selectedBranch);
 
   useEffect(() => {
     if (selectedBranch) {
@@ -221,9 +219,10 @@ export function EditUserModal({
     if (dirtyFields.priorityLevel)
       changedData.priorityLevel = data.priorityLevel;
     if (dirtyFields.documents) changedData.documents = data.documents;
-    if (dirtyFields.branch?._id) changedData.branch = { _id: data.branch._id };
+    if (dirtyFields.branch?._id) changedData.branch = data.branch._id;
+
     if (dirtyFields.assignedRoom?._id)
-      changedData.assignedRoom = { _id: data.assignedRoom._id };
+      changedData.assignedRoom = data.assignedRoom._id;
     if (dirtyFields.roomTypePreference)
       changedData.roomTypePreference = data.roomTypePreference;
     if (dirtyFields.checkInDate) changedData.checkInDate = data.checkInDate;
@@ -265,7 +264,7 @@ export function EditUserModal({
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="border p-4 rounded-md">
             <h3 className="text-lg font-semibold mb-4">Service User Details</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="userId.fullName">Full Name</Label>
                 <Input
@@ -297,6 +296,19 @@ export function EditUserModal({
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="userId.emailAddress">Room Number</Label>
+                <Input
+                  id="assignedRoom.roomNumber"
+                  type="text"
+                  {...register("assignedRoom.roomNumber")}
+                />
+                {errors.assignedRoom?.roomNumber && (
+                  <p className="text-red-500 text-xs">
+                    {errors.assignedRoom?.roomNumber.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-4">
@@ -307,7 +319,19 @@ export function EditUserModal({
                   control={control}
                   rules={{ required: "Branch is required" }}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val);
+                        if (val !== initialBranch) {
+                          setBranchChanged(true); // sirf tab true jab user ne branch change ki ho
+                          setValue("assignedRoom._id", "");
+                          setValue("location._id", "");
+                        } else {
+                          setBranchChanged(false);
+                        }
+                      }}
+                      value={field.value}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select branch" />
                       </SelectTrigger>
@@ -342,38 +366,85 @@ export function EditUserModal({
                   </p>
                 )}
               </div>
-              {/* <div className="space-y-2">
-                <Label htmlFor="assignedRoom._id">Room</Label>
-                <Controller
-                  name="assignedRoom._id"
-                  control={control}
-                  rules={{ required: "Room selection is required" }}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                      disabled={!selectedBranch}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select room" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {allRooms?.map((room: Room) => (
-                          <SelectItem key={room._id} value={room._id}>
-                            {room.roomNumber} ({room.type})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.assignedRoom?._id && (
-                  <p className="text-red-500 text-xs">
-                    {errors.assignedRoom._id.message}
-                  </p>
-                )}
-              </div> */}
             </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              {branchChanged && (
+                <>
+                  {/* Location dropdown */}
+                  <div className="space-y-2">
+                    <Label htmlFor="location._id">Location</Label>
+                    <Controller
+                      name="location._id"
+                      control={control}
+                      rules={{ required: "Location is required" }}
+                      render={({ field }) => {
+                        const branchObj = branches.find(
+                          (b) => b._id === selectedBranch
+                        );
+                        const locations = branchObj?.locations || [];
+                        return (
+                          <Select
+                            onValueChange={(val) => {
+                              field.onChange(val);
+                              setValue("assignedRoom._id", ""); // reset room on location change
+                            }}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select location" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {locations.map((loc: any) => (
+                                <SelectItem key={loc._id} value={loc._id}>
+                                  {loc.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                  </div>
+
+                  {/* Room dropdown */}
+                  <div className="space-y-2">
+                    <Label htmlFor="assignedRoom._id">Room</Label>
+                    <Controller
+                      name="assignedRoom._id"
+                      control={control}
+                      rules={{ required: "Room is required" }}
+                      render={({ field }) => {
+                        const branchObj = branches.find(
+                          (b) => b._id === selectedBranch
+                        );
+                        const locationObj = branchObj?.locations.find(
+                          (l: any) => l._id === watch("location._id")
+                        );
+                        const rooms = locationObj?.rooms || [];
+                        return (
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select room" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {rooms.map((room: any) => (
+                                <SelectItem key={room._id} value={room._id}>
+                                  {room.roomNumber} ({room.type})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">Date of Birth</Label>
@@ -650,7 +721,7 @@ export function EditUserModal({
                         </SelectContent>
                       </Select>
                       <div className="flex flex-wrap gap-2">
-                        {selectedValues?.map((service) => (
+                        {selectedValues.map((service) => (
                           <Badge
                             key={service}
                             variant="secondary"

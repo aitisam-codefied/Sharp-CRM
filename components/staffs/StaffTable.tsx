@@ -113,8 +113,8 @@ export default function StaffTable() {
           ? staff.locations.map((l: any) => l.name)
           : [],
       branch:
-        Array.isArray(staff.branchId) && staff.branchId.length > 0
-          ? staff.branchId
+        Array.isArray(staff.branches) && staff.branches.length > 0
+          ? staff.branches
               .map((b: any) => b.name || "Assigned Branch Has Been Deleted")
               .join(", ")
           : "Assigned Branch Has Been Deleted",
@@ -344,10 +344,10 @@ export default function StaffTable() {
                     <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm">
+                {/* <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" />
                   More Filters
-                </Button>
+                </Button> */}
               </div>
 
               <div className="rounded-md border">
