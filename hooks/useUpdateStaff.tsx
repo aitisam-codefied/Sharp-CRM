@@ -47,7 +47,7 @@ export function useUpdateStaff(
 
       if (onUpdate) onUpdate(data?._id, updatedData);
 
-      queryClient.invalidateQueries({ queryKey: ["staffList"] });
+      queryClient.invalidateQueries({ queryKey: ["guestList"] });
 
       if (onClose) onClose();
     },

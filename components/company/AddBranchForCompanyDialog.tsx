@@ -254,12 +254,7 @@ export default function AddBranchForCompanyDialog({
         toast({
           title: "Branch Created Successfully",
         });
-        // onBranchCreated({
-        //   _id: data._id, // Assuming the API returns the new branch ID
-        //   name: branch.name,
-        //   address: branch.address,
-        //   locations: branch.locations,
-        // });
+
         onBranchCreated(createdBranch);
         setIsAddDialogOpen(false);
         setBranch({
@@ -279,10 +274,15 @@ export default function AddBranchForCompanyDialog({
           ],
         });
       },
-      onError: () => {
+     
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create branch.";
         toast({
           title: "Error",
-          description: "Failed to create branch",
+          description: message,
           variant: "destructive",
         });
       },

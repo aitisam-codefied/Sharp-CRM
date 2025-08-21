@@ -60,6 +60,7 @@ interface Location {
 
 interface AddLocationForBranchDialogProps {
   branchId: string;
+  existingLocations: Array<{ _id: string; name: string }>;
   onLocationCreated: (location: {
     _id: string;
     name: string;
@@ -75,6 +76,7 @@ interface AddLocationForBranchDialogProps {
 export default function AddLocationForBranchDialog({
   branchId,
   onLocationCreated,
+  existingLocations,
 }: AddLocationForBranchDialogProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [location, setLocation] = useState<Location>({
@@ -89,10 +91,31 @@ export default function AddLocationForBranchDialog({
   });
   const { toast } = useToast();
   const { mutate, isPending } = useCreateLocation();
+  const [locationNameError, setLocationNameError] = useState<string | null>(
+    null
+  );
 
   const updateLocationName = (value: string) => {
     setLocation((prev) => ({ ...prev, name: value }));
+
+    // ✅ Check duplicate name
+    if (
+      existingLocations.some(
+        (loc: any) =>
+          loc.name.trim().toLowerCase() === value.trim().toLowerCase()
+      )
+    ) {
+      setLocationNameError(
+        "A location with this name already exists in this branch."
+      );
+    } else {
+      setLocationNameError(null);
+    }
   };
+
+  // const updateLocationName = (value: string) => {
+  //   setLocation((prev) => ({ ...prev, name: value }));
+  // };
 
   const addRoom = () => {
     setLocation((prev) => ({
@@ -218,13 +241,15 @@ export default function AddLocationForBranchDialog({
           ],
         });
       },
-      onError: (error) => {
-        // ✅ Log the error response
-        console.error("Failed to create location:", error);
 
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create Location.";
         toast({
           title: "Error",
-          description: "Failed to create location",
+          description: message,
           variant: "destructive",
         });
       },
@@ -233,6 +258,7 @@ export default function AddLocationForBranchDialog({
 
   const isFormValid =
     location.name.trim() !== "" &&
+    !locationNameError &&
     location.rooms.every(
       (room) =>
         room.roomNumber.trim() !== "" &&
@@ -264,6 +290,9 @@ export default function AddLocationForBranchDialog({
               onChange={(e) => updateLocationName(e.target.value)}
               placeholder="e.g., Floor 1, East Wing"
             />
+            {locationNameError && (
+              <p className="text-red-500 text-sm">{locationNameError}</p>
+            )}
           </div>
           <div className="space-y-4">
             <Label>Rooms</Label>

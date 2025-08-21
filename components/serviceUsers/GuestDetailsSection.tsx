@@ -74,7 +74,7 @@ export function GuestDetailsSection({
         name: "",
         address: "",
       },
-      roomTypePreference: user?.roomTypePreference ||"",
+      roomTypePreference: user?.roomTypePreference || "",
       assignedRoom: { _id: "", roomNumber: "", type: "" },
       checkInDate: "",
       consentAccuracy: false,

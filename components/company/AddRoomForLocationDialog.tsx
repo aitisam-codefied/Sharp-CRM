@@ -139,14 +139,25 @@ export default function AddRoomForLocationDialog({
           amenities: [],
         });
       },
-      onError: (error) => {
-        console.error("Failed to create room:", error);
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create room.";
         toast({
           title: "Error",
-          description: "Failed to create room",
+          description: message,
           variant: "destructive",
         });
       },
+      // onError: (error) => {
+      //   console.error("Failed to create room:", error);
+      //   toast({
+      //     title: "Error",
+      //     description: "Failed to create room",
+      //     variant: "destructive",
+      //   });
+      // },
     });
   };
 

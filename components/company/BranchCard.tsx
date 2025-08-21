@@ -356,6 +356,7 @@ export default function BranchCard({
                 <AddLocationForBranchDialog
                   branchId={branch._id}
                   onLocationCreated={handleLocationCreated}
+                  existingLocations={branch.locations || []}
                 />
               )}
             </div>
