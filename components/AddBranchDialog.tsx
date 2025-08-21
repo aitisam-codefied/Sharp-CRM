@@ -261,6 +261,24 @@ export default function AddBranchDialog() {
     });
   };
 
+  const isFormValid = () => {
+    if (!selectedCompanyId.trim()) return false;
+    if (!branch.name.trim()) return false;
+    if (!branch.address.trim()) return false;
+
+    for (const location of branch.locations) {
+      if (!location.name.trim()) return false;
+
+      for (const room of location.rooms) {
+        if (!room.roomNumber.trim()) return false;
+        if (!room.type.trim()) return false;
+        if (room.amenities.length === 0) return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
@@ -462,7 +480,7 @@ export default function AddBranchDialog() {
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || !isFormValid()}>
             {isPending ? "Adding..." : "Add Branch"}
           </Button>
         </div>

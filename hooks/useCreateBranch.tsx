@@ -20,11 +20,22 @@ export const useCreateBranch = () => {
       });
     },
     onError: (error: any) => {
+      const message =
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to create branch.";
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to create branch",
+        description: message,
         variant: "destructive",
       });
     },
+    // onError: (error: any) => {
+    //   toast({
+    //     title: "Error",
+    //     description: error.response?.data?.message || "Failed to create branch",
+    //     variant: "destructive",
+    //   });
+    // },
   });
 };

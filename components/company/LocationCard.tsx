@@ -269,6 +269,7 @@ export default function LocationCard({
                 <>
                   <AddRoomForLocationDialog
                     locationId={location._id}
+                    existingRooms={location.rooms}
                     onRoomCreated={handleRoomCreated}
                   />
                   <Button

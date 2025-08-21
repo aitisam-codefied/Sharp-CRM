@@ -67,9 +67,11 @@ interface Branch {
 
 export default function AddBranchForCompanyDialog({
   companyId,
+  existingBranches,
   onBranchCreated,
 }: {
   companyId: string;
+  existingBranches: { _id: string; name: string }[];
   onBranchCreated: (branch: {
     _id: string;
     name: string;
@@ -97,9 +99,28 @@ export default function AddBranchForCompanyDialog({
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
 
+  const [branchNameError, setBranchNameError] = useState<string | null>(null);
+
   const updateBranch = (field: keyof Branch, value: string) => {
+    if (field === "name") {
+      const exists = existingBranches.some(
+        (b) => b.name.trim().toLowerCase() === value.trim().toLowerCase()
+      );
+      if (exists) {
+        setBranchNameError(
+          "A branch with this name already exists in this company."
+        );
+      } else {
+        setBranchNameError(null);
+      }
+    }
+
     setBranch((prev) => ({ ...prev, [field]: value }));
   };
+
+  // const updateBranch = (field: keyof Branch, value: string) => {
+  //   setBranch((prev) => ({ ...prev, [field]: value }));
+  // };
 
   const addLocation = () => {
     setBranch((prev) => ({
@@ -274,7 +295,7 @@ export default function AddBranchForCompanyDialog({
           ],
         });
       },
-     
+
       onError: (error: any) => {
         const message =
           error.response?.data?.error ||
@@ -287,6 +308,22 @@ export default function AddBranchForCompanyDialog({
         });
       },
     });
+  };
+
+  const isFormValid = () => {
+    if (branchNameError) return false; // 👈 duplicate branch prevent
+    if (!branch.name.trim() || !branch.address.trim()) return false;
+
+    for (const location of branch.locations) {
+      if (!location.name.trim()) return false;
+
+      for (const room of location.rooms) {
+        if (!room.roomNumber.trim() || !room.type.trim()) return false;
+        if (room.amenities.length === 0) return false;
+      }
+    }
+
+    return true;
   };
 
   return (
@@ -313,6 +350,9 @@ export default function AddBranchForCompanyDialog({
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
             />
+            {branchNameError && (
+              <p className="text-red-600 text-sm">{branchNameError}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
@@ -472,7 +512,7 @@ export default function AddBranchForCompanyDialog({
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || !isFormValid()}>
             {isPending ? "Adding..." : "Add Branch"}
           </Button>
         </div>

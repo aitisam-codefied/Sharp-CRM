@@ -326,6 +326,7 @@ export default function ViewCompanyModal({
               <div></div>
               <AddBranchForCompanyDialog
                 companyId={companyData._id}
+                existingBranches={companyData.branches || []}
                 onBranchCreated={handleBranchCreated}
               />
             </div>

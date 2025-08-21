@@ -55,6 +55,7 @@ interface Room {
 
 interface AddRoomForLocationDialogProps {
   locationId: string;
+  existingRooms: { _id: string; roomNumber: string }[];
   onRoomCreated: (room: {
     _id: string;
     roomNumber: string;
@@ -65,6 +66,7 @@ interface AddRoomForLocationDialogProps {
 
 export default function AddRoomForLocationDialog({
   locationId,
+  existingRooms,
   onRoomCreated,
 }: AddRoomForLocationDialogProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -76,12 +78,39 @@ export default function AddRoomForLocationDialog({
   const { toast } = useToast();
   const { mutate, isPending } = useCreateRoom();
 
+  const [roomNumberError, setRoomNumberError] = useState<string | null>(null);
+
   const updateRoom = (field: keyof Room, value: string) => {
+    if (field === "roomNumber") {
+      const exists = existingRooms.some(
+        (r) => r.roomNumber.trim().toLowerCase() === value.trim().toLowerCase()
+      );
+      if (exists) {
+        setRoomNumberError("This room number already exists in this location.");
+      } else {
+        setRoomNumberError(null);
+      }
+    }
+
     setRoom((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
+
+  const isFormValid = () => {
+    if (roomNumberError) return false;
+    if (!room.roomNumber.trim() || !room.type.trim()) return false;
+    if (room.amenities.length === 0) return false;
+    return true;
+  };
+
+  // const updateRoom = (field: keyof Room, value: string) => {
+  //   setRoom((prev) => ({
+  //     ...prev,
+  //     [field]: value,
+  //   }));
+  // };
 
   const toggleAmenity = (amenity: string) => {
     setRoom((prev) => {
@@ -186,6 +215,9 @@ export default function AddRoomForLocationDialog({
               placeholder="e.g., 101, A-1"
               className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30"
             />
+            {roomNumberError && (
+              <p className="text-red-600 text-sm">{roomNumberError}</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label>Room Type *</Label>
@@ -237,7 +269,7 @@ export default function AddRoomForLocationDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isPending}
+            disabled={isPending || !isFormValid()}
             className="bg-[#F87D7D] hover:bg-[#F87D7D]/90"
           >
             {isPending ? (
