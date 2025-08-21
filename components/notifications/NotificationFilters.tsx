@@ -8,56 +8,57 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, Filter } from "lucide-react";
+import { Dispatch, SetStateAction } from "react";
 
-interface UserFiltersProps {
+interface NotificationFiltersProps {
   searchTerm: string;
-  setSearchTerm: (value: string) => void;
-  selectedBranch: string;
-  setSelectedBranch: (value: string) => void;
+  setSearchTerm: Dispatch<SetStateAction<string>>;
+  selectedType: string;
+  setSelectedType: Dispatch<SetStateAction<string>>;
   selectedStatus: string;
-  setSelectedStatus: (value: string) => void;
-  selectedNationality: string;
-  setSelectedNationality: (value: string) => void;
-  branches: string[];
+  setSelectedStatus: Dispatch<SetStateAction<string>>;
+  selectedBranch: string;
+  setSelectedBranch: Dispatch<SetStateAction<string>>;
+  notificationTypes: string[];
   statusOptions: string[];
-  nationalities: string[];
+  branches: string[];
 }
 
-export function UserFilters({
+export function NotificationFilters({
   searchTerm,
   setSearchTerm,
-  selectedBranch,
-  setSelectedBranch,
+  selectedType,
+  setSelectedType,
   selectedStatus,
   setSelectedStatus,
-  selectedNationality,
-  setSelectedNationality,
-  branches,
+  selectedBranch,
+  setSelectedBranch,
+  notificationTypes,
   statusOptions,
-  nationalities,
-}: UserFiltersProps) {
+  branches,
+}: NotificationFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
+    <div className="flex flex-col md:flex-row gap-4">
       <div className="flex-1">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, ID, or room..."
+            placeholder="Search notifications..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
       </div>
-      <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+      <Select value={selectedType} onValueChange={setSelectedType}>
         <SelectTrigger className="w-full md:w-48">
-          <SelectValue placeholder="All Branches" />
+          <SelectValue placeholder="All Types" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Branches</SelectItem>
-          {branches.map((branch) => (
-            <SelectItem key={branch} value={branch}>
-              {branch}
+          <SelectItem value="all">All Types</SelectItem>
+          {notificationTypes?.map((type) => (
+            <SelectItem key={type} value={type}>
+              {type.charAt(0).toUpperCase() + type.slice(1)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -68,25 +69,22 @@ export function UserFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Status</SelectItem>
-          {statusOptions.map((status) => (
+          {statusOptions?.map((status) => (
             <SelectItem key={status} value={status}>
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Select
-        value={selectedNationality}
-        onValueChange={setSelectedNationality}
-      >
+      <Select value={selectedBranch} onValueChange={setSelectedBranch}>
         <SelectTrigger className="w-full md:w-48">
-          <SelectValue placeholder="All Nationalities" />
+          <SelectValue placeholder="All Branches" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Nationalities</SelectItem>
-          {nationalities.map((nationality) => (
-            <SelectItem key={nationality} value={nationality}>
-              {nationality}
+          <SelectItem value="all">All Branches</SelectItem>
+          {branches?.map((branch) => (
+            <SelectItem key={branch} value={branch}>
+              {branch}
             </SelectItem>
           ))}
         </SelectContent>

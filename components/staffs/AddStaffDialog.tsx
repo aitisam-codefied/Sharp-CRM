@@ -46,17 +46,22 @@ export default function AddStaffDialog() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     joinDate: "",
+    shiftStart: "",
+    shiftEnd: "",
   });
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     phone: "",
     joinDate: "",
+    shiftStart: "",
+    shiftEnd: "",
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
@@ -64,24 +69,6 @@ export default function AddStaffDialog() {
   const isAssistantManagerOrStaff = selectedRoles.some(
     (role) => role === "AssistantManager" || role === "Staff"
   );
-
-  // Filter branches by selected company
-  // const filteredBranches =
-  //   branches?.filter(
-  //     (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
-  //   ) || [];
-
-  // // Filter locations by selected branches
-  // const filteredLocations =
-  //   locations?.filter((location) => {
-  //     const selectedBranchIds = filteredBranches
-  //       .filter((b) => selectedBranches.includes(b.name))
-  //       .map((b) => b._id);
-  //     return (
-  //       selectedBranches.length === 0 ||
-  //       selectedBranchIds.includes(location.branchId)
-  //     );
-  //   }) || [];
 
   const filteredBranches =
     branches?.filter(
@@ -96,25 +83,25 @@ export default function AddStaffDialog() {
       const selectedBranchIds = filteredBranches
         .filter((b) => selectedBranches.includes(b.name))
         .map((b) => b._id);
-      console.log("selectedBranchIds:", selectedBranchIds);
-      console.log("location.branchId:", location.branchId);
+      // console.log("selectedBranchIds:", selectedBranchIds);
+      // console.log("location.branchId:", location.branchId);
       return selectedBranchIds.includes(location.branchId);
     }) || [];
 
-  useEffect(() => {
-    console.log("selectedBranches:", selectedBranches);
-    console.log("filteredBranches:", filteredBranches);
-    console.log("locations:", locations);
-    console.log("filteredLocations:", filteredLocations);
-  }, [selectedBranches, filteredBranches, locations, filteredLocations]);
+  // useEffect(() => {
+  //   console.log("selectedBranches:", selectedBranches);
+  //   console.log("filteredBranches:", filteredBranches);
+  //   console.log("locations:", locations);
+  //   console.log("filteredLocations:", filteredLocations);
+  // }, [selectedBranches, filteredBranches, locations, filteredLocations]);
 
-  useEffect(() => {
-    console.log("locationssss", filteredLocations);
-  });
+  // useEffect(() => {
+  //   console.log("locationssss", filteredLocations);
+  // });
 
-  useEffect(() => {
-    console.log("Raw locations data:", JSON.stringify(locations, null, 2));
-  }, [locations]);
+  // useEffect(() => {
+  //   console.log("Raw locations data:", JSON.stringify(locations, null, 2));
+  // }, [locations]);
 
   const createMutation = useMutation({
     mutationFn: createStaff,
@@ -134,6 +121,7 @@ export default function AddStaffDialog() {
         title: "Error Adding Staff",
         description:
           error.response?.data?.error ||
+          error.message ||
           "Failed to add staff member. Please try again.",
         variant: "destructive",
       });
@@ -240,10 +228,13 @@ export default function AddStaffDialog() {
       emailAddress: formData.email,
       phoneNumber: formData.phone,
       joinDate: formData.joinDate,
+      start: formData.shiftStart,
+      end: formData.shiftEnd,
       roles: selectedRoles,
       branches: branchIds,
       locations: locationIds,
     };
+    console.log("backendData", backendData);
 
     createMutation.mutate(backendData);
   };
@@ -268,7 +259,7 @@ export default function AddStaffDialog() {
           Add Staff
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogDescription>
@@ -330,6 +321,7 @@ export default function AddStaffDialog() {
               )}
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
@@ -344,6 +336,48 @@ export default function AddStaffDialog() {
                 <p className="text-sm text-red-600">{errors.phone}</p>
               )}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="joinDate">Join Date</Label>
+              <Input
+                id="joinDate"
+                type="date"
+                value={formData.joinDate}
+                onChange={handleInputChange}
+                disabled={createMutation.isPending}
+                min={getOneMonthAgoDate()}
+              />
+              {errors.joinDate && (
+                <p className="text-sm text-red-600">{errors.joinDate}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="shiftStart">Shift Start Time</Label>{" "}
+              <Input
+                id="shiftStart"
+                type="time"
+                step="60"
+                value={formData.shiftStart || ""}
+                onChange={handleInputChange}
+                disabled={createMutation.isPending}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="shiftEnd">Shift End Time</Label>
+              <Input
+                id="shiftEnd"
+                type="time"
+                step="60"
+                value={formData.shiftEnd || ""}
+                onChange={handleInputChange}
+                disabled={createMutation.isPending}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="role">Role(s)</Label>
               <Select
@@ -377,8 +411,6 @@ export default function AddStaffDialog() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="branch">Branch(es)</Label>
               <Select
@@ -416,20 +448,6 @@ export default function AddStaffDialog() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="joinDate">Join Date</Label>
-              <Input
-                id="joinDate"
-                type="date"
-                value={formData.joinDate}
-                onChange={handleInputChange}
-                disabled={createMutation.isPending}
-                min={getOneMonthAgoDate()}
-              />
-              {errors.joinDate && (
-                <p className="text-sm text-red-600">{errors.joinDate}</p>
-              )}
             </div>
           </div>
           {isAssistantManagerOrStaff && (

@@ -101,6 +101,26 @@ export default function StaffTable() {
   //   console.log("branchesssss", branches);
   // });
 
+  function formatDateWithSuffix(dateString: string) {
+    const date = new Date(dateString);
+    const day = date.getDate();
+
+    // suffix calculate
+    const suffix =
+      day % 10 === 1 && day !== 11
+        ? "st"
+        : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+        ? "rd"
+        : "th";
+
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+
+    return `${day}${suffix} ${month} ${year}`;
+  }
+
   const staffMembers =
     data?.users?.map((staff: any) => ({
       id: staff._id,
@@ -128,9 +148,18 @@ export default function StaffTable() {
           : "Unknown",
       status: staff.status.toLowerCase(),
       joinDate: new Date(staff.joinDate).toISOString().split("T")[0],
-      lastLogin: staff.updatedAt
-        ? new Date(staff.updatedAt).toLocaleString()
+      registration: staff.createdAt
+        ? formatDateWithSuffix(staff.createdAt)
         : "N/A",
+      shiftTimes:
+        Array.isArray(staff.staffTimes) && staff.staffTimes.length > 0
+          ? staff.staffTimes.map((t: any) => ({
+              start: t.start,
+              end: t.end,
+              break: t.defaultBreakMins,
+              early: t.allowedEarlyMins,
+            }))
+          : [],
     })) || [];
 
   const filteredStaff = staffMembers.filter((staff: any) => {
@@ -344,10 +373,6 @@ export default function StaffTable() {
                     <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
-                {/* <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  More Filters
-                </Button> */}
               </div>
 
               <div className="rounded-md border">
@@ -357,8 +382,9 @@ export default function StaffTable() {
                       <TableHead>Staff Member</TableHead>
                       <TableHead>Role & Branch</TableHead>
                       <TableHead>Contact</TableHead>
+                      <TableHead>Shift Timings</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Last Login</TableHead>
+                      <TableHead>Registration Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -435,6 +461,19 @@ export default function StaffTable() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {staff.shiftTimes.length > 0 ? (
+                            staff.shiftTimes.map((t: any, idx: number) => (
+                              <div key={idx} className="text-sm text-black">
+                                {t.start} - {t.end}
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-gray-400">
+                              No Shift Assigned
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge
                             className={`capitalize ${getStatusColor(
                               staff.status
@@ -445,7 +484,7 @@ export default function StaffTable() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-muted-foreground">
-                            {staff.lastLogin}
+                            {staff.registration}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

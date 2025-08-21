@@ -14,6 +14,8 @@ export default function StatsCards() {
     queryFn: fetchStaffMembers,
   });
 
+  // console.log("data", data);
+
   return (
     <div className="grid gap-4 md:grid-cols-4">
       <Card>
@@ -22,7 +24,7 @@ export default function StatsCards() {
             <div>
               <p className="text-sm text-muted-foreground">Total Staff</p>
               <p className="text-2xl font-bold">
-                {isLoading ? "..." : data?.count || 0}
+                {isLoading ? "..." : data?.totalCount || 0}
               </p>
             </div>
             <Users className="h-8 w-8 text-blue-600" />

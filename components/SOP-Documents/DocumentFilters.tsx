@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -6,49 +7,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { Search, Filter } from "lucide-react";
 
-interface UserFiltersProps {
+interface DocumentFiltersProps {
   searchTerm: string;
   setSearchTerm: (value: string) => void;
+  selectedCategory: string;
+  setSelectedCategory: (value: string) => void;
   selectedBranch: string;
   setSelectedBranch: (value: string) => void;
   selectedStatus: string;
   setSelectedStatus: (value: string) => void;
-  selectedNationality: string;
-  setSelectedNationality: (value: string) => void;
+  categories: string[];
   branches: string[];
   statusOptions: string[];
-  nationalities: string[];
 }
 
-export function UserFilters({
+export default function DocumentFilters({
   searchTerm,
   setSearchTerm,
+  selectedCategory,
+  setSelectedCategory,
   selectedBranch,
   setSelectedBranch,
   selectedStatus,
   setSelectedStatus,
-  selectedNationality,
-  setSelectedNationality,
+  categories,
   branches,
   statusOptions,
-  nationalities,
-}: UserFiltersProps) {
+}: DocumentFiltersProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-6">
       <div className="flex-1">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, ID, or room..."
+            placeholder="Search documents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
       </div>
+      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+        <SelectTrigger className="w-full md:w-48">
+          <SelectValue placeholder="All Categories" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All Categories</SelectItem>
+          {categories.map((category) => (
+            <SelectItem key={category} value={category}>
+              {category.charAt(0).toUpperCase() + category.slice(1)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
       <Select value={selectedBranch} onValueChange={setSelectedBranch}>
         <SelectTrigger className="w-full md:w-48">
           <SelectValue placeholder="All Branches" />
@@ -70,23 +83,9 @@ export function UserFilters({
           <SelectItem value="all">All Status</SelectItem>
           {statusOptions.map((status) => (
             <SelectItem key={status} value={status}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <Select
-        value={selectedNationality}
-        onValueChange={setSelectedNationality}
-      >
-        <SelectTrigger className="w-full md:w-48">
-          <SelectValue placeholder="All Nationalities" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Nationalities</SelectItem>
-          {nationalities.map((nationality) => (
-            <SelectItem key={nationality} value={nationality}>
-              {nationality}
+              {status
+                .replace("_", " ")
+                .replace(/\b\w/g, (l) => l.toUpperCase())}
             </SelectItem>
           ))}
         </SelectContent>

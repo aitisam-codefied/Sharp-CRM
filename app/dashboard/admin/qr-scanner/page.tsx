@@ -95,24 +95,6 @@ export default function QRScannerPage() {
             />
           </CardContent>
         </Card>
-
-        {/* QR Code Logs Display */}
-        <Card>
-          <CardHeader>
-            <CardTitle>QR Code Logs</CardTitle>
-            <CardDescription>
-              {selectedBranch
-                ? `QR code logs for selected branch`
-                : "All QR code logs from the system"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <QRCodeLogsDisplay
-              qrCodeLogs={qrCodeLogs}
-              isLoading={isLogsPending}
-            />
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

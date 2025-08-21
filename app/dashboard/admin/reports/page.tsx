@@ -333,10 +333,6 @@ export default function ReportsPage() {
 
   return (
     <DashboardLayout
-      breadcrumbs={[
-        { label: "Admin Dashboard", href: "/dashboard/admin" },
-        { label: "Reports & Analytics" },
-      ]}
       title="Reports & Analytics Dashboard"
       description="Generate, manage and analyze comprehensive reports across all operations"
       actions={

@@ -371,7 +371,7 @@ export default function ClockSystemPage() {
         </Card>
 
         {/* QR Code Generator */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -454,7 +454,7 @@ export default function ClockSystemPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </div> */}
       </div>
     </DashboardLayout>
   );

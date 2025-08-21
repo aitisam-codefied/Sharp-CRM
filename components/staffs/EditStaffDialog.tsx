@@ -85,11 +85,17 @@ export default function EditStaffDialog({
     staff.locations || []
   );
 
+  useEffect(() => {
+    console.log("Staff prop:", staff);
+  }, [staff]);
+
   const [formData, setFormData] = useState({
     name: staff.name || "",
     email: staff.email || "",
     phone: staff.phone || "",
     joinDate: staff.joinDate || "",
+    shiftStart: staff.shiftTimes?.[0]?.start || "",
+    shiftEnd: staff.shiftTimes?.[0]?.end || "",
   });
 
   const [changedFields, setChangedFields] = useState<string[]>([]);
@@ -98,6 +104,8 @@ export default function EditStaffDialog({
     email: "",
     phone: "",
     joinDate: "",
+    shiftStart: "",
+    shiftEnd: "",
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
@@ -122,6 +130,8 @@ export default function EditStaffDialog({
         emailAddress: data?.emailAddress,
         phoneNumber: data?.phoneNumber,
         joinDate: data?.joinDate,
+        start: data?.shiftStart,
+        end: data?.shiftEnd,
         roles: data?.roles,
         branch: data?.branchId,
         locations: data?.locations,
@@ -132,15 +142,6 @@ export default function EditStaffDialog({
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
       onClose();
     },
-    // onError: (error: any) => {
-    //   toast({
-    //     title: "Error Updating Staff",
-    //     description:
-    //       error.response?.data?.error ||
-    //       "Failed to update staff member. Please try again.",
-    //     variant: "destructive",
-    //   });
-    // },
     onError: (error: any) => {
       const message =
         error.response?.data?.error ||
@@ -259,6 +260,12 @@ export default function EditStaffDialog({
       ...(changedFields.includes("joinDate") && {
         joinDate: formData.joinDate,
       }),
+      ...(changedFields.includes("shiftStart") && {
+        start: formData.shiftStart,
+      }),
+      ...(changedFields.includes("shiftEnd") && {
+        end: formData.shiftEnd,
+      }),
       ...(changedFields.includes("roles") && { roles: selectedRoles }),
       ...(changedFields.includes("branchId") && { branchId: branchIds }),
       ...(changedFields.includes("locations") && { locations: locationIds }),
@@ -371,6 +378,33 @@ export default function EditStaffDialog({
               />
               {errors.joinDate && (
                 <p className="text-sm text-red-600">{errors.joinDate}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="shiftStart">Shift Start</Label>
+              <Input
+                id="shiftStart"
+                type="time"
+                value={formData.shiftStart}
+                onChange={handleInputChange}
+              />
+              {errors.shiftStart && (
+                <p className="text-sm text-red-600">{errors.shiftStart}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="shiftEnd">Shift End</Label>
+              <Input
+                id="shiftEnd"
+                type="time"
+                value={formData.shiftEnd}
+                onChange={handleInputChange}
+              />
+              {errors.shiftEnd && (
+                <p className="text-sm text-red-600">{errors.shiftEnd}</p>
               )}
             </div>
           </div>
