@@ -60,12 +60,6 @@ export default function ServiceUsersPage() {
     setIsNewUserOpen(false);
   };
 
-  const handleEditUser = (userId: string) => {
-    toast({
-      title: "Edit Service User",
-      description: `Opening edit form for ${userId}`,
-    });
-  };
 
   if (isPending) {
     return (

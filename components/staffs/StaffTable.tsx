@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Card,
@@ -52,6 +52,7 @@ import { useDeleteStaff } from "@/hooks/useDeleteStaff";
 import api from "@/lib/axios";
 import EditStaffDialog from "./EditStaffDialog";
 import { useBranches } from "@/hooks/useGetBranches";
+import { useSearchParams } from "next/navigation";
 
 const fetchStaffMembers = async () => {
   const response = await api.get("/user/list");
@@ -69,6 +70,27 @@ export default function StaffTable() {
   const [editStaff, setEditStaff] = useState<any | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingStaff, setDeletingStaff] = useState<any | null>(null);
+  const searchParams = useSearchParams();
+  const highlight = searchParams.get("highlight");
+
+  // Refs store karne ke liye ek object
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+
+  useEffect(() => {
+    if (highlight && rowRefs.current[highlight]) {
+      // Scroll into view
+      rowRefs.current[highlight]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Temporary highlight effect
+      rowRefs.current[highlight]?.classList.add("bg-yellow-100");
+      setTimeout(() => {
+        rowRefs.current[highlight]?.classList.remove("bg-yellow-100");
+      }, 3000);
+    }
+  }, [highlight]);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["staffList"],
@@ -124,6 +146,7 @@ export default function StaffTable() {
   const staffMembers =
     data?.users?.map((staff: any) => ({
       id: staff._id,
+      username: staff.username,
       name: staff.fullName,
       email: staff.emailAddress,
       phone: staff.phoneNumber,
@@ -390,7 +413,11 @@ export default function StaffTable() {
                   </TableHeader>
                   <TableBody>
                     {filteredStaff.map((staff: any) => (
-                      <TableRow key={staff.id}>
+                      <TableRow
+                        key={staff.id}
+                        ref={(el) => (rowRefs.current[staff.username] = el)}
+                        className="hover:bg-gray-50"
+                      >
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <div>
@@ -417,8 +444,8 @@ export default function StaffTable() {
                                 </Badge>
                               ))}
                             </div>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center text-sm">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center text-xs">
                                 <MapPin className="h-3 w-3 mr-1" />
                                 {staff.branch.includes(
                                   "Assigned Branch Has Been Deleted"
@@ -427,7 +454,7 @@ export default function StaffTable() {
                                     {staff.branch}
                                   </span>
                                 ) : (
-                                  <span className="text-muted-foreground">
+                                  <span className="text-black">
                                     {staff.branch}
                                   </span>
                                 )}

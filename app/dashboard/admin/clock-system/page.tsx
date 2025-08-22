@@ -41,6 +41,7 @@ import {
   Timer,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ModuleLogs from "@/components/ModuleLogs";
 
 export default function ClockSystemPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -370,91 +371,10 @@ export default function ClockSystemPage() {
           </CardContent>
         </Card>
 
-        {/* QR Code Generator */}
-        {/* <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <QrCode className="h-5 w-5" />
-                QR Code Generator
-              </CardTitle>
-              <CardDescription>
-                Generate QR codes for staff clock in/out
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg">
-                <div className="text-center">
-                  <QrCode className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground mb-4">
-                    QR Code will appear here
-                  </p>
-                  <Button>Generate QR Code</Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Location</label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="main-entrance">Main Entrance</SelectItem>
-                    <SelectItem value="staff-room">Staff Room</SelectItem>
-                    <SelectItem value="reception">Reception</SelectItem>
-                    <SelectItem value="security-desk">Security Desk</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Activity Feed</CardTitle>
-              <CardDescription>
-                Real-time clock in/out activities
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      Sarah Johnson clocked in
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Manchester - Main Entrance • 2 min ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50">
-                  <Timer className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      Ahmed Hassan clocked out
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Manchester - Staff Room • 15 min ago
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 p-3 rounded-lg bg-orange-50">
-                  <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">
-                      Late clock in detected
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Emma Wilson - Birmingham • 1 hour ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
+        <ModuleLogs
+          moduleType="Clock In/Out"
+          title="Clock In/Out Activity Logs"
+        />
       </div>
     </DashboardLayout>
   );

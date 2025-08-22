@@ -1,43 +1,14 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Clock, Activity } from "lucide-react";
-import { useActivityLogs } from "@/hooks/useGetActivityLogs";
+import { Activity, Clock } from "lucide-react";
 import Link from "next/link";
+import { useActivityLogsByModule } from "@/hooks/useGetActivityLogsByModule";
 
-interface ActivityLog {
-  _id: string;
-  sessionId: string;
-  userId: string;
-  fullName: string;
-  username: string;
+interface ModuleLogsProps {
   moduleType: string;
-  actionType: string;
-  timestamp: string;
-  notes: string;
-  metadata: {
-    userRole?: string;
-    permissions?: string[];
-    entryMethod?: string;
-    clockInSessionId?: string | null;
-    fullName?: string;
-    username?: string;
-    clockInId?: string;
-    shiftStart?: string;
-    earliestAllowed?: string;
-    deltaMinutes?: number;
-    withinPolicy?: boolean;
-    stepNumber?: number;
-    duration?: number;
-    actionId?: string;
-  };
-  severity: string;
-  category: string;
-  startedAt: string;
-  endedAt: string;
-  durationMinutes: number;
-  moduleStatus: string;
-  totalActions: number;
+  title?: string;
 }
 
 function timeAgo(timestamp: string): string {
@@ -68,15 +39,8 @@ function timeAgo(timestamp: string): string {
   return "just now";
 }
 
-export default function RecentActivities() {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    error,
-  } = useActivityLogs();
+export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
+  const { data, isLoading, error } = useActivityLogsByModule(moduleType);
 
   if (isLoading) {
     return (
@@ -84,11 +48,11 @@ export default function RecentActivities() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Recent Activities
+            {title || `${moduleType} Logs`}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Loading activities...</p>
+          <p>Loading logs...</p>
         </CardContent>
       </Card>
     );
@@ -100,31 +64,29 @@ export default function RecentActivities() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            Recent Activities
+            {title || `${moduleType} Logs`}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p>Error loading activities: {(error as Error).message}</p>
+          <p className="text-red-500">Error loading logs</p>
         </CardContent>
       </Card>
     );
   }
 
-  // now each "log" is an activity itself
-  const activities: ActivityLog[] =
-    data?.pages
-      .flatMap((page) => page.logs)
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      ) ?? [];
+  // New API: `data` is already the logs array
+  const activities =
+    data?.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    ) ?? [];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="h-5 w-5" />
-          Recent Activities
+          {title || `${moduleType} Logs`}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -132,10 +94,7 @@ export default function RecentActivities() {
           {activities.map((log, index) => {
             const time = timeAgo(log.timestamp);
             return (
-              <div
-                key={log._id || index}
-                className="flex items-start space-x-3"
-              >
+              <div key={index} className="flex items-start space-x-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">
                     <Link
@@ -150,18 +109,21 @@ export default function RecentActivities() {
                     <span className="text-xs text-muted-foreground">
                       {time}
                     </span>
+
                     <Badge
                       variant="outline"
                       className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
                     >
                       {log.actionType}
                     </Badge>
+
                     <Badge
                       variant="outline"
                       className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
                     >
                       {log.severity}
                     </Badge>
+
                     <Badge
                       variant="outline"
                       className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
@@ -175,16 +137,6 @@ export default function RecentActivities() {
           })}
           {activities.length === 0 && <p>No recent activities found.</p>}
         </div>
-        {hasNextPage && (
-          <Button
-            variant="outline"
-            className="w-full mt-4 bg-transparent"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-          >
-            {isFetchingNextPage ? "Loading..." : "Load More"}
-          </Button>
-        )}
       </CardContent>
     </Card>
   );

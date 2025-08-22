@@ -31,9 +31,9 @@ export default function AdminDashboard() {
         <BranchPerformanceTable />
 
         {/* Branch Performance and Recent Activities */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <TopBranchPerformance />
+        <div className="grid gap-6 lg:grid-cols-1">
           <RecentActivities />
+          {/* <TopBranchPerformance /> */}
         </div>
       </div>
     </DashboardLayout>

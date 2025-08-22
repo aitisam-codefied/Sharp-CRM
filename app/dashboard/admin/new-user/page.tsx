@@ -127,47 +127,6 @@ export default function NewUserPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="photo">Profile Photo</Label>
-
-                <label
-                  htmlFor="photo-upload"
-                  className="relative w-32 h-32 flex items-center justify-center rounded-full border-2 border-dashed border-gray-300 overflow-hidden cursor-pointer"
-                >
-                  <Camera className="h-6 w-6 text-gray-400" />
-                  <Input
-                    id="photo-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function (event) {
-                          const imageElement = document.getElementById(
-                            "preview-img"
-                          ) as HTMLImageElement;
-                          if (imageElement && event.target?.result) {
-                            imageElement.src = event.target.result as string;
-                          }
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                  <img
-                    id="preview-img"
-                    // alt="Preview"
-                    className="absolute inset-0 w-full h-full object-cover rounded-full"
-                  />
-                </label>
-
-                <p className="text-sm text-gray-500">Click to upload photo</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
                 <Label htmlFor="firstName">First Name *</Label>
                 <Input id="firstName" placeholder="Enter first name" />
               </div>
