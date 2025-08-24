@@ -104,32 +104,35 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                       {log.notes}
                     </Link>
                   </p>
-                  <div className="flex items-center gap-4 mt-1">
-                    <Clock className="h-3 w-3 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">
-                      {time}
-                    </span>
+                  <div className="flex items-center justify-between gap-4 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {time}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
+                      >
+                        {log.actionType}
+                      </Badge>
 
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
-                    >
-                      {log.actionType}
-                    </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
+                      >
+                        {log.severity}
+                      </Badge>
 
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
-                    >
-                      {log.severity}
-                    </Badge>
-
-                    <Badge
-                      variant="outline"
-                      className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
-                    >
-                      {log.moduleType}
-                    </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
+                      >
+                        {log.moduleType}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
               </div>

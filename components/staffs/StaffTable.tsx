@@ -53,9 +53,13 @@ import api from "@/lib/axios";
 import EditStaffDialog from "./EditStaffDialog";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useSearchParams } from "next/navigation";
+import { CustomPagination } from "../CustomPagination";
 
-const fetchStaffMembers = async () => {
-  const response = await api.get("/user/list");
+// Fetch staff members with pagination
+const fetchStaffMembers = async (page: number, limit: number) => {
+  const response = await api.get("/user/list", {
+    params: { page, limit },
+  });
   return response.data;
 };
 
@@ -70,6 +74,8 @@ export default function StaffTable() {
   const [editStaff, setEditStaff] = useState<any | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingStaff, setDeletingStaff] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
   const searchParams = useSearchParams();
   const highlight = searchParams.get("highlight");
 
@@ -93,13 +99,13 @@ export default function StaffTable() {
   }, [highlight]);
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ["staffList"],
-    queryFn: fetchStaffMembers,
+    queryKey: ["staffList", currentPage],
+    queryFn: () => fetchStaffMembers(currentPage, limit),
   });
 
   useEffect(() => {
     console.log("user table data", data?.users);
-  });
+  }, [data]);
 
   const { mutate: deleteStaffMutation, isPending: isDeleting } =
     useDeleteStaff();
@@ -236,7 +242,7 @@ export default function StaffTable() {
   };
 
   const handleUpdateStaff = (id: string, data: any) => {
-    queryClient.setQueryData(["staffList"], (oldData: any) => ({
+    queryClient.setQueryData(["staffList", currentPage], (oldData: any) => ({
       ...oldData,
       users: oldData.users.map((s: any) =>
         s._id === id
@@ -278,7 +284,7 @@ export default function StaffTable() {
     }));
 
     // ✅ THIS LINE TRIGGERS RE-RUN OF `staffMembers` transformation
-    queryClient.invalidateQueries({ queryKey: ["staffList"] });
+    queryClient.invalidateQueries({ queryKey: ["staffList", currentPage] });
 
     setEditStaff(null);
   };
@@ -310,6 +316,10 @@ export default function StaffTable() {
         setDeletingStaff(null);
       },
     });
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -553,6 +563,11 @@ export default function StaffTable() {
                   </p>
                 </div>
               )}
+              <CustomPagination
+                currentPage={currentPage}
+                totalPages={data?.totalPages || 1}
+                onPageChange={handlePageChange}
+              />
             </>
           )}
         </CardContent>

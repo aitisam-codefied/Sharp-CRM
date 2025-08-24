@@ -49,9 +49,7 @@ interface ApiResponse {
   };
 }
 
-const fetchActivityLogs = async ({
-  pageParam = 1,
-}): Promise<{ logs: Log[]; pagination: ApiResponse["pagination"] }> => {
+const fetchActivityLogs = async ({ pageParam = 1 }) => {
   const response = await api.get<ApiResponse>(
     `/activity-log/list?page=${pageParam}&limit=5`
   );
@@ -72,9 +70,11 @@ export const useActivityLogs = () => {
     queryFn: fetchActivityLogs,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
+      // agar abhi wali page total pages se chhoti hai tou next page number return kare
       if (lastPage.pagination.page < lastPage.pagination.pages) {
         return lastPage.pagination.page + 1;
       }
+      // warna undefined return -> load more button hide
       return undefined;
     },
   });

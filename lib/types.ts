@@ -172,3 +172,124 @@ export interface ServiceUser {
   createdAt: string;
   updatedAt: string;
 }
+
+// types/Document.ts
+export interface Document {
+  id: string;
+  title: string;
+  description: string;
+  version: string;
+  category: string;
+  tags: string[];
+  accessLevel: string;
+  isMandatoryReading: boolean;
+  branch: string;
+  status: string;
+  downloadCount: number;
+  viewCount: number;
+  createdBy: string;
+  effectiveDate: string;
+  priority: string;
+  department: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  fileSize: string;
+  fileType: string;
+  fileUrl: string;
+  mandatory: boolean;
+}
+
+export interface ApiClockRecord {
+  id: string;
+  tenantId: string;
+  branch: {
+    _id: string;
+    name: string;
+  };
+  locations: {
+    _id: string;
+    name: string;
+  }[];
+  staff: {
+    _id: string;
+    username: string;
+    fullName: string;
+  };
+  clockOut: string | null;
+  method: string;
+  withinPolicy: boolean;
+  deltaMinutes: number;
+  createdAt: string;
+  updatedAt: string;
+  isDisconnected: boolean;
+  disconnectionMinutes: number;
+  disconnectionReason: string | null;
+  sessionType: string;
+  totalShiftMinutes: number;
+  actualWorkMinutes: number;
+  totalDisconnectionMinutes: number;
+  efficiencyPercentage: number;
+  isLate: boolean;
+  isEarly: boolean;
+  isOnBreak: boolean;
+  isOverTime: boolean;
+  isAbsent: boolean;
+  isClockedIn: boolean;
+  extraSubstituteMinutes: number;
+  currentStatus: string;
+  shiftStart: string; // ✅ from API
+  shiftEnd: string; // ✅ from API
+  clockInTime: string; // ✅ actual clock in time
+  currentTime: string;
+}
+
+export interface ClockRecord {
+  id: string;
+  tenantId: string;
+  branch: {
+    _id: string;
+    name: string;
+  };
+  locations: {
+    _id: string;
+    name: string;
+  }[];
+  staff: {
+    _id: string;
+    username: string;
+    fullName: string;
+  };
+  clockIn: string;
+  clockOut: string | null;
+  totalHours: string;
+  status: string;
+  date: string;
+  location: string;
+  overtime: boolean;
+  shiftStart: string;
+  shiftEnd: string;
+  method: string;
+  withinPolicy: boolean;
+  deltaMinutes: number;
+  createdAt: string;
+  updatedAt: string;
+  isDisconnected: boolean;
+  disconnectionMinutes: number;
+  disconnectionReason: string | null;
+  sessionType: string;
+  totalShiftMinutes: number;
+  actualWorkMinutes: number;
+  totalDisconnectionMinutes: number;
+  efficiencyPercentage: number;
+  isLate: boolean;
+  isEarly: boolean;
+  isOnBreak: boolean;
+  isOverTime: boolean;
+  isAbsent: boolean;
+  isClockedIn: boolean;
+  extraSubstituteMinutes: number;
+  currentStatus: string;
+  clockInTime: string;
+  currentTime: string;
+}
