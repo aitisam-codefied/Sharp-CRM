@@ -1,4 +1,4 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 
 interface ActionMetadata {
@@ -21,7 +21,7 @@ interface ActionMetadata {
 interface Log {
   _id: string;
   sessionId: string;
-  userId: string; // directly ID now
+  userId: string;
   fullName: string;
   username: string;
   moduleType: string;
@@ -41,41 +41,19 @@ interface Log {
 interface ApiResponse {
   success: boolean;
   logs: Log[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    pages: number;
-  };
 }
 
-const fetchActivityLogs = async ({ pageParam = 1 }) => {
-  const response = await api.get<ApiResponse>(
-    `/activity-log/list?page=${pageParam}&limit=5`
-  );
-
+const fetchActivityLogs = async () => {
+  const response = await api.get<ApiResponse>(`/activity-log/list?limit=1000`);
   if (!response.data.success) {
     throw new Error("Failed to fetch activity logs");
   }
-
-  return {
-    logs: response.data.logs,
-    pagination: response.data.pagination,
-  };
+  return response.data.logs;
 };
 
 export const useActivityLogs = () => {
-  return useInfiniteQuery({
+  return useQuery({
     queryKey: ["activityLogs"],
     queryFn: fetchActivityLogs,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage) => {
-      // agar abhi wali page total pages se chhoti hai tou next page number return kare
-      if (lastPage.pagination.page < lastPage.pagination.pages) {
-        return lastPage.pagination.page + 1;
-      }
-      // warna undefined return -> load more button hide
-      return undefined;
-    },
   });
 };

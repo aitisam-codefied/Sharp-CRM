@@ -113,7 +113,7 @@ export function AppNavbar() {
     },
     {
       title: "System Settings",
-      href: "/dashboard/admin/notifications",
+      href: "/dashboard/admin/documents",
       key: "system",
     },
     {
@@ -198,12 +198,12 @@ export function AppNavbar() {
       },
     ],
     system: [
-      {
-        title: "Notifications",
-        href: "/dashboard/admin/notifications",
-        icon: Bell,
-        color: "bg-red-100 text-red-700 border-red-200",
-      },
+      // {
+      //   title: "Notifications",
+      //   href: "/dashboard/admin/notifications",
+      //   icon: Bell,
+      //   color: "bg-red-100 text-red-700 border-red-200",
+      // },
       {
         title: "SOP Documents",
         href: "/dashboard/admin/documents",
