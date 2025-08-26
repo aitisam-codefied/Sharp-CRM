@@ -149,7 +149,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Address</Label>
           <Textarea
@@ -160,6 +160,9 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Additional Notes</Label>
           <Textarea
@@ -170,25 +173,12 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>
           <Input
             id="language"
             placeholder="Enter preferred language"
             value={formData.language || ""}
-            onChange={handleInputChange}
-            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="language">Signature</Label>
-          <Input
-            id="signature"
-            placeholder="Enter signature"
-            value={formData.signature || ""}
             onChange={handleInputChange}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />

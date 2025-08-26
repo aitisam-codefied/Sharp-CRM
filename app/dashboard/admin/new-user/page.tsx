@@ -17,6 +17,9 @@ import axios from "axios";
 import api from "@/lib/axios";
 import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactForm";
 import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
+import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
+import SupportServicesForm from "@/components/SU-Registration/SupportServicesForm";
+import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 
 export default function NewUserPage() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -50,12 +53,16 @@ export default function NewUserPage() {
       title: "Dental Clinic Info",
       description: "Dental clinic preferences",
     },
-    { id: 6, title: "Documents And Support Services", description: "Documents and support services" },
+    // {
+    //   id: 6,
+    //   title: "Support Services",
+    //   description: "Support services",
+    // },
 
     {
-      id: 7,
-      title: "Review & Submit",
-      description: "Final review and submission",
+      id: 6,
+      title: "Review And Confirmation",
+      description: "Final review and Confirmation",
     },
   ];
 
@@ -89,7 +96,7 @@ export default function NewUserPage() {
             dep?.name?.trim() && dep?.dob?.trim() && dep?.nationality?.trim()
         ))
     ) {
-      console.log("Dependants validation failed");
+      // console.log("Dependants validation failed");
       return false;
     }
 
@@ -102,12 +109,12 @@ export default function NewUserPage() {
       const assigned = parseInt(formData.roomAssignments[roomId] || 0);
       const room = rooms.find((r) => r.id === roomId);
       if (room && assigned > room.availableSpace) {
-        console.log(`Room ${roomId} over capacity`);
+        // console.log(`Room ${roomId} over capacity`);
         return false;
       }
       totalAssigned += assigned;
     }
-    console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
+    // console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
     return totalAssigned === totalPeople;
   };
 
@@ -126,6 +133,45 @@ export default function NewUserPage() {
     }
   };
 
+  const isStep5Valid = () => {
+    const numDep = parseInt(formData.numDependants || 0);
+    const total = numDep + 1;
+    if (numDep === 0 || formData.sameDentalClinic) {
+      const dc = formData.dentalClinic || {};
+      return dc.name?.trim() && dc.phone?.trim() && dc.email?.trim();
+    } else {
+      const dcs = formData.dentalClinics || [];
+      if (dcs.length !== total) return false;
+      return dcs.every(
+        (dc: any) => dc.name?.trim() && dc.phone?.trim() && dc.email?.trim()
+      );
+    }
+  };
+
+  // const isStep6Valid = () => {
+  //   const numDep = parseInt(formData.numDependants || 0);
+  //   const total = numDep + 1;
+  //   if (numDep === 0 || formData.sameSupportServices) {
+  //     const ss = formData.supportServices || {};
+  //     return Array.isArray(ss.services) && ss.services.length > 0;
+  //   } else {
+  //     const ssl = formData.supportServicesList || [];
+  //     if (ssl.length !== total) return false;
+  //     return ssl.every(
+  //       (ss: any) => Array.isArray(ss.services) && ss.services.length > 0
+  //     );
+  //   }
+  // };
+
+  const isStep6Valid = () => {
+    return (
+      formData.consents?.accuracy &&
+      formData.consents?.processing &&
+      formData.consents?.retention &&
+      !!formData.signatureUrl
+    );
+  };
+
   const isCurrentStepValid = () => {
     switch (currentStep) {
       case 1:
@@ -136,6 +182,12 @@ export default function NewUserPage() {
         return isStep3Valid();
       case 4:
         return true;
+      case 5:
+        return isStep5Valid();
+      // case 6:
+      //   return isStep6Valid();
+      case 6:
+        return isStep6Valid();
       default:
         return true; // For unimplemented steps
     }
@@ -183,6 +235,7 @@ export default function NewUserPage() {
   };
 
   const handleSubmit = () => {
+    console.log(JSON.stringify(formData, null, 2));
     toast({
       title: "Registration Complete",
       description:
@@ -211,6 +264,22 @@ export default function NewUserPage() {
       case 4:
         return (
           <MedicalDietaryForm formData={formData} setFormData={setFormData} />
+        );
+      case 5:
+        return (
+          <DentalClinicForm formData={formData} setFormData={setFormData} />
+        );
+      // case 6:
+      //   return (
+      //     <SupportServicesForm formData={formData} setFormData={setFormData} />
+      //   );
+      case 6:
+        return (
+          <ReviewConfirmationForm
+            formData={formData}
+            setFormData={setFormData}
+            rooms={rooms}
+          />
         );
       default:
         return <div />;
@@ -284,7 +353,7 @@ export default function NewUserPage() {
           </Button>
           <div className="flex gap-2">
             {currentStep === steps.length ? (
-              <Button onClick={handleSubmit}>
+              <Button onClick={handleSubmit} disabled={!isCurrentStepValid()}>
                 <Send className="h-4 w-4 mr-2" />
                 Complete Registration
               </Button>

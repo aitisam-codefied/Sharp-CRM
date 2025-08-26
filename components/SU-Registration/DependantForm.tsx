@@ -102,7 +102,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     variant="outline"
                     className="bg-[#F87D7D] text-white border-[#F87D7D] font-medium"
                   >
-                    {room.availableSpace} Vacant
+                    {room.availableAdultSpace} Vacant
                   </Badge>
                 </div>
                 <div className="flex gap-2 mb-3">
@@ -303,6 +303,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   </Select>
                 </div>
               </div>
+
               {/* New fields for each dependant: Address and Language */}
               <div className="grid grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
@@ -319,6 +320,30 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`additional-notes-${i}`}
+                    className="text-gray-600"
+                  >
+                    Additional Notes
+                  </Label>
+                  <Textarea
+                    id={`additional-notes-${i}`}
+                    placeholder="Enter additional notes"
+                    value={formData.dependants?.[i]?.additionalNotes || ""}
+                    onChange={(e) =>
+                      handleDependantChange(
+                        i,
+                        "additionalNotes",
+                        e.target.value
+                      )
+                    }
+                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`language-${i}`} className="text-gray-600">
                     Language
