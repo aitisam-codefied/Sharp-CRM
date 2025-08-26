@@ -11,6 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import DependantsModal from "./DependantsModal";
+import { useBranches } from "@/hooks/useGetBranches";
+import { Textarea } from "../ui/textarea";
 
 const nationalities = [
   "Syrian",
@@ -25,6 +27,15 @@ const nationalities = [
 
 export default function PersonalInfoForm({ formData, setFormData }: any) {
   const [showModal, setShowModal] = useState(false);
+  const { data: branchData } = useBranches();
+
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+    })) || [];
+
+  // const branches = allBranches.map((b) => b.name);
 
   const handleInputChange = (e: any) => {
     const { id, value } = e.target;
@@ -32,8 +43,10 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       const newData = { ...prev, [id]: value };
 
       // Clean up dependants array if number of dependants is reduced
-      if (id === "numDependants" && prev.dependants) {
-        const newDependants = prev.dependants.slice(0, parseInt(value || "0"));
+      if (id === "numDependants") {
+        const newDependants = Array.isArray(prev.dependants)
+          ? prev.dependants.slice(0, parseInt(value || "0"))
+          : Array(parseInt(value || "0")).fill({});
         newData.dependants = newDependants;
       }
 
@@ -136,15 +149,84 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="numDependants">Number of Dependants</Label>
-        <Input
-          id="numDependants"
-          type="number"
-          min="0"
-          value={formData.numDependants || ""}
-          onChange={handleInputChange}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="address">Address</Label>
+          <Textarea
+            id="address"
+            placeholder="Enter address"
+            value={formData.address || ""}
+            onChange={handleInputChange}
+            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="address">Additional Notes</Label>
+          <Textarea
+            id="additionalNotes"
+            placeholder="Enter any additional notes"
+            value={formData.additionalNotes || ""}
+            onChange={handleInputChange}
+            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="language">Language</Label>
+          <Input
+            id="language"
+            placeholder="Enter preferred language"
+            value={formData.language || ""}
+            onChange={handleInputChange}
+            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="language">Signature</Label>
+          <Input
+            id="signature"
+            placeholder="Enter signature"
+            value={formData.signature || ""}
+            onChange={handleInputChange}
+            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="branch">Branch *</Label>
+          <Select
+            value={formData.branch || ""}
+            onValueChange={(value) =>
+              setFormData((prev: any) => ({ ...prev, branch: value }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select branch" />
+            </SelectTrigger>
+            <SelectContent>
+              {allBranches?.map((branch: any) => (
+                <SelectItem key={branch.id} value={branch.id}>
+                  {branch.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="numDependants">Number of Dependants</Label>
+          <Input
+            id="numDependants"
+            type="number"
+            min="0"
+            value={formData.numDependants || ""}
+            onChange={handleInputChange}
+          />
+        </div>
       </div>
 
       {showModal && (

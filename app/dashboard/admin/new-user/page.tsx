@@ -1,23 +1,27 @@
 "use client";
-
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Save, Send } from "lucide-react";
+import { UserPlus, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PersonalInfoForm from "@/components/SU-Registration/PersonalInfoForm";
 import DependantsForm from "@/components/SU-Registration/DependantForm";
+import axios from "axios";
+import api from "@/lib/axios";
+import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactForm";
+import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
 
 export default function NewUserPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<any>({});
+  const [rooms, setRooms] = useState<any[]>([]); // State to store API rooms
   const { toast } = useToast();
 
   const steps = [
@@ -33,16 +37,21 @@ export default function NewUserPage() {
     },
     {
       id: 3,
+      title: "Emergency Contact Info",
+      description: "Emergency contact details",
+    },
+    {
+      id: 4,
       title: "Medical & Dietary",
       description: "Health and dietary requirements",
     },
     {
-      id: 4,
-      title: "Support & Services",
-      description: "Support needs and services required",
+      id: 5,
+      title: "Dental Clinic Info",
+      description: "Dental clinic preferences",
     },
-    { id: 5, title: "Documentation", description: "Upload required documents" },
-    { id: 6, title: "Room Assignment", description: "Assign accommodation" },
+    { id: 6, title: "Documents And Support Services", description: "Documents and support services" },
+
     {
       id: 7,
       title: "Review & Submit",
@@ -55,46 +64,114 @@ export default function NewUserPage() {
       formData.firstName?.trim() &&
       formData.dob?.trim() &&
       formData.nationality?.trim() &&
-      formData.numDependants !== undefined
+      formData.numDependants !== undefined &&
+      formData.branch?.trim()
     );
   };
 
   const isStep2Valid = () => {
     const dependants = parseInt(formData.numDependants || 0);
     const totalPeople = dependants + 1;
+
+    // console.log("isStep2Valid:", {
+    //   dependants,
+    //   totalPeople,
+    //   isDependantsArray: Array.isArray(formData.dependants),
+    //   dependantsData: formData.dependants,
+    //   roomAssignments: formData.roomAssignments,
+    // });
+
     if (
       dependants > 0 &&
-      !formData.dependants?.every(
-        (dep: any) =>
-          dep?.name?.trim() && dep?.dob?.trim() && dep?.nationality?.trim()
-      )
+      (!Array.isArray(formData.dependants) ||
+        !formData.dependants.every(
+          (dep: any) =>
+            dep?.name?.trim() && dep?.dob?.trim() && dep?.nationality?.trim()
+        ))
     ) {
+      console.log("Dependants validation failed");
       return false;
     }
 
-    // Check room assignment
-    if (!formData.roomAssignments) return false;
+    if (!formData.roomAssignments) {
+      console.log("Room assignments missing");
+      return false;
+    }
     let totalAssigned = 0;
     for (const roomId in formData.roomAssignments) {
       const assigned = parseInt(formData.roomAssignments[roomId] || 0);
       const room = rooms.find((r) => r.id === roomId);
-      if (room && assigned > room.vacant) return false;
+      if (room && assigned > room.availableSpace) {
+        console.log(`Room ${roomId} over capacity`);
+        return false;
+      }
       totalAssigned += assigned;
     }
+    console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
     return totalAssigned === totalPeople;
   };
 
-  // Dummy rooms data (hardcoded)
-  const rooms = [
-    { id: "101", capacity: 5, occupied: 2, vacant: 3 },
-    { id: "102", capacity: 5, occupied: 0, vacant: 5 },
-    { id: "103", capacity: 5, occupied: 3, vacant: 2 },
-    { id: "104", capacity: 5, occupied: 1, vacant: 4 },
-    { id: "105", capacity: 5, occupied: 4, vacant: 1 },
-  ];
+  const isStep3Valid = () => {
+    const numDep = parseInt(formData.numDependants || 0);
+    const total = numDep + 1;
+    if (numDep === 0 || formData.sameEmergencyContact) {
+      const ec = formData.emergencyContact || {};
+      return ec.name?.trim() && ec.phone?.trim() && ec.relation?.trim();
+    } else {
+      const ecs = formData.emergencyContacts || [];
+      if (ecs.length !== total) return false;
+      return ecs.every(
+        (ec: any) => ec.name?.trim() && ec.phone?.trim() && ec.relation?.trim()
+      );
+    }
+  };
 
-  const handleNext = () => {
-    if (currentStep < steps.length) {
+  const isCurrentStepValid = () => {
+    switch (currentStep) {
+      case 1:
+        return isStep1Valid();
+      case 2:
+        return isStep2Valid();
+      case 3:
+        return isStep3Valid();
+      case 4:
+        return true;
+      default:
+        return true; // For unimplemented steps
+    }
+  };
+
+  const handleNext = async () => {
+    if (!isCurrentStepValid()) return;
+
+    if (currentStep === 1) {
+      try {
+        const capacity = parseInt(formData.numDependants || 0) + 1;
+        const kids = formData.numKids || 0;
+        const branchId = formData.branch;
+
+        const response = await api.get("/guest/rooms/capacity", {
+          params: { capacity, kids, branchId },
+        });
+
+        if (response.data.success) {
+          setRooms(response.data.data);
+          setCurrentStep(currentStep + 1);
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to fetch rooms. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "An error occurred while fetching rooms.",
+          variant: "destructive",
+        });
+      }
+    } else if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -126,6 +203,14 @@ export default function NewUserPage() {
             setFormData={setFormData}
             rooms={rooms}
           />
+        );
+      case 3:
+        return (
+          <EmergencyContactForm formData={formData} setFormData={setFormData} />
+        );
+      case 4:
+        return (
+          <MedicalDietaryForm formData={formData} setFormData={setFormData} />
         );
       default:
         return <div />;
@@ -180,7 +265,6 @@ export default function NewUserPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>{steps[currentStep - 1].title}</CardTitle>
@@ -190,7 +274,6 @@ export default function NewUserPage() {
           </CardHeader>
           <CardContent>{renderStepContent()}</CardContent>
         </Card>
-
         <div className="flex justify-between">
           <Button
             variant="outline"
@@ -200,20 +283,13 @@ export default function NewUserPage() {
             Previous
           </Button>
           <div className="flex gap-2">
-            <Button variant="outline">
-              <Save className="h-4 w-4 mr-2" />
-              Save Draft
-            </Button>
             {currentStep === steps.length ? (
               <Button onClick={handleSubmit}>
                 <Send className="h-4 w-4 mr-2" />
                 Complete Registration
               </Button>
             ) : (
-              <Button
-                onClick={handleNext}
-                disabled={currentStep === 1 ? !isStep1Valid() : !isStep2Valid()}
-              >
+              <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
                 Next
               </Button>
             )}
