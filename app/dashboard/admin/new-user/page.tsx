@@ -18,7 +18,6 @@ import api from "@/lib/axios";
 import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactForm";
 import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
 import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
-import SupportServicesForm from "@/components/SU-Registration/SupportServicesForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 
 export default function NewUserPage() {
