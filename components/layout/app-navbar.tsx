@@ -138,12 +138,12 @@ export function AppNavbar() {
         icon: Utensils,
         color: "bg-green-100 text-green-700 border-green-200",
       },
-      {
-        title: "Food Images",
-        href: "/dashboard/admin/food-images",
-        icon: Camera,
-        color: "bg-pink-100 text-pink-700 border-pink-200",
-      },
+      // {
+      //   title: "Food Images",
+      //   href: "/dashboard/admin/food-images",
+      //   icon: Camera,
+      //   color: "bg-pink-100 text-pink-700 border-pink-200",
+      // },
       {
         title: "Food Feedbacks",
         href: "/dashboard/admin/feedback",
@@ -225,7 +225,7 @@ export function AppNavbar() {
       //   color: "bg-blue-100 text-blue-700 border-blue-200",
       // },
       {
-        title: "User Registration",
+        title: "Service User Registration",
         href: "/dashboard/admin/new-user",
         icon: UserPlus,
         color: "bg-green-100 text-green-700 border-green-200",

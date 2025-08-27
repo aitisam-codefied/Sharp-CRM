@@ -52,12 +52,6 @@ export default function NewUserPage() {
       title: "Dental Clinic Info",
       description: "Dental clinic preferences",
     },
-    // {
-    //   id: 6,
-    //   title: "Support Services",
-    //   description: "Support services",
-    // },
-
     {
       id: 6,
       title: "Review And Confirmation",
@@ -147,26 +141,10 @@ export default function NewUserPage() {
     }
   };
 
-  // const isStep6Valid = () => {
-  //   const numDep = parseInt(formData.numDependants || 0);
-  //   const total = numDep + 1;
-  //   if (numDep === 0 || formData.sameSupportServices) {
-  //     const ss = formData.supportServices || {};
-  //     return Array.isArray(ss.services) && ss.services.length > 0;
-  //   } else {
-  //     const ssl = formData.supportServicesList || [];
-  //     if (ssl.length !== total) return false;
-  //     return ssl.every(
-  //       (ss: any) => Array.isArray(ss.services) && ss.services.length > 0
-  //     );
-  //   }
-  // };
-
   const isStep6Valid = () => {
     return (
       formData.consents?.accuracy &&
       formData.consents?.processing &&
-      formData.consents?.retention &&
       !!formData.signatureUrl
     );
   };
@@ -183,8 +161,6 @@ export default function NewUserPage() {
         return true;
       case 5:
         return isStep5Valid();
-      // case 6:
-      //   return isStep6Valid();
       case 6:
         return isStep6Valid();
       default:
@@ -268,10 +244,6 @@ export default function NewUserPage() {
         return (
           <DentalClinicForm formData={formData} setFormData={setFormData} />
         );
-      // case 6:
-      //   return (
-      //     <SupportServicesForm formData={formData} setFormData={setFormData} />
-      //   );
       case 6:
         return (
           <ReviewConfirmationForm

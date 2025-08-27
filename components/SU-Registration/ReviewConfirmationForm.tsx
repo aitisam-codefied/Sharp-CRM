@@ -4,7 +4,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useBranches } from "@/hooks/useGetBranches";
-import SignatureCanvas from "react-signature-canvas";
+import dynamic from "next/dynamic";
+
+const SignaturePad = dynamic(() => import("react-signature-pad-wrapper"), {
+  ssr: false,
+});
 
 export default function ReviewConfirmationForm({
   formData,
@@ -14,7 +18,7 @@ export default function ReviewConfirmationForm({
   const numDependants = parseInt(formData.numDependants || 0);
   const totalPeople = numDependants + 1;
   const { data: branchData } = useBranches();
-  const sigRef = useRef<SignatureCanvas | null>(null);
+  const sigRef = useRef<SignaturePad | null>(null);
 
   const getBranchName = (branchId: string) => {
     return branchData?.find((b: any) => b._id === branchId)?.name || branchId;
@@ -66,7 +70,7 @@ export default function ReviewConfirmationForm({
 
   const saveSignature = () => {
     if (sigRef.current) {
-      const dataUrl = sigRef.current.getTrimmedCanvas().toDataURL("image/png");
+      const dataUrl = sigRef.current.toDataURL("image/png");
       setFormData((prev: any) => ({ ...prev, signatureUrl: dataUrl }));
     }
   };
@@ -310,7 +314,6 @@ export default function ReviewConfirmationForm({
                     </div>
                   </dl>
                 </div>
-              
               </CardContent>
             </Card>
           );
@@ -365,13 +368,18 @@ export default function ReviewConfirmationForm({
         </h3>
         <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
           <CardContent className="p-6">
-            <SignatureCanvas
+            <SignaturePad
               ref={sigRef}
               canvasProps={{
-                width: 500,
-                height: 200,
+                width: "500",
+                height: "200",
                 className:
                   "border-2 border-[#F87D7D] rounded-lg bg-gray-50 w-full max-w-[500px]",
+              }}
+              options={{
+                minWidth: 0.5,
+                maxWidth: 2.5,
+                penColor: "black",
               }}
             />
             <div className="flex gap-4 mt-4">

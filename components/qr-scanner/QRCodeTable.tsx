@@ -188,9 +188,9 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{qr.branchId.name}</span>
+                      <span className="font-medium">{qr.branchId?.name}</span>
                       <span className="text-xs text-gray-500">
-                        {qr.branchId.address}
+                        {qr.branchId?.address}
                       </span>
                     </div>
                   </TableCell>

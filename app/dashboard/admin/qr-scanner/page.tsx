@@ -48,8 +48,8 @@ interface QRCodeLog {
 
 export default function QRScannerPage() {
   const { data: qrcodes = [], isPending: isQRCodesPending } = useGetQRCodes();
-  const { data: qrCodeLogs = [], isPending: isLogsPending } =
-    useGetQRCodeLogs();
+  // const { data: qrCodeLogs = [], isPending: isLogsPending } =
+  //   useGetQRCodeLogs();
   const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
   // Filter QR codes and logs based on selected branch
@@ -63,9 +63,9 @@ export default function QRScannerPage() {
   useEffect(() => {
     console.log("qrcodes", qrcodes);
     console.log("filteredQRCodes", filteredQRCodes);
-    console.log("qrCodeLogs", qrCodeLogs);
+    // console.log("qrCodeLogs", qrCodeLogs);
     // console.log("filteredQRCodeLogs", filteredQRCodeLogs);
-  }, [qrcodes, filteredQRCodes, qrCodeLogs]);
+  }, [qrcodes, filteredQRCodes]);
 
   return (
     <DashboardLayout

@@ -16,31 +16,94 @@ interface ActionMetadata {
   stepNumber?: number;
   duration?: number;
   actionId?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  totalBreakMinutes?: number;
+  isBreakExtended?: boolean;
+  breakExtensionMinutes?: number;
+  breakReason?: string;
+  breakNotes?: string;
+  isBypass?: boolean;
+  isDisconnection?: boolean;
+  disconnectionMinutes?: number;
+  disconnectionReason?: string;
+  sessionType?: string;
+  previousRecordId?: string;
+  reconnectionTime?: string;
+  clockOutId?: string;
+  clockOutAt?: string;
+  disconnectionTime?: string;
+  sessionEnded?: boolean;
+}
+
+interface Action {
+  actionType: string;
+  timestamp: string;
+  notes: string;
+  metadata: ActionMetadata;
+  stepNumber: number;
+  duration: number;
+  _id: string;
+}
+
+interface UserId {
+  _id: string;
+  username: string;
+  fullName: string;
+}
+
+interface BranchId {
+  _id: string;
+  name: string;
+}
+
+interface Performance {
+  totalActions: number;
+  averageActionTime: number;
+  idleTime: number;
+  lastActivity: string;
 }
 
 interface Log {
   _id: string;
   sessionId: string;
-  userId: string;
-  fullName: string;
-  username: string;
+  userId: UserId;
   moduleType: string;
-  actionType: string;
-  timestamp: string;
-  notes: string;
-  metadata: ActionMetadata;
+  activityType: string;
+  resource: string;
+  resourceId: string;
+  branchId: BranchId;
+  locationIds: string[];
+  userRole: string;
+  userPermissions: string[];
+  details: {
+    qrCodeId: string;
+    entryMethod: string;
+    clockInSessionId: string | null;
+  };
+  metadata: {
+    scope: {
+      branchId: string;
+    };
+    isShiftActive: boolean;
+  };
+  startedAt: string;
+  isActive: boolean;
+  moduleStatus: string;
+  currentStep: string;
+  totalSteps: number;
+  progress: number;
+  actions: Action[];
+  performance: Performance;
   severity: string;
   category: string;
-  startedAt: string;
-  endedAt: string;
-  durationMinutes: number;
-  moduleStatus: string;
-  totalActions: number;
+  errors: any[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface ApiResponse {
-  success: boolean;
-  logs: Log[];
+  [key: string]: Log | boolean; // Allow numeric keys for logs and 'success' boolean
 }
 
 const fetchActivityLogs = async () => {
@@ -48,7 +111,37 @@ const fetchActivityLogs = async () => {
   if (!response.data.success) {
     throw new Error("Failed to fetch activity logs");
   }
-  return response.data.logs;
+
+  // Extract logs from numeric keys and flatten actions
+  const logs: Log[] = Object.keys(response.data)
+    .filter((key) => key !== "success")
+    .map((key) => response.data[key] as Log);
+
+  // Flatten actions into a format compatible with the component
+  const flattenedLogs = logs.flatMap((log) =>
+    log.actions.map((action) => ({
+      _id: action._id,
+      sessionId: log.sessionId,
+      userId: log.userId._id,
+      fullName: log.userId.fullName,
+      username: log.userId.username,
+      moduleType: log.moduleType,
+      actionType: action.actionType,
+      timestamp: action.timestamp,
+      notes: action.notes,
+      metadata: action.metadata,
+      severity: log.severity,
+      category: log.category,
+      startedAt: log.startedAt,
+      endedAt: log.updatedAt,
+      durationMinutes:
+        action.metadata.totalBreakMinutes || action.duration || 0,
+      moduleStatus: log.moduleStatus,
+      totalActions: log.performance.totalActions,
+    }))
+  );
+
+  return flattenedLogs;
 };
 
 export const useActivityLogs = () => {
