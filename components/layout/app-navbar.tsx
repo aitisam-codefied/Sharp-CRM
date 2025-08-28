@@ -61,7 +61,8 @@ export function AppNavbar() {
     if (
       pathname.includes("/staffs") ||
       pathname.includes("/scheduler") ||
-      pathname.includes("/clock-system")
+      pathname.includes("/clock-system") ||
+      pathname.includes("/medical-staff")
     )
       return "staffs";
     if (
@@ -195,6 +196,12 @@ export function AppNavbar() {
         href: "/dashboard/admin/clock-system",
         icon: Clock,
         color: "bg-green-100 text-green-700 border-green-200",
+      },
+      {
+        title: "Medical Staff",
+        href: "/dashboard/admin/medical-staff",
+        icon: Users,
+        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
       },
     ],
     system: [
