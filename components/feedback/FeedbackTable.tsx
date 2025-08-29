@@ -76,9 +76,7 @@ export const FeedbackTable = ({
               </TableCell>
               <TableCell>
                 <div className="text-sm text-muted-foreground">
-                  {feedback.staffMember
-                    ? feedback.staffMember
-                    : "No Staff Assigned"}
+                  {feedback.staffMember ? feedback.staffMember : "No Staff Assigned"}
                 </div>
               </TableCell>
               {/* <TableCell>

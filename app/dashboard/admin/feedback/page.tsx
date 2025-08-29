@@ -44,9 +44,7 @@ export default function FeedbackPage() {
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedMeal, setSelectedMeal] = useState("all");
   const [selectedRating, setSelectedRating] = useState("all");
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState("");
   const { toast } = useToast();
 
   const { data, isLoading, error } = useFoodFeedbacks();
@@ -219,12 +217,12 @@ export default function FeedbackPage() {
                   />
                 </div>
               </div>
-              {/* <Input
+              <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full md:w-48"
-              /> */}
+              />
               <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Branches" />
