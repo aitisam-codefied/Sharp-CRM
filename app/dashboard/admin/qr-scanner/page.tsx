@@ -1,19 +1,25 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
 import { useGetQRCodes } from "@/hooks/useGetQRCodes";
-import { useGetQRCodeLogs } from "@/hooks/useGetQRCodeLogs";
-import { BranchList } from "@/components/qr-scanner/BranchList";
 import { QRCodeTable } from "@/components/qr-scanner/QRCodeTable";
-import { QRCodeLogsDisplay } from "@/components/qr-scanner/QRCodeLogsDisplay";
-import { useEffect, useState } from "react";
 
 interface QRCode {
   _id: string;
@@ -23,49 +29,35 @@ interface QRCode {
   createdAt: string;
 }
 
-interface QRCodeLog {
-  _id: string;
-  staffId: {
-    _id: string;
-    fullName: string;
-    phoneNumber: string;
-    emailAddress: string;
-  };
-  qrCodeId: { _id: string; type: string; code: string };
-  branchId: { _id: string; name: string; address: string };
-  startedAt: string;
-  durationMaxLimitMinutes: number;
-  isActive: boolean;
-  actions: {
-    actionType: string;
-    timestamp: string;
-    notes: string;
-    _id: string;
-  }[];
-  createdAt: string;
-  updatedAt: string;
-}
-
 export default function QRScannerPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedBranch, setSelectedBranch] = useState("all");
   const { data: qrcodes = [], isPending: isQRCodesPending } = useGetQRCodes();
-  // const { data: qrCodeLogs = [], isPending: isLogsPending } =
-  //   useGetQRCodeLogs();
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
 
-  // Filter QR codes and logs based on selected branch
-  const filteredQRCodes = selectedBranch
-    ? qrcodes.filter((qr: QRCode) => qr.branchId._id === selectedBranch)
-    : qrcodes;
-  // const filteredQRCodeLogs = selectedBranch
-  //   ? qrCodeLogs.filter((log: QRCodeLog) => log.branchId._id === selectedBranch)
-  //   : qrCodeLogs;
+  // Extract unique QR code types and branches for dropdowns
+  const types = useMemo(
+    () => [...new Set(qrcodes.map((qr: QRCode) => qr.type))].sort(),
+    [qrcodes]
+  );
+  const branches = useMemo(
+    () =>
+      [...new Set(qrcodes.map((qr: QRCode) => JSON.stringify(qr.branchId)))]
+        .map((branch) => JSON.parse(branch))
+        .sort((a, b) => a?.name.localeCompare(b?.name)),
+    [qrcodes]
+  );
 
-  useEffect(() => {
-    console.log("qrcodes", qrcodes);
-    console.log("filteredQRCodes", filteredQRCodes);
-    // console.log("qrCodeLogs", qrCodeLogs);
-    // console.log("filteredQRCodeLogs", filteredQRCodeLogs);
-  }, [qrcodes, filteredQRCodes]);
+  // Filter QR codes based on search term, type, and branch
+  const filteredQRCodes = qrcodes.filter((qr: QRCode) => {
+    const matchesSearch =
+      qr.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      qr._id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === "all" || qr.type === selectedType;
+    const matchesBranch =
+      selectedBranch === "all" || qr.branchId?._id === selectedBranch;
+    return matchesSearch && matchesType && matchesBranch;
+  });
 
   return (
     <DashboardLayout
@@ -74,25 +66,68 @@ export default function QRScannerPage() {
       actions={<div className="flex gap-2"></div>}
     >
       <div className="space-y-6">
-        <CardContent>
-          <BranchList onBranchSelect={setSelectedBranch} />
-        </CardContent>
-
-        {/* QR Codes Table */}
         <Card>
           <CardHeader>
             <CardTitle>QR Codes List</CardTitle>
             <CardDescription>
-              {selectedBranch
-                ? `QR codes for selected branch`
-                : "All available QR codes from the system"}
+              {selectedBranch === "all"
+                ? "All available QR codes from the system"
+                : `QR codes for selected branch`}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <QRCodeTable
-              qrcodes={filteredQRCodes}
-              isLoading={isQRCodesPending}
-            />
+            {isQRCodesPending ? (
+              <div className="text-center py-8">Loading QR codes...</div>
+            ) : (
+              <>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search by code or ID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <Select
+                    value={selectedBranch}
+                    onValueChange={setSelectedBranch}
+                  >
+                    <SelectTrigger className="w-full md:w-48">
+                      <SelectValue placeholder="All Branches" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Branches</SelectItem>
+                      {branches.map((branch) => (
+                        <SelectItem key={branch?._id} value={branch?._id}>
+                          {branch?.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <QRCodeTable
+                  qrcodes={filteredQRCodes}
+                  isLoading={isQRCodesPending}
+                />
+
+                {filteredQRCodes.length === 0 && (
+                  <div className="text-center py-8">
+                    <h3 className="text-lg font-medium mb-2">
+                      No QR codes found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search criteria.
+                    </p>
+                  </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

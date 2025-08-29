@@ -4,7 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function EmergencyContactForm({ formData, setFormData }: any) {
-  const numDependants = parseInt(formData.numDependants || 0);
+  const numDependants = Number(formData.guests[0].numberOfDependents) || 0;
+  console.log("numDependants", numDependants);
   const totalPeople = numDependants + 1;
   const hasDependants = numDependants > 0;
 
@@ -17,7 +18,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
       ...prev,
       sameEmergencyContact: sameEmergencyContact,
     }));
-  }, [sameEmergencyContact, setFormData]);
+  }, [sameEmergencyContact]);
 
   const handleSameChange = (checked: boolean) => {
     setSameEmergencyContact(checked);
@@ -25,60 +26,60 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
       const newData = { ...prev, sameEmergencyContact: checked };
 
       if (checked) {
-        // Switching to same: Use primary's contact if available, or empty
-        let commonContact = {};
-        if (prev.emergencyContacts && prev.emergencyContacts[0]) {
-          commonContact = prev.emergencyContacts[0];
-        } else if (prev.emergencyContact) {
-          commonContact = prev.emergencyContact;
-        }
-        newData.emergencyContact = commonContact;
+        // Switching to same: reset and keep only primary empty contact
+        newData.emergencyContact = {};
         delete newData.emergencyContacts;
-      } else {
-        // Switching to separate: Replicate the common contact to all if available
-        let initialContacts = Array(totalPeople).fill({});
-        if (prev.emergencyContact) {
-          initialContacts = Array(totalPeople).fill(prev.emergencyContact);
-        } else if (prev.emergencyContacts) {
-          initialContacts = prev.emergencyContacts;
+
+        // also reset guests ke emergencyContact
+        if (prev.guests) {
+          newData.guests = prev.guests.map((g: any) => ({
+            ...g,
+            emergencyContact: {},
+          }));
         }
-        newData.emergencyContacts = initialContacts;
+      } else {
+        // Switching to separate: reset all contacts for each person
+        newData.emergencyContacts = Array(totalPeople).fill({});
         delete newData.emergencyContact;
+
+        // guests ke contacts bhi reset
+        if (prev.guests) {
+          newData.guests = prev.guests.map((g: any) => ({
+            ...g,
+            emergencyContact: {},
+          }));
+        }
       }
 
       return newData;
     });
   };
 
-  const handleContactChange = (
+  const handleContactChange = (field: string, value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      emergencyContact: {
+        ...(prev.emergencyContact || {}),
+        [field]: value,
+      },
+    }));
+  };
+
+  const handleContactChangeGuest = (
+    guestIndex: number,
     field: string,
-    value: string,
-    index?: number
+    value: string
   ) => {
     setFormData((prev: any) => {
-      if (!hasDependants || sameEmergencyContact) {
-        // Update single emergencyContact
-        return {
-          ...prev,
-          emergencyContact: {
-            ...(prev.emergencyContact || {}),
-            [field]: value,
-          },
-        };
-      } else {
-        // Update specific index in emergencyContacts
-        const contacts = [
-          ...(prev.emergencyContacts || Array(totalPeople).fill({})),
-        ];
-        contacts[index!] = {
-          ...contacts[index!],
+      const guests = [...prev.guests]; // clone array
+      guests[guestIndex] = {
+        ...guests[guestIndex],
+        emergencyContact: {
+          ...(guests[guestIndex]?.emergencyContact || {}),
           [field]: value,
-        };
-        return {
-          ...prev,
-          emergencyContacts: contacts,
-        };
-      }
+        },
+      };
+      return { ...prev, guests };
     });
   };
 
@@ -87,6 +88,14 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
       return formData.emergencyContact || {};
     } else {
       return (formData.emergencyContacts || [])[index] || {};
+    }
+  };
+
+  const getContactGuest = (index: number) => {
+    if (!hasDependants || sameEmergencyContact) {
+      return formData.guests.emergencyContact || {};
+    } else {
+      return (formData.guests.emergencyContacts || [])[index] || {};
     }
   };
 
@@ -113,12 +122,14 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="ec-name">Name *</Label>
+              <Label htmlFor="ec-name">Full Name *</Label>
               <Input
                 id="ec-name"
                 placeholder="Enter name"
-                value={getContact(0).name || ""}
-                onChange={(e) => handleContactChange("name", e.target.value)}
+                value={formData?.emergencyContact?.fullName || ""}
+                onChange={(e) =>
+                  handleContactChange("fullName", e.target.value)
+                }
               />
             </div>
             <div className="space-y-2">
@@ -127,8 +138,10 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 id="ec-phone"
                 type="tel"
                 placeholder="+44 7700 900000"
-                value={getContact(0).phone || ""}
-                onChange={(e) => handleContactChange("phone", e.target.value)}
+                value={formData?.emergencyContact?.phoneNumber || ""}
+                onChange={(e) =>
+                  handleContactChange("phoneNumber", e.target.value)
+                }
               />
             </div>
             <div className="space-y-2">
@@ -136,9 +149,9 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
               <Input
                 id="ec-relation"
                 placeholder="e.g., Family, Friend"
-                value={getContact(0).relation || ""}
+                value={formData?.emergencyContact?.relationship || ""}
                 onChange={(e) =>
-                  handleContactChange("relation", e.target.value)
+                  handleContactChange("relationship", e.target.value)
                 }
               />
             </div>
@@ -164,9 +177,9 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                   <Input
                     id={`ec-name-${i}`}
                     placeholder="Enter name"
-                    value={getContact(i).name || ""}
+                    value={formData?.guests[i]?.emergencyContact?.fullName || ""}
                     onChange={(e) =>
-                      handleContactChange("name", e.target.value, i)
+                      handleContactChangeGuest(i, "fullName", e.target.value)
                     }
                   />
                 </div>
@@ -176,9 +189,11 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                     id={`ec-phone-${i}`}
                     type="tel"
                     placeholder="+44 7700 900000"
-                    value={getContact(i).phone || ""}
+                    value={
+                      formData?.guests[i]?.emergencyContact?.phoneNumber || ""
+                    }
                     onChange={(e) =>
-                      handleContactChange("phone", e.target.value, i)
+                      handleContactChangeGuest(i, "phoneNumber", e.target.value)
                     }
                   />
                 </div>
@@ -187,9 +202,15 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                   <Input
                     id={`ec-relation-${i}`}
                     placeholder="e.g., Family, Friend"
-                    value={getContact(i).relation || ""}
+                    value={
+                      formData?.guests[i]?.emergencyContact?.relationship || ""
+                    }
                     onChange={(e) =>
-                      handleContactChange("relation", e.target.value, i)
+                      handleContactChangeGuest(
+                        i,
+                        "relationship",
+                        e.target.value
+                      )
                     }
                   />
                 </div>

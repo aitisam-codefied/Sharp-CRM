@@ -37,26 +37,34 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
   // const branches = allBranches.map((b) => b.name);
 
-  const handleInputChange = (e: any) => {
+  const handleInputChange = (e: any, guestIndex?: number) => {
     const { id, value } = e.target;
+    // console.log("Updating field:", id, "with value:", value);
+    // console.log("guestIndex:", guestIndex);
     setFormData((prev: any) => {
-      const newData = { ...prev, [id]: value };
+      let newData = { ...prev };
 
-      // Clean up dependants array if number of dependants is reduced
-      if (id === "numDependants") {
-        const newDependants = Array.isArray(prev.dependants)
-          ? prev.dependants.slice(0, parseInt(value || "0"))
-          : Array(parseInt(value || "0")).fill({});
-        newData.dependants = newDependants;
-      }
+      // 🔹 If updating guest field
+      if (guestIndex !== undefined) {
+        newData.guests = prev.guests.map((guest: any, index: number) =>
+          index === guestIndex ? { ...guest, [id]: value } : guest
+        );
+      } else {
+        // 🔹 Normal top-level field update
+        newData = { ...newData, [id]: value };
 
-      // Clean up room assignments when numDependants changes
-      if (id === "numDependants") {
-        newData.roomAssignments = {};
-      }
-
-      if (id === "numDependants" && parseInt(value || "0") >= 5) {
-        setShowModal(true);
+        // Clean up dependants array if number of dependants is reduced
+        if (id === "numberOfDependents") {
+          const newDependants = Array.isArray(prev.guests[0].numberOfDependents)
+            ? prev.guests[0].numberOfDependents.slice(0, parseInt(value || "0"))
+            : Array(parseInt(value || "0")).fill({});
+          newData.guests[0].numberOfDependents = newDependants;
+          newData.roomAssignments = {};
+        }
+        console.log("value", value);
+        if ((id === "numberOfDependents" && value) || 0 >= 5) {
+          setShowModal(true);
+        }
       }
 
       return newData;
@@ -67,43 +75,43 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
     <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">First Name *</Label>
+          <Label htmlFor="fullName">Full Name *</Label>
           <Input
-            id="firstName"
-            placeholder="Enter first name"
-            value={formData.firstName || ""}
-            onChange={handleInputChange}
+            id="fullName"
+            placeholder="Enter full name"
+            value={formData.guests[0].fullName || ""}
+            onChange={(e) => handleInputChange(e, 0)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
+          <Label htmlFor="emailAddress">Email Address</Label>
           <Input
-            id="email"
+            id="emailAddress"
             type="email"
             placeholder="user@temp.com"
-            value={formData.email || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].emailAddress || ""}
+            onChange={(e) => handleInputChange(e, 0)}
           />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone Number</Label>
+          <Label htmlFor="phoneNumber">Phone Number</Label>
           <Input
-            id="phone"
+            id="phoneNumber"
             placeholder="+44 7700 900000"
-            value={formData.phone || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].phoneNumber || ""}
+            onChange={(e) => handleInputChange(e, 0)}
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="dob">Date of Birth *</Label>
+          <Label htmlFor="dateOfBirth">Date of Birth *</Label>
           <Input
-            id="dob"
+            id="dateOfBirth"
             type="date"
-            value={formData.dob || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].dateOfBirth || ""}
+            onChange={(e) => handleInputChange(e, 0)}
           />
         </div>
       </div>
@@ -112,9 +120,14 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
           <Select
-            value={formData.gender || ""}
+            value={formData.guests[0].gender || ""}
             onValueChange={(value) =>
-              setFormData((prev: any) => ({ ...prev, gender: value }))
+              setFormData((prev: any) => ({
+                ...prev,
+                guests: prev.guests.map((guest: any, index: number) =>
+                  index === 0 ? { ...guest, gender: value } : guest
+                ),
+              }))
             }
           >
             <SelectTrigger>
@@ -130,9 +143,14 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         <div className="space-y-2">
           <Label htmlFor="nationality">Nationality *</Label>
           <Select
-            value={formData.nationality || ""}
+            value={formData.guests[0].nationality || ""}
             onValueChange={(value) =>
-              setFormData((prev: any) => ({ ...prev, nationality: value }))
+              setFormData((prev: any) => ({
+                ...prev,
+                guests: prev.guests.map((guest: any, index: number) =>
+                  index === 0 ? { ...guest, nationality: value } : guest
+                ),
+              }))
             }
           >
             <SelectTrigger>
@@ -155,8 +173,8 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           <Textarea
             id="address"
             placeholder="Enter address"
-            value={formData.address || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].address || ""}
+            onChange={(e) => handleInputChange(e, 0)}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
         </div>
@@ -168,8 +186,8 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           <Textarea
             id="additionalNotes"
             placeholder="Enter any additional notes"
-            value={formData.additionalNotes || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].additionalNotes || ""}
+            onChange={(e) => handleInputChange(e, 0)}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
         </div>
@@ -178,8 +196,8 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           <Input
             id="language"
             placeholder="Enter preferred language"
-            value={formData.language || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].language || ""}
+            onChange={(e) => handleInputChange(e, 0)}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
         </div>
@@ -189,9 +207,9 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         <div className="space-y-2">
           <Label htmlFor="branch">Branch *</Label>
           <Select
-            value={formData.branch || ""}
+            value={formData.branchId || ""}
             onValueChange={(value) =>
-              setFormData((prev: any) => ({ ...prev, branch: value }))
+              setFormData((prev: any) => ({ ...prev, branchId: value }))
             }
           >
             <SelectTrigger>
@@ -208,13 +226,34 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="numDependants">Number of Dependants</Label>
+          <Label htmlFor="numberOfDependents">Number of Dependants</Label>
           <Input
-            id="numDependants"
+            id="numberOfDependents"
             type="number"
             min="0"
-            value={formData.numDependants || ""}
-            onChange={handleInputChange}
+            value={formData.guests[0].numberOfDependents || ""}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              handleInputChange(e, 0);
+
+              if (val === 0) {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  areThereMultipleGuests: false,
+                }));
+              } else if (val >= 5) {
+                setShowModal(true);
+                setFormData((prev: any) => ({
+                  ...prev,
+                  areThereMultipleGuests: true,
+                }));
+              } else {
+                setFormData((prev: any) => ({
+                  ...prev,
+                  areThereMultipleGuests: true,
+                }));
+              }
+            }}
           />
         </div>
       </div>

@@ -20,9 +20,105 @@ import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm"
 import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 
+// Guest Emergency Contact
+interface EmergencyContact {
+  fullName: string;
+  relationship: string;
+  phoneNumber: string;
+}
+
+// Document Upload (for signature / agreement)
+interface UploadedFile {
+  file: File; // In Next.js frontend this will be a File object
+}
+
+interface Medic {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  emailAddress: string;
+}
+
+// Individual Guest inside guests array
+interface Guest {
+  fullName: string;
+  emailAddress: string;
+  phoneNumber: string;
+  dateOfBirth?: Date | string;
+  gender?: "Male" | "Female" | "Other" | string;
+  nationality?: string;
+  language?: string;
+  numberOfDependents?: number;
+  medic?: string; // objectId
+  address?: string;
+  emergencyContact?: EmergencyContact;
+  medicalCondition?: string;
+  allergies?: string;
+  currentMedications?: string;
+  additionalNotes?: string;
+  dietaryRequirements?: string[];
+}
+
+// Main Form Data Interface
+export interface CreateGuestForm {
+  branchId: string; // objectId
+  locations: string[]; // objectId[]
+  assignedRooms: string[]; // objectId[]
+  medic?: string; // objectId
+  emergencyContact?: EmergencyContact;
+  occupancyAgreement: UploadedFile;
+  signature: UploadedFile;
+  areThereMultipleGuests?: boolean;
+  consentAccuracy: boolean;
+  consentDataProcessing: boolean;
+  guests: Guest[];
+  numKids?: number;
+  sameEmergencyContact?: boolean;
+}
+
 export default function NewUserPage() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<CreateGuestForm>({
+    branchId: "",
+    locations: [],
+    assignedRooms: [],
+    medic: "",
+    emergencyContact: {
+      fullName: "",
+      relationship: "",
+      phoneNumber: "",
+    },
+    occupancyAgreement: { file: new File([], "") },
+    signature: { file: new File([], "") },
+    areThereMultipleGuests: false,
+    consentAccuracy: false,
+    consentDataProcessing: false,
+    sameEmergencyContact: false,
+    guests: [
+      {
+        fullName: "",
+        emailAddress: "",
+        phoneNumber: "",
+        dateOfBirth: "",
+        gender: "",
+        nationality: "",
+        language: "",
+        numberOfDependents: 0,
+        medic: "",
+        address: "",
+        emergencyContact: {
+          fullName: "",
+          relationship: "",
+          phoneNumber: "",
+        },
+        medicalCondition: "",
+        allergies: "",
+        currentMedications: "",
+        additionalNotes: "",
+        dietaryRequirements: [],
+      },
+    ],
+  });
   const [rooms, setRooms] = useState<any[]>([]); // State to store API rooms
   const { toast } = useToast();
 
@@ -61,85 +157,87 @@ export default function NewUserPage() {
 
   const isStep1Valid = () => {
     return (
-      formData.firstName?.trim() &&
-      formData.dob?.trim() &&
-      formData.nationality?.trim() &&
-      formData.numDependants !== undefined &&
-      formData.branch?.trim()
+      formData.guests[0].fullName?.trim() &&
+      formData.guests[0].dateOfBirth &&
+      formData.guests[0].nationality?.trim() &&
+      formData.guests[0].numberOfDependents !== undefined &&
+      formData.branchId?.trim()
     );
   };
 
   const isStep2Valid = () => {
-    const dependants = parseInt(formData.numDependants || 0);
-    const totalPeople = dependants + 1;
+    const dependants = formData.guests[0].numberOfDependents || 0;
+    const totalPeople = Number(dependants) + 1;
 
-    // console.log("isStep2Valid:", {
-    //   dependants,
-    //   totalPeople,
-    //   isDependantsArray: Array.isArray(formData.dependants),
-    //   dependantsData: formData.dependants,
-    //   roomAssignments: formData.roomAssignments,
-    // });
+    // if (
+    //   dependants > 0 &&
+    //   (!Array.isArray(formData.guests[0].numberOfDependents) ||
+    //     !formData.guests[0].numberOfDependents.every(
+    //       (dep: any) =>
+    //         dep?.fullName?.trim() &&
+    //         dep?.dateOfBirth?.trim() &&
+    //         dep?.nationality?.trim()
+    //     ))
+    // ) {
+    //   console.log("Dependants validation failed");
+    //   return false;
+    // }
 
-    if (
-      dependants > 0 &&
-      (!Array.isArray(formData.dependants) ||
-        !formData.dependants.every(
-          (dep: any) =>
-            dep?.name?.trim() && dep?.dob?.trim() && dep?.nationality?.trim()
-        ))
-    ) {
-      // console.log("Dependants validation failed");
-      return false;
-    }
-
-    if (!formData.roomAssignments) {
+    if (!formData.assignedRooms) {
       console.log("Room assignments missing");
       return false;
     }
     let totalAssigned = 0;
-    for (const roomId in formData.roomAssignments) {
-      const assigned = parseInt(formData.roomAssignments[roomId] || 0);
+    for (const roomId in formData.assignedRooms) {
+      const assigned = Number(formData.assignedRooms[roomId]) || 0;
+      console.log("assigned", assigned);
       const room = rooms.find((r) => r.id === roomId);
       if (room && assigned > room.availableSpace) {
-        // console.log(`Room ${roomId} over capacity`);
+        console.log(`Room ${roomId} over capacity`);
         return false;
       }
       totalAssigned += assigned;
     }
-    // console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
+    console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
     return totalAssigned === totalPeople;
   };
 
-  const isStep3Valid = () => {
-    const numDep = parseInt(formData.numDependants || 0);
-    const total = numDep + 1;
-    if (numDep === 0 || formData.sameEmergencyContact) {
-      const ec = formData.emergencyContact || {};
-      return ec.name?.trim() && ec.phone?.trim() && ec.relation?.trim();
-    } else {
-      const ecs = formData.emergencyContacts || [];
-      if (ecs.length !== total) return false;
-      return ecs.every(
-        (ec: any) => ec.name?.trim() && ec.phone?.trim() && ec.relation?.trim()
-      );
-    }
-  };
+  // const isStep3Valid = () => {
+  //   const numDep = formData.guests[0].numberOfDependents || 0;
+  //   const total = numDep + 1;
+  //   if (numDep === 0 || formData.sameEmergencyContact) {
+  //     const ec = formData.emergencyContact;
+  //     return (
+  //       ec?.fullName?.trim() &&
+  //       ec.phoneNumber?.trim() &&
+  //       ec.relationship?.trim()
+  //     );
+  //   } else {
+  //     const ecs = formData.guests || [];
+  //     if (ecs.length !== total) return false;
+  //     return ecs.every(
+  //       (ec: any) =>
+  //         ec.emergencyContact.fullName?.trim() &&
+  //         ec.emergencyContact.phoneNumber?.trim() &&
+  //         ec.emergencyContact.relationship?.trim()
+  //     );
+  //   }
+  // };
 
-  const isStep5Valid = () => {
-    const numDep = parseInt(formData.numDependants || 0);
-    const total = numDep + 1;
-    if (numDep === 0 || formData.sameDentalClinic) {
-      const dc = formData.dentalClinic || {};
-      return dc.name?.trim() && dc.phone?.trim() && dc.email?.trim();
-    } else {
-      const dcs = formData.dentalClinics || [];
-      if (dcs.length !== total) return false;
-      return dcs.every(
-        (dc: any) => dc.name?.trim() && dc.phone?.trim() && dc.email?.trim()
-      );
-    }
-  };
+  // const isStep5Valid = () => {
+  //   const numDep = parseInt(formData.numDependants || 0);
+  //   const total = numDep + 1;
+  //   if (numDep === 0 || formData.sameDentalClinic) {
+  //     const dc = formData.dentalClinic || {};
+  //     return dc.name?.trim() && dc.phone?.trim() && dc.email?.trim();
+  //   } else {
+  //     const dcs = formData.dentalClinics || [];
+  //     if (dcs.length !== total) return false;
+  //     return dcs.every(
+  //       (dc: any) => dc.name?.trim() && dc.phone?.trim() && dc.email?.trim()
+  //     );
+  //   }
+  // };
 
   const isStep6Valid = () => {
     return (
@@ -156,11 +254,11 @@ export default function NewUserPage() {
       case 2:
         return isStep2Valid();
       case 3:
-        return isStep3Valid();
+        return true;
       case 4:
         return true;
       case 5:
-        return isStep5Valid();
+        return true;
       case 6:
         return isStep6Valid();
       default:
@@ -173,9 +271,11 @@ export default function NewUserPage() {
 
     if (currentStep === 1) {
       try {
-        const capacity = parseInt(formData.numDependants || 0) + 1;
+        const capacity =
+          parseInt(String(formData?.guests[0]?.numberOfDependents ?? "0"), 10) +
+          1;
         const kids = formData.numKids || 0;
-        const branchId = formData.branch;
+        const branchId = formData.branchId;
 
         const response = await api.get("/guest/rooms/capacity", {
           params: { capacity, kids, branchId },
@@ -199,6 +299,7 @@ export default function NewUserPage() {
         });
       }
     } else if (currentStep < steps.length) {
+      console.log("formData", formData);
       setCurrentStep(currentStep + 1);
     }
   };

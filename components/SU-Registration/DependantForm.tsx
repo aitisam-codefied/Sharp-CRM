@@ -9,8 +9,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const nationalities = [
@@ -25,7 +25,7 @@ const nationalities = [
 ];
 
 export default function DependantsForm({ formData, setFormData, rooms }: any) {
-  const dependants = parseInt(formData.numDependants || 0);
+  const dependants = parseInt(formData.guests[0].numberOfDependents || 0);
   const totalPeople = dependants + 1;
 
   const handleDependantChange = (
@@ -34,43 +34,51 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     value: string
   ) => {
     setFormData((prev: any) => {
-      const updatedDependants = Array.isArray(prev.dependants)
-        ? [...prev.dependants]
-        : Array(parseInt(prev.numDependants || 0)).fill({});
-      updatedDependants[index] = {
-        ...updatedDependants[index],
+      const updatedGuests = Array.isArray(prev.guests) ? [...prev.guests] : [];
+
+      updatedGuests[index] = {
+        ...updatedGuests[index],
         [field]: value,
       };
+
       return {
         ...prev,
-        dependants: updatedDependants,
+        guests: updatedGuests,
       };
     });
   };
 
   const handleRoomAssignmentChange = (roomId: string, value: string) => {
     const num = parseInt(value) || 0;
-    setFormData((prev: any) => ({
-      ...prev,
-      roomAssignments: {
-        ...(prev.roomAssignments || {}),
-        [roomId]: num > 0 ? num : undefined, // Remove if 0
-      },
-    }));
-  };
 
+    setFormData((prev: any) => {
+      const updated = { ...(prev.assignedRooms || {}) };
+
+      if (num > 0) {
+        updated[roomId] = num;
+      } else {
+        delete updated[roomId]; // ✅ remove room if count is 0
+      }
+
+      return {
+        ...prev,
+        assignedRooms: updated,
+      };
+    });
+  };
   let totalAssigned = 0;
   let hasError = false;
   const roomErrors: { [key: string]: string } = {};
-  for (const roomId in formData.roomAssignments || {}) {
-    const assigned = parseInt(formData.roomAssignments[roomId] || 0);
+  for (const roomId in formData.assignedRooms || {}) {
+    const assigned = parseInt(formData.assignedRooms[roomId] || 0);
+    console.log("assigned", assigned);
     const room = rooms.find((r: any) => r.id === roomId);
     if (room) {
-      if (assigned > room.availableSpace) {
+      if (assigned > room.totalAvailableSpace) {
         hasError = true;
         roomErrors[
           roomId
-        ] = `Only ${room.availableSpace} vacancies available in this room.`;
+        ] = `Only ${room.totalAvailableSpace} vacancies available in this room.`;
       }
       totalAssigned += assigned;
     }
@@ -83,10 +91,14 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     <div className="space-y-8">
       <div className="space-y-4">
         <h3 className="font-semibold text-lg text-gray-800">Room Assignment</h3>
-        <p className="text-sm text-gray-600">
-          Total people to assign: {totalPeople} (including primary user). Assign
-          people to rooms without exceeding vacancies.
-        </p>
+        <Alert className="bg-blue-50 border-blue-200 text-blue-800 flex items-center">
+          <Info className="h-4 w-4" />
+          {/* <AlertTitle>Heads up!</AlertTitle> */}
+          <AlertDescription>
+            Total people to assign: {totalPeople} (including primary user).
+            Assign people to rooms without exceeding vacancies.
+          </AlertDescription>
+        </Alert>
         {rooms.length > 0 ? (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {rooms.map((room: any) => (
@@ -102,10 +114,10 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     variant="outline"
                     className="bg-[#F87D7D] text-white border-[#F87D7D] font-medium"
                   >
-                    {room.availableAdultSpace} Vacant
+                    {room.totalAvailableSpace} Vacant
                   </Badge>
                 </div>
-                <div className="flex gap-2 mb-3">
+                <div className="w-full flex flex-wrap gap-2 mb-3">
                   <Badge
                     variant="secondary"
                     className="bg-yellow-100 text-yellow-700 border-yellow-300"
@@ -118,11 +130,20 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   >
                     Occupied: {room.currentOccupancy}
                   </Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-blue-100 text-blue-700 border-blue-300"
+                  >
+                    Status: {room.status}
+                  </Badge>
                 </div>
                 <div className="space-y-2">
                   <div className="mb-2">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs text-gray-600 mb-1">
                       Location: {room.location}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Room Type: {room.roomType}
                     </p>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {room.amenities.map((amenity: string, idx: number) => (
@@ -135,6 +156,9 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                         </Badge>
                       ))}
                     </div>
+                    <p className="text-xs text-black mt-2">
+                      {room.recommendedFor}
+                    </p>
                   </div>
                   <Label htmlFor={`assign-${room.id}`} className="text-black">
                     Assign people
@@ -143,8 +167,8 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     id={`assign-${room.id}`}
                     type="number"
                     min="0"
-                    max={room.availableSpace}
-                    value={formData.roomAssignments?.[room.id] || ""}
+                    max={room.totalAvailableSpace}
+                    value={formData.assignedRooms?.[room.id] || ""}
                     onChange={(e) =>
                       handleRoomAssignmentChange(room.id, e.target.value)
                     }
@@ -190,37 +214,40 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
           <h3 className="font-semibold text-lg text-gray-800">
             Dependants Information
           </h3>
-          {[...Array(dependants)].map((_, i) => (
+          {Array.from({ length: dependants }, (_, idx) => idx + 1).map((i) => (
             <div
               key={i}
               className="border p-6 rounded-lg bg-white shadow-sm relative hover:shadow-md transition-shadow"
             >
               <h3 className="font-semibold text-md mb-4 text-gray-800">
-                Dependant {i + 1}
+                Dependant {i}
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-gray-600">Name *</Label>
                   <Input
                     placeholder="Full Name"
-                    value={formData.dependants?.[i]?.name || ""}
+                    value={formData.guests?.[i]?.fullName || ""}
                     onChange={(e) =>
-                      handleDependantChange(i, "name", e.target.value)
+                      handleDependantChange(i, "fullName", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor={`email-${i}`} className="text-gray-600">
+                  <Label
+                    htmlFor={`emailAddress-${i}`}
+                    className="text-gray-600"
+                  >
                     Email Address
                   </Label>
                   <Input
-                    id={`email-${i}`}
+                    id={`emailAddress-${i}`}
                     type="email"
                     placeholder="user@temp.com"
-                    value={formData.dependants?.[i]?.email || ""}
+                    value={formData.guests?.[i]?.emailAddress || ""}
                     onChange={(e) =>
-                      handleDependantChange(i, "email", e.target.value)
+                      handleDependantChange(i, "emailAddress", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
@@ -234,9 +261,9 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`phone-${i}`}
                     placeholder="+44 7700 900000"
-                    value={formData.dependants?.[i]?.phone || ""}
+                    value={formData.guests?.[i]?.phoneNumber || ""}
                     onChange={(e) =>
-                      handleDependantChange(i, "phone", e.target.value)
+                      handleDependantChange(i, "phoneNumber", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
@@ -248,9 +275,9 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`dob-${i}`}
                     type="date"
-                    value={formData.dependants?.[i]?.dob || ""}
+                    value={formData.guests?.[i]?.dateOfBirth || ""}
                     onChange={(e) =>
-                      handleDependantChange(i, "dob", e.target.value)
+                      handleDependantChange(i, "dateOfBirth", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
@@ -262,7 +289,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     Gender
                   </Label>
                   <Select
-                    value={formData.dependants?.[i]?.gender || ""}
+                    value={formData.guests?.[i]?.gender || ""}
                     onValueChange={(value) =>
                       handleDependantChange(i, "gender", value)
                     }
@@ -282,7 +309,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     Nationality *
                   </Label>
                   <Select
-                    value={formData.dependants?.[i]?.nationality || ""}
+                    value={formData.guests?.[i]?.nationality || ""}
                     onValueChange={(value) =>
                       handleDependantChange(i, "nationality", value)
                     }
@@ -313,7 +340,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Textarea
                     id={`address-${i}`}
                     placeholder="Enter address"
-                    value={formData.dependants?.[i]?.address || ""}
+                    value={formData.guests?.[i]?.address || ""}
                     onChange={(e) =>
                       handleDependantChange(i, "address", e.target.value)
                     }
@@ -330,7 +357,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Textarea
                     id={`additional-notes-${i}`}
                     placeholder="Enter additional notes"
-                    value={formData.dependants?.[i]?.additionalNotes || ""}
+                    value={formData.guests?.[i]?.additionalNotes || ""}
                     onChange={(e) =>
                       handleDependantChange(
                         i,
@@ -351,7 +378,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`language-${i}`}
                     placeholder="Enter preferred language"
-                    value={formData.dependants?.[i]?.language || ""}
+                    value={formData.guests?.[i]?.language || ""}
                     onChange={(e) =>
                       handleDependantChange(i, "language", e.target.value)
                     }

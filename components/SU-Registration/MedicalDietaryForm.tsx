@@ -17,42 +17,31 @@ export const DIETARY_REQUIREMENT_TYPES = {
 };
 
 export default function MedicalDietaryForm({ formData, setFormData }: any) {
-  const numDependants = parseInt(formData.numDependants || 0);
+  const numDependants = Number(formData.guests[0].numberOfDependents[0]) || 0;
   const totalPeople = numDependants + 1;
 
   const handleMedicalChange = (
-    index: number,
+    guestIndex: number,
     field: string,
     value: string | string[]
   ) => {
     setFormData((prev: any) => {
-      const updatedMedical = Array.isArray(prev.medicalInfo)
-        ? [...prev.medicalInfo]
-        : Array(totalPeople).fill({});
-      updatedMedical[index] = {
-        ...updatedMedical[index],
+      const guests = [...prev.guests]; // clone
+      guests[guestIndex] = {
+        ...guests[guestIndex],
         [field]: value,
       };
-      return {
-        ...prev,
-        medicalInfo: updatedMedical,
-      };
+      return { ...prev, guests };
     });
   };
 
-  const toggleDietary = (index: number, type: string) => {
-    const current = getMedical(index).dietaryRequirements || [];
-    let updated;
-    if (current.includes(type)) {
-      updated = current.filter((t: string) => t !== type);
-    } else {
-      updated = [...current, type];
-    }
-    handleMedicalChange(index, "dietaryRequirements", updated);
-  };
+  const toggleDietary = (guestIndex: number, type: string) => {
+    const current = formData.guests[guestIndex]?.dietaryRequirements || [];
+    const updated = current.includes(type)
+      ? current.filter((t: string) => t !== type)
+      : [...current, type];
 
-  const getMedical = (index: number) => {
-    return (formData.medicalInfo || [])[index] || {};
+    handleMedicalChange(guestIndex, "dietaryRequirements", updated);
   };
 
   return (
@@ -76,11 +65,10 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
               <Textarea
                 id={`medical-conditions-${i}`}
                 placeholder="Describe any medical conditions"
-                value={getMedical(i).medicalConditions || ""}
+                value={formData.guests[i]?.medicalCondition || ""}
                 onChange={(e) =>
-                  handleMedicalChange(i, "medicalConditions", e.target.value)
+                  handleMedicalChange(i, "medicalCondition", e.target.value)
                 }
-                className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
               />
             </div>
             <div className="space-y-2">
@@ -88,11 +76,10 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
               <Textarea
                 id={`allergies-${i}`}
                 placeholder="List any allergies"
-                value={getMedical(i).allergies || ""}
+                value={formData.guests[i]?.allergies || ""}
                 onChange={(e) =>
                   handleMedicalChange(i, "allergies", e.target.value)
                 }
-                className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
               />
             </div>
             <div className="space-y-2">
@@ -100,11 +87,10 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
               <Textarea
                 id={`medications-${i}`}
                 placeholder="List current medications"
-                value={getMedical(i).currentMedications || ""}
+                value={formData.guests[i]?.currentMedications || ""}
                 onChange={(e) =>
                   handleMedicalChange(i, "currentMedications", e.target.value)
                 }
-                className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
               />
             </div>
             <div className="space-y-2">
@@ -115,7 +101,7 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
                     <Checkbox
                       id={`dietary-${type}-${i}`}
                       checked={(
-                        getMedical(i).dietaryRequirements || []
+                        formData.guests[i]?.dietaryRequirements || []
                       ).includes(type)}
                       onCheckedChange={() => toggleDietary(i, type)}
                     />
@@ -123,20 +109,6 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
                   </div>
                 ))}
               </div>
-              {/* {getMedical(i).dietaryRequirements?.includes("Other") && (
-                <div className="mt-2 space-y-2">
-                  <Label htmlFor={`other-dietary-${i}`}>Specify Other</Label>
-                  <Input
-                    id={`other-dietary-${i}`}
-                    placeholder="Describe other dietary requirements"
-                    value={getMedical(i).otherDietary || ""}
-                    onChange={(e) =>
-                      handleMedicalChange(i, "otherDietary", e.target.value)
-                    }
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                  />
-                </div>
-              )} */}
             </div>
           </div>
         </div>
