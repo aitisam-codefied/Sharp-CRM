@@ -18,8 +18,12 @@ import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
 import { useGetGuests } from "@/hooks/useGetGuests";
 import { useRooms } from "@/hooks/useGetRooms";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
 
 export default function ServiceUsersPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
@@ -60,7 +64,6 @@ export default function ServiceUsersPage() {
     setIsNewUserOpen(false);
   };
 
-
   if (isPending) {
     return (
       <DashboardLayout
@@ -79,14 +82,21 @@ export default function ServiceUsersPage() {
       title="Service User Management"
       description="Manage resident profiles and information across all branches"
       actions={
-        <NewUserDialog
-          isOpen={isNewUserOpen}
-          setIsOpen={setIsNewUserOpen}
-          branches={branches}
-          locations={locations}
-          nationalities={nationalities}
-          onSubmit={handleNewUser}
-        />
+        // <NewUserDialog
+        //   isOpen={isNewUserOpen}
+        //   setIsOpen={setIsNewUserOpen}
+        //   branches={branches}
+        //   locations={locations}
+        //   nationalities={nationalities}
+        //   onSubmit={handleNewUser}
+        // />
+        <Button
+          onClick={() => router.push("/dashboard/admin/new-user")}
+          size="sm"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Service User
+        </Button>
       }
     >
       <div className="space-y-6">

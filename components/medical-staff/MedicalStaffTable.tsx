@@ -16,9 +16,11 @@ import { DeleteMedicalStaffModal } from "@/components/medical-staff/DeleteMedica
 
 interface Staff {
   _id: string;
-  name: string;
+  fullName: string;
+  phoneNumber: string;
+  emailAddress: string;
   type: string;
-  branchId: string;
+  branches: string[];
   status: string;
   createdAt: any;
 }
@@ -71,6 +73,8 @@ export function MedicalStaffTable({
         <TableHeader>
           <TableRow>
             <TableHead>Staff</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
             <TableHead>Specialization</TableHead>
             <TableHead>Registered On</TableHead>
             <TableHead>Status</TableHead>
@@ -82,7 +86,17 @@ export function MedicalStaffTable({
             <TableRow key={staffItem._id}>
               <TableCell>
                 <div>
-                  <div className="font-medium">{staffItem.name}</div>
+                  <div className="font-medium">{staffItem.fullName}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium">{staffItem.emailAddress}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div>
+                  <div className="font-medium">{staffItem.phoneNumber}</div>
                 </div>
               </TableCell>
               <TableCell>
@@ -110,13 +124,13 @@ export function MedicalStaffTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleViewDetails(staffItem._id)}
                   >
                     <Eye className="h-4 w-4" />
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     size="sm"
@@ -155,7 +169,7 @@ export function MedicalStaffTable({
             isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             staffId={selectedStaff._id}
-            staffName={selectedStaff.name}
+            staffName={selectedStaff.fullName}
           />
         </>
       )}

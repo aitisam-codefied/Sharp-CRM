@@ -74,9 +74,9 @@ export function AppNavbar() {
     )
       return "operations";
     if (
-      pathname.includes("/incidents") ||
-      pathname.includes("/observations") ||
-      pathname.includes("/safeguarding")
+      pathname.includes("/incidents") 
+      // pathname.includes("/observations") ||
+      // pathname.includes("/safeguarding")
     )
       return "incidents";
     if (pathname.includes("/notifications") || pathname.includes("/documents"))
@@ -139,12 +139,12 @@ export function AppNavbar() {
         icon: Utensils,
         color: "bg-green-100 text-green-700 border-green-200",
       },
-      // {
-      //   title: "Food Images",
-      //   href: "/dashboard/admin/food-images",
-      //   icon: Camera,
-      //   color: "bg-pink-100 text-pink-700 border-pink-200",
-      // },
+      {
+        title: "Food Images",
+        href: "/dashboard/admin/food-images",
+        icon: Camera,
+        color: "bg-pink-100 text-pink-700 border-pink-200",
+      },
       {
         title: "Food Feedbacks",
         href: "/dashboard/admin/feedback",
@@ -165,18 +165,18 @@ export function AppNavbar() {
         icon: AlertTriangle,
         color: "bg-red-100 text-red-700 border-red-200",
       },
-      {
-        title: "Observation Checks",
-        href: "/dashboard/admin/observations",
-        icon: Eye,
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-      },
-      {
-        title: "Safeguarding",
-        href: "/dashboard/admin/safeguarding",
-        icon: Shield,
-        color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-      },
+      // {
+      //   title: "Observation Checks",
+      //   href: "/dashboard/admin/observations",
+      //   icon: Eye,
+      //   color: "bg-blue-100 text-blue-700 border-blue-200",
+      // },
+      // {
+      //   title: "Safeguarding",
+      //   href: "/dashboard/admin/safeguarding",
+      //   icon: Shield,
+      //   color: "bg-indigo-100 text-indigo-700 border-indigo-200",
+      // },
     ],
     staffs: [
       {

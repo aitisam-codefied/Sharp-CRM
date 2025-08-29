@@ -230,18 +230,6 @@ export default function WelfarePage() {
     <DashboardLayout
       title="Welfare Check Management"
       description="Monitor and manage resident welfare checks across all branches"
-      actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button size="sm" onClick={handleNewCheck}>
-            <Plus className="h-4 w-4 mr-2" />
-            New Check
-          </Button>
-        </div>
-      }
     >
       <div className="space-y-6">
         {/* Stats Cards */}
@@ -465,7 +453,7 @@ export default function WelfarePage() {
         </Card>
 
         {/* Critical Alerts */}
-        {stats.criticalChecks > 0 && (
+        {/* {stats.criticalChecks > 0 && (
           <Card className="border-red-200 bg-red-50">
             <CardHeader>
               <CardTitle className="text-red-800 flex items-center gap-2">
@@ -506,7 +494,7 @@ export default function WelfarePage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
       </div>
     </DashboardLayout>
   );

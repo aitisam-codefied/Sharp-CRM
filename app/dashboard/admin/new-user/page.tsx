@@ -401,7 +401,9 @@ export default function NewUserPage() {
 
     // Append simple fields
     apiFormData.append("branchId", cleanedData.branchId || "");
-    apiFormData.append("medic", cleanedData.medic || "");
+    if (cleanedData.medic) {
+      apiFormData.append("medic", cleanedData.medic || "");
+    }
     apiFormData.append(
       "consentAccuracy",
       String(cleanedData.consentAccuracy || false)

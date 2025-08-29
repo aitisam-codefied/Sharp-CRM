@@ -110,7 +110,7 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
             <SelectContent>
               {medicalStaff.map((staff: any) => (
                 <SelectItem key={staff._id} value={String(staff._id)}>
-                  {staff.name}
+                  {staff.fullName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -142,7 +142,7 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
                   <SelectContent>
                     {medicalStaff.map((staff: any) => (
                       <SelectItem key={staff._id} value={String(staff._id)}>
-                        {staff.name}
+                        {staff.fullName}
                       </SelectItem>
                     ))}
                   </SelectContent>

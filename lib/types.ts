@@ -101,73 +101,58 @@ export interface ServiceUser {
     emailAddress: string;
     roles: string[];
   };
-  dateOfBirth: string; // ISO date string
+  familyId: string;
+  isPrimaryGuest: boolean;
+  primaryGuestId: string | null;
+  familyRooms: {
+    roomId: {
+      _id: string;
+      roomNumber: string;
+      type: string;
+    };
+    locationId: string;
+    branchId: string;
+    _id: string;
+  }[];
+  dateOfBirth: string;
   gender: string;
   nationality: string;
   language: string;
   numberOfDependents: number;
-  dental: {
-    name: string;
-    phoneNumber: string;
-    emailAddress: string;
-  };
+  medic: string;
   address: string;
   emergencyContacts: {
+    fullName: string;
+    relationship: string;
+    phoneNumber: string;
     _id: string;
-    fullName: any;
-    relationship: any;
-    phoneNumber: any;
   }[];
   medicalCondition: string;
   allergies: string;
   currentMedications: string;
   additionalNotes: string;
   dietaryRequirements: string[];
-  supportServices: string[];
-  priorityLevel: string;
-  documents: {
+  caseWorker: {
     _id: string;
-    type: string;
-    url: string;
-  }[];
-  branch: {
-    _id: string;
-    companyId: {
-      _id: string;
-      name: string;
-    };
-    name: string;
-    address: string;
+    fullName: string;
+    phoneNumber: string;
+    emailAddress: string;
   };
-  roomTypePreference: string;
-  assignedRoom: {
-    _id: string;
-    roomNumber: string;
-    type: string;
-  };
-  checkInDate: string; // ISO date string
+  occupancyAgreementUrl: string | null;
+  signatureUrl: string | null;
   consentAccuracy: boolean;
   consentDataProcessing: boolean;
-  consentDataRetention: boolean;
-  signature: string;
   removal: {
-    transfer: {
-      requestedBy: string | null;
-      approvedBy: string | null;
-      approvalStatus: string | null;
-      approvalNotes: string | null;
-      targetCompanyId: string | null;
-      targetBranchId: string | null;
-      targetLocationId: string | null;
-      targetRoomId: string | null;
-    };
     status: string;
+    reason: string | null;
     scheduledAt: string | null;
     scheduledBy: string | null;
     notes: string | null;
     executedAt: string | null;
     executedBy: string | null;
     lastError: string | null;
+    transfer: string | null;
+    _id: string;
   };
   createdAt: string;
   updatedAt: string;
@@ -292,4 +277,88 @@ export interface ClockRecord {
   currentStatus: string;
   clockInTime: string;
   currentTime: string;
+}
+
+export interface Guest {
+  _id: string;
+  userId: {
+    _id: string;
+    portNumber: string;
+    fullName: string;
+    phoneNumber: string;
+    emailAddress: string;
+    roles: string[];
+  };
+  familyId: string;
+  isPrimaryGuest: boolean;
+  primaryGuestId: string | null;
+  familyRooms: {
+    roomId: {
+      _id: string;
+      roomNumber: string;
+      type: string;
+    };
+    locationId: string;
+    branchId: string;
+    _id: string;
+  }[];
+  dateOfBirth: string;
+  gender: string;
+  nationality: string;
+  language: string;
+  numberOfDependents: number;
+  medic: string;
+  address: string;
+  emergencyContacts: {
+    fullName: string;
+    relationship: string;
+    phoneNumber: string;
+    _id: string;
+  }[];
+  medicalCondition: string;
+  allergies: string;
+  currentMedications: string;
+  additionalNotes: string;
+  dietaryRequirements: string[];
+  caseWorker: {
+    _id: string;
+    fullName: string;
+    phoneNumber: string;
+    emailAddress: string;
+  };
+  occupancyAgreementUrl: string | null;
+  signatureUrl: string | null;
+  consentAccuracy: boolean;
+  consentDataProcessing: boolean;
+  removal: {
+    status: string;
+    reason: string | null;
+    scheduledAt: string | null;
+    scheduledBy: string | null;
+    notes: string | null;
+    executedAt: string | null;
+    executedBy: string | null;
+    lastError: string | null;
+    transfer: string | null;
+    _id: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Branch {
+  _id: string;
+  name: string;
+  address: string;
+}
+
+export interface Room {
+  _id: string;
+  roomNumber: string;
+  type: string;
+}
+
+export interface Location {
+  _id: string;
+  name: string;
 }

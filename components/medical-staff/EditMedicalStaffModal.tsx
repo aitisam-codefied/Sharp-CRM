@@ -22,7 +22,9 @@ interface EditMedicalStaffModalProps {
   onClose: () => void;
   staff: {
     _id: string;
-    name: string;
+    fullName: string;
+    phoneNumber: string;
+    emailAddress: string;
     type: string;
   };
 }
@@ -54,14 +56,21 @@ export function EditMedicalStaffModal({
   onClose,
   staff,
 }: EditMedicalStaffModalProps) {
-  const [name, setName] = useState(staff.name);
+  const [fullName, setfullName] = useState(staff.fullName);
+  const [emailAddress, setEmailAddress] = useState(staff.emailAddress);
+  const [phoneNumber, setPhoneNumber] = useState(staff.phoneNumber);
   const [type, setType] = useState(staff.type);
   const { mutate: updateStaff, isPending } = useUpdateMedicalStaff();
   const { toast } = useToast();
 
   const handleSubmit = () => {
-    const updatedData: { name?: string; type?: string } = {};
-    if (name !== staff.name) updatedData.name = name;
+    const updatedData: {
+      fullName?: any;
+      type?: string;
+      emailAddress?: string;
+      phoneNumber?: string;
+    } = {};
+    if (fullName !== staff.fullName) updatedData.fullName = fullName;
     if (type !== staff.type) updatedData.type = type;
 
     if (Object.keys(updatedData).length === 0) {
@@ -102,13 +111,33 @@ export function EditMedicalStaffModal({
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium">
+            <label htmlFor="fullName" className="block text-sm font-medium">
               Name
             </label>
             <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setfullName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="emailAddress" className="block text-sm font-medium">
+              Email
+            </label>
+            <Input
+              id="emailAddress"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="phoneNumber" className="block text-sm font-medium">
+              Phone
+            </label>
+            <Input
+              id="phoneNumber"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
             />
           </div>
           <div>

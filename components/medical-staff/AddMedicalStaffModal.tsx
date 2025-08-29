@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useBranches } from "@/hooks/useGetBranches";
+import { useCreateMedicalStaff } from "@/hooks/useCreateMedicalStaff";
+import { Input } from "../ui/input";
 import {
   Select,
   SelectContent,
@@ -14,10 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
-import { useBranches } from "@/hooks/useGetBranches";
-import { useCreateMedicalStaff } from "@/hooks/useCreateMedicalStaff";
-import { Input } from "../ui/input";
 
 interface AddMedicalStaffModalProps {
   isOpen: boolean;
@@ -50,10 +49,12 @@ export function AddMedicalStaffModal({
   isOpen,
   onClose,
 }: AddMedicalStaffModalProps) {
-  const [name, setName] = useState("");
+  const [fullName, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("active");
-  const [branchId, setBranchId] = useState("");
+  const [branches, setBranches] = useState(""); // Single branch ID as string
   const { toast } = useToast();
   const createMutation = useCreateMedicalStaff();
   const { data: branchData, isPending } = useBranches();
@@ -66,7 +67,7 @@ export function AddMedicalStaffModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !type || !branchId) {
+    if (!fullName || !type || !branches || !phoneNumber || !emailAddress) {
       toast({
         title: "Error",
         description: "Please fill all required fields.",
@@ -76,7 +77,14 @@ export function AddMedicalStaffModal({
     }
 
     createMutation.mutate(
-      { branchId, name, type, status },
+      {
+        branches: [branches], // Wrap the single branch ID in an array
+        fullName,
+        phoneNumber,
+        emailAddress,
+        type,
+        status,
+      },
       {
         onSuccess: () => {
           toast({
@@ -86,9 +94,11 @@ export function AddMedicalStaffModal({
           onClose();
           // Reset form
           setName("");
+          setPhoneNumber("");
+          setEmailAddress("");
           setType("");
           setStatus("active");
-          setBranchId("");
+          setBranches("");
         },
         onError: (error) => {
           toast({
@@ -109,15 +119,50 @@ export function AddMedicalStaffModal({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
+            <label
+              htmlFor="fullName"
+              className="block text-sm font-medium mb-1"
+            >
               Name
             </label>
             <Input
-              id="name"
-              value={name}
+              id="fullName"
+              value={fullName}
               onChange={(e) => setName(e.target.value)}
               required
               className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="emailAddress"
+              className="block text-sm font-medium mb-1"
+            >
+              Email
+            </label>
+            <Input
+              id="emailAddress"
+              type="email"
+              value={emailAddress}
+              onChange={(e) => setEmailAddress(e.target.value)}
+              required
+              className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="phoneNumber"
+              className="block text-sm font-medium mb-1"
+            >
+              Phone
+            </label>
+            <Input
+              id="phoneNumber"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              required
+              className="w-full px-3 py-2 border rounded-md"
+              type="tel"
             />
           </div>
           <div>
@@ -155,7 +200,7 @@ export function AddMedicalStaffModal({
             <label htmlFor="branch" className="block text-sm font-medium mb-1">
               Branch
             </label>
-            <Select value={branchId} onValueChange={setBranchId}>
+            <Select value={branches} onValueChange={setBranches}>
               <SelectTrigger>
                 <SelectValue placeholder="Select Branch" />
               </SelectTrigger>

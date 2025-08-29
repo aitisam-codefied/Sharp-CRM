@@ -25,7 +25,7 @@ import {
   Mail,
   Trash2,
 } from "lucide-react";
-import { Branch, Room, ServiceUser } from "@/lib/types";
+import { Branch, Room, Guest, Location } from "@/lib/types";
 import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
@@ -33,10 +33,10 @@ import { UserDetailsModal } from "./UserDetailsModal";
 import { EditUserModal } from "./EditUserModal";
 
 interface UserTableProps {
-  users: ServiceUser[]; // Now contains nested structure
+  users: Guest[];
   searchTerm: string;
   selectedBranch: string;
-  selectedStatus: string; // We'll map to priorityLevel
+  selectedStatus: string;
   selectedNationality: string;
   branches: Branch[];
   allLocations: Location[];
@@ -63,13 +63,9 @@ export function UserTable({
   } | null>(null);
 
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [selectedViewUser, setSelectedViewUser] = useState<ServiceUser | null>(
-    null
-  );
+  const [selectedViewUser, setSelectedViewUser] = useState<Guest | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
-  const [selectedEditUser, setSelectedEditUser] = useState<ServiceUser | null>(
-    null
-  );
+  const [selectedEditUser, setSelectedEditUser] = useState<Guest | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -84,36 +80,34 @@ export function UserTable({
     }
   };
 
-  // console.log("userssssssss", users);
-
-  const flattenedUsers = users.map((u, index) => ({
-    id: u._id || `${index}`,
-    fullName: u.userId?.fullName || "",
-    email: u.userId?.emailAddress || "",
-    phone: u.userId?.phoneNumber || "",
-    branch: u.branch?.name || "", // from branch object
-    location: u.branch?.address || "", // if you want to use branch address as location
-    dateOfBirth: u.dateOfBirth
-      ? new Date(u.dateOfBirth).toLocaleDateString()
+  const flattenedUsers = users.map((guest, index) => ({
+    id: guest._id || `${index}`,
+    fullName: guest.userId?.fullName || "",
+    email: guest.userId?.emailAddress || "",
+    phone: guest.userId?.phoneNumber || "",
+    branch:
+      branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.name ||
+      "",
+    location:
+      branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.address ||
+      "",
+    dateOfBirth: guest.dateOfBirth
+      ? new Date(guest.dateOfBirth).toLocaleDateString()
       : "",
-    gender: u.gender || "",
-    nationality: u.nationality || "",
-    languages: u.language ? [u.language] : [],
-    arrivalDate: u.checkInDate
-      ? new Date(u.checkInDate).toLocaleDateString()
-      : "", // using checkInDate as arrival date
-    caseWorker: "", // not in ServiceUser, keep blank or remove entirely
-    status: u.priorityLevel || "Unknown",
-    room: u.assignedRoom?.roomNumber || "",
+    gender: guest.gender || "",
+    nationality: guest.nationality || "",
+    languages: guest.language ? [guest.language] : [],
+    arrivalDate: "", // Not present in new structure, keeping for compatibility
+    caseWorker: guest.caseWorker?.fullName || "",
+    status: guest.priorityLevel || "Unknown",
+    room: guest.familyRooms[0]?.roomId?.roomNumber || "",
   }));
-
-  // console.log("flattenedUsers", flattenedUsers);
 
   const filteredUsers = flattenedUsers.filter((user) => {
     const matchesSearch =
-      user?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user?.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user?.room?.toLowerCase().includes(searchTerm.toLowerCase());
+      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.room.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesBranch =
       selectedBranch === "all" || user.branch === selectedBranch;
@@ -126,8 +120,6 @@ export function UserTable({
       matchesSearch && matchesBranch && matchesStatus && matchesNationality
     );
   });
-
-  // console.log("filteredusersssss", filteredUsers);
 
   return (
     <>
@@ -191,7 +183,7 @@ export function UserTable({
                           {user.branch || "N/A"}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Room {user?.room || "N/A"}
+                          Room {user.room || "N/A"}
                         </div>
                         {user.arrivalDate && (
                           <div className="text-xs">
@@ -279,25 +271,22 @@ export function UserTable({
         </CardContent>
       </Card>
 
-      {/* User Details Modal */}
       <UserDetailsModal
         user={selectedViewUser}
         isOpen={viewModalOpen}
         onOpenChange={setViewModalOpen}
       />
 
-      {/* Edit User Modal */}
       <EditUserModal
         user={selectedEditUser}
         isOpen={editModalOpen}
         onOpenChange={setEditModalOpen}
         branches={branches}
-        // allLocations={allLocations}
+        allLocations={allLocations}
         allRooms={allRooms}
         nationalities={nationalities}
       />
 
-      {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}

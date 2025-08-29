@@ -57,8 +57,8 @@ export default function MedicalStaffPage() {
 
   const filteredStaff = medicalStaff.filter((staff) => {
     const matchesSearch =
-      staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff._id.toLowerCase().includes(searchTerm.toLowerCase());
+      staff.fullName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      staff._id?.toLowerCase().includes(searchTerm?.toLowerCase());
 
     const matchesType = selectedType === "all" || staff.type === selectedType;
     const matchesStatus =

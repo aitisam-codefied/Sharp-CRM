@@ -3,7 +3,9 @@ import api from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UpdateStaffData {
-  name?: string;
+  fullName?: string;
+  phoneNumber?: string;
+  emailAddress?: string;
   type?: string;
 }
 

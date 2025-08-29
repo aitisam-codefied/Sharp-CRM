@@ -6,8 +6,10 @@ import axios from "axios";
 interface MedicalStaffResponse {
   results: {
     _id: string;
-    branchId: string;
-    name: string;
+    branches: string[];
+    fullName: string;
+    phoneNumber: string;
+    emailAddress: string;
     type: string;
     status: string;
     createdAt: string;

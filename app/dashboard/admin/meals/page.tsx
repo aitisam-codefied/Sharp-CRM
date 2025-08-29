@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -10,9 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -20,31 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
-import {
-  Utensils,
-  Search,
-  QrCode,
-  CheckCircle,
-  Clock,
-  AlertCircle,
-  Download,
-  Filter,
-  Users,
-  TrendingUp,
-  Eye,
-  Edit,
-  Trash2,
-} from "lucide-react";
+import { Filter, Search, Utensils } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useGetMealMarkings } from "@/hooks/useGetMealMarking";
+import MealsStats from "@/components/meals/MealsStats";
+import MealsTable from "@/components/meals/MealsTable";
 
 export default function MealsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,70 +31,50 @@ export default function MealsPage() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [residents, setResidents] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const { toast } = useToast();
 
-  const residents = [
-    {
-      id: "SMS-USER-1001",
-      name: "John Smith",
-      room: "204A",
-      branch: "Manchester",
-      meals: {
-        breakfast: { marked: true, time: "08:30", staff: "Sarah J." },
-        lunch: { marked: false, time: null, staff: null },
-        dinner: { marked: false, time: null, staff: null },
-      },
-      dietary: ["Halal", "No Nuts"],
-      lastMeal: "Breakfast",
-    },
-    {
-      id: "SMS-USER-1002",
-      name: "Ahmed Hassan",
-      room: "205B",
-      branch: "Manchester",
-      meals: {
-        breakfast: { marked: true, time: "08:15", staff: "Ahmed H." },
-        lunch: { marked: true, time: "12:45", staff: "Emma W." },
-        dinner: { marked: false, time: null, staff: null },
-      },
-      dietary: ["Vegetarian"],
-      lastMeal: "Lunch",
-    },
-    {
-      id: "SMS-USER-1003",
-      name: "Maria Garcia",
-      room: "206A",
-      branch: "Birmingham",
-      meals: {
-        breakfast: { marked: false, time: null, staff: null },
-        lunch: { marked: false, time: null, staff: null },
-        dinner: { marked: false, time: null, staff: null },
-      },
-      dietary: [],
-      lastMeal: "None",
-    },
-    {
-      id: "SMS-USER-1004",
-      name: "David Wilson",
-      room: "207B",
-      branch: "Liverpool",
-      meals: {
-        breakfast: { marked: true, time: "09:00", staff: "Lisa C." },
-        lunch: { marked: false, time: null, staff: null },
-        dinner: { marked: false, time: null, staff: null },
-      },
-      dietary: ["Gluten Free"],
-      lastMeal: "Breakfast",
-    },
-  ];
+  const { data, isLoading } = useGetMealMarkings(selectedDate);
 
-  const branches = [
-    "Manchester",
-    "Birmingham",
-    "London Central",
-    "Liverpool",
-    "Leeds",
-  ];
+  useEffect(() => {
+    if (data) {
+      const mappedResidents = data.map((item) => ({
+        id: item.guestId.userId.portNumber,
+        name: item.guestId.userId.fullName.trim(),
+        room: item.guestId.familyId, // Using familyId as a proxy for room
+        branch: item.branchId.name,
+        meals: {
+          breakfast: {
+            marked: item.meals.breakfast.taken,
+            time: null,
+            staff: item.staffId?.fullName || null,
+          },
+          lunch: {
+            marked: item.meals.lunch.taken,
+            time: null,
+            staff: item.staffId?.fullName || null,
+          },
+          dinner: {
+            marked: item.meals.dinner.taken,
+            time: null,
+            staff: item.staffId?.fullName || null,
+          },
+        },
+        dietary: [], // Not available in API
+        lastMeal: "None",
+        markingId: item._id,
+      }));
+      setResidents(mappedResidents);
+      setCurrentPage(1); // Reset to first page when data changes
+
+      const uniqueBranches = [
+        ...new Set(mappedResidents.map((r) => r.branch)),
+      ].sort();
+      setBranches(uniqueBranches);
+    }
+  }, [data]);
 
   const filteredResidents = residents.filter((resident) => {
     const matchesSearch =
@@ -130,59 +88,47 @@ export default function MealsPage() {
     return matchesSearch && matchesBranch;
   });
 
-  const handleMealToggle = (
-    userId: string,
-    mealType: string,
-    checked: boolean
-  ) => {
+  const handleMealToggle = (userId, mealType, checked) => {
     const currentTime = new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const resident = residents.find((r) => r.id === userId);
 
+    setResidents((prev: any) =>
+      prev.map((r) => {
+        if (r.id === userId) {
+          const updatedMeals = {
+            ...r.meals,
+            [mealType]: {
+              marked: checked,
+              time: checked ? currentTime : null,
+              staff: checked ? "Current Staff" : null,
+            },
+          };
+          return { ...r, meals: updatedMeals };
+        }
+        return r;
+      })
+    );
+
+    const resident = residents.find((r) => r.id === userId);
     toast({
       title: checked ? "Meal Marked" : "Meal Unmarked",
       description: `${mealType} ${checked ? "marked" : "unmarked"} for ${
         resident?.name
       }`,
     });
+
+    // TODO: Integrate API update here
   };
 
-  const getMealStats = () => {
-    const totalResidents = filteredResidents.length;
-    const breakfastMarked = filteredResidents.filter(
-      (r) => r.meals.breakfast.marked
-    ).length;
-    const lunchMarked = filteredResidents.filter(
-      (r) => r.meals.lunch.marked
-    ).length;
-    const dinnerMarked = filteredResidents.filter(
-      (r) => r.meals.dinner.marked
-    ).length;
-
-    return {
-      breakfast: {
-        marked: breakfastMarked,
-        total: totalResidents,
-        percentage: (breakfastMarked / totalResidents) * 100,
-      },
-      lunch: {
-        marked: lunchMarked,
-        total: totalResidents,
-        percentage: (lunchMarked / totalResidents) * 100,
-      },
-      dinner: {
-        marked: dinnerMarked,
-        total: totalResidents,
-        percentage: (dinnerMarked / totalResidents) * 100,
-      },
-      totalMarked: breakfastMarked + lunchMarked + dinnerMarked,
-      totalPossible: totalResidents * 3,
-    };
-  };
-
-  const stats = getMealStats();
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading meal data...
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout
@@ -190,82 +136,8 @@ export default function MealsPage() {
       description="Track meal attendance and dietary requirements across all branches"
     >
       <div className="space-y-6">
-        {/* Meal Statistics */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Breakfast</CardTitle>
-              <Utensils className="h-4 w-4 text-orange-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.breakfast.marked}/{stats.breakfast.total}
-              </div>
-              <Progress value={stats.breakfast.percentage} className="mt-2" />
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <CheckCircle className="mr-1 h-3 w-3 text-green-500" />
-                {Math.round(stats.breakfast.percentage)}% completed
-              </div>
-            </CardContent>
-          </Card>
+        <MealsStats residents={filteredResidents} />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lunch</CardTitle>
-              <Utensils className="h-4 w-4 text-green-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.lunch.marked}/{stats.lunch.total}
-              </div>
-              <Progress value={stats.lunch.percentage} className="mt-2" />
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <Clock className="mr-1 h-3 w-3 text-orange-500" />
-                {Math.round(stats.lunch.percentage)}% completed
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Dinner</CardTitle>
-              <Utensils className="h-4 w-4 text-blue-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.dinner.marked}/{stats.dinner.total}
-              </div>
-              <Progress value={stats.dinner.percentage} className="mt-2" />
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <AlertCircle className="mr-1 h-3 w-3 text-gray-500" />
-                {Math.round(stats.dinner.percentage)}% completed
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Meals</CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {stats.totalMarked}/{stats.totalPossible}
-              </div>
-              <Progress
-                value={(stats.totalMarked / stats.totalPossible) * 100}
-                className="mt-2"
-              />
-              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                <Users className="mr-1 h-3 w-3" />
-                {Math.round((stats.totalMarked / stats.totalPossible) * 100)}%
-                overall
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Filters and Search */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -325,141 +197,12 @@ export default function MealsPage() {
               </Button>
             </div>
 
-            {/* Residents Table */}
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Resident</TableHead>
-                    <TableHead>Branch & Room</TableHead>
-                    <TableHead>Dietary Requirements</TableHead>
-                    <TableHead>Breakfast</TableHead>
-                    <TableHead>Lunch</TableHead>
-                    <TableHead>Dinner</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredResidents.map((resident) => (
-                    <TableRow key={resident.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{resident.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {resident.id}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm font-medium">
-                            {resident.branch}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Room {resident.room}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {resident.dietary.length > 0 ? (
-                            resident.dietary.map((diet) => (
-                              <Badge
-                                key={diet}
-                                variant="outline"
-                                className="text-xs"
-                              >
-                                {diet}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-sm text-muted-foreground">
-                              None
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`${resident.id}-breakfast`}
-                            checked={resident.meals.breakfast.marked}
-                            onCheckedChange={(checked) =>
-                              handleMealToggle(
-                                resident.id,
-                                "breakfast",
-                                checked as boolean
-                              )
-                            }
-                          />
-                          {resident.meals.breakfast.marked && (
-                            <div className="text-xs text-muted-foreground">
-                              <div>{resident.meals.breakfast.time}</div>
-                              <div>{resident.meals.breakfast.staff}</div>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`${resident.id}-lunch`}
-                            checked={resident.meals.lunch.marked}
-                            onCheckedChange={(checked) =>
-                              handleMealToggle(
-                                resident.id,
-                                "lunch",
-                                checked as boolean
-                              )
-                            }
-                          />
-                          {resident.meals.lunch.marked && (
-                            <div className="text-xs text-muted-foreground">
-                              <div>{resident.meals.lunch.time}</div>
-                              <div>{resident.meals.lunch.staff}</div>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`${resident.id}-dinner`}
-                            checked={resident.meals.dinner.marked}
-                            onCheckedChange={(checked) =>
-                              handleMealToggle(
-                                resident.id,
-                                "dinner",
-                                checked as boolean
-                              )
-                            }
-                          />
-                          {resident.meals.dinner.marked && (
-                            <div className="text-xs text-muted-foreground">
-                              <div>{resident.meals.dinner.time}</div>
-                              <div>{resident.meals.dinner.staff}</div>
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <MealsTable
+              residents={filteredResidents}
+              handleMealToggle={handleMealToggle}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+            />
 
             {filteredResidents.length === 0 && (
               <div className="text-center py-8">
