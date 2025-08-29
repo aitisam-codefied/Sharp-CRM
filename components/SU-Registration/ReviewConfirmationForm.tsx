@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ export default function ReviewConfirmationForm({
   setFormData,
   rooms,
 }: any) {
-  const numDependants = parseInt(formData.numDependants || 0);
+  const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
   const totalPeople = numDependants + 1;
   const { data: branchData } = useBranches();
   const sigRef = useRef<SignaturePad | null>(null);
@@ -26,68 +26,60 @@ export default function ReviewConfirmationForm({
     return branchData?.find((b: any) => b._id === branchId)?.name || branchId;
   };
 
-  const getPersonData = (index: number) => {
-    const isPrimary = index === 0;
-    const person: any = isPrimary
-      ? {
-          name: formData.firstName,
-          email: formData.email,
-          phone: formData.phone,
-          dob: formData.dob,
-          gender: formData.gender,
-          nationality: formData.nationality,
-          address: formData.address,
-          additionalNotes: formData.additionalNotes,
-          language: formData.language,
-          branch: getBranchName(formData.branch),
-        }
-      : formData.dependants?.[index - 1] || {};
-
-    person.emergency = formData.sameEmergencyContact
-      ? formData.emergencyContact
-      : formData.emergencyContacts?.[index] || {};
-
-    person.medical = formData.medicalInfo?.[index] || {};
-
-    person.dental = formData.sameDentalClinic
-      ? formData.dentalClinic
-      : formData.dentalClinics?.[index] || {};
-
-    person.support = formData.sameSupportServices
-      ? formData.supportServices
-      : formData.supportServicesList?.[index] || {};
-
-    return person;
-  };
-
   const handleConsentChange = (consentType: string, checked: boolean) => {
     setFormData((prev: any) => ({
       ...prev,
-      consents: {
-        ...(prev.consents || {}),
-        [consentType]: checked,
-      },
+      [consentType]: checked,
     }));
   };
 
   const saveSignature = () => {
     if (sigRef.current) {
       const dataUrl = sigRef.current.toDataURL("image/png");
-      setFormData((prev: any) => ({ ...prev, signatureUrl: dataUrl }));
+
+      // Convert base64 → Blob
+      const byteString = atob(dataUrl.split(",")[1]);
+      const mimeString = dataUrl.split(",")[0].split(":")[1].split(";")[0];
+
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+
+      // Convert Blob → File
+      const file = new File([blob], "signature.png", { type: "image/png" });
+
+      // Save to formData
+      setFormData((prev: any) => ({
+        ...prev,
+        signature: file.name // UploadedFile format
+      }));
     }
   };
 
   const clearSignature = () => {
-    sigRef.current?.clear();
-    setFormData((prev: any) => ({ ...prev, signatureUrl: undefined }));
+    if (sigRef.current) {
+      sigRef.current.clear(); // canvas se clear
+    }
+
+    setFormData((prev: any) => ({
+      ...prev,
+      signature: "", // state se bhi clear
+    }));
   };
+
+  const [pdf, setPdf] = useState<File | null>(null);
 
   const generatePDF = () => {
     if (formRef.current) {
       const element = formRef.current;
       const opt = {
         margin: 0.5,
-        filename: `Review_Confirmation_${formData.firstName || "User"}.pdf`,
+        filename: `Review_Confirmation_${
+          formData.guests[0]?.fullName || "User"
+        }.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
@@ -96,14 +88,46 @@ export default function ReviewConfirmationForm({
       html2pdf()
         .set(opt)
         .from(element)
-        .save()
-        .then(() => {
-          // Auto-check the occupancy letter checkbox after PDF is generated
-          handleConsentChange("occupancy", true);
+        .toPdf()
+        .get("pdf")
+        .then((pdfObj: any) => {
+          const blob = pdfObj.output("blob");
+          const file = new File(
+            [blob],
+            `Review_Confirmation_${formData.guests[0]?.fullName || "User"}.pdf`,
+            { type: "application/pdf" }
+          );
+
+          setPdf(file);
+
+          // ✅ direct File assign
+          setFormData((prev: any) => ({
+            ...prev,
+            occupancyAgreement: file.name,
+          }));
         })
         .catch((error: any) => {
           console.error("PDF generation failed:", error);
         });
+    }
+  };
+
+  // 🔹 Page load pe PDF generate karo
+  useEffect(() => {
+    generatePDF();
+  }, []);
+
+  // 🔹 Download trigger
+  const downloadPDF = () => {
+    if (pdf) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(pdf);
+      link.download = pdf.name;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      // Auto-check after download
+      handleConsentChange("occupancy", true);
     }
   };
 
@@ -114,7 +138,8 @@ export default function ReviewConfirmationForm({
     >
       <div className="flex justify-end">
         <Button
-          onClick={generatePDF}
+          onClick={downloadPDF} // ab direct state se download hoga
+          disabled={!pdf} // agar PDF abhi generate nahi hui
           className="bg-[#F87D7D] hover:bg-[#E66B6B] text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
         >
           Download PDF
@@ -127,9 +152,11 @@ export default function ReviewConfirmationForm({
           Assigned Rooms
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Object.entries(formData.roomAssignments || {}).map(
+          {Object.entries(formData.assignedRooms || {}).map(
             ([roomId, assigned]: any) => {
-              const room = rooms.find((r: any) => r.id === roomId);
+              const room = rooms.find(
+                (r: any) => String(r.id) === String(roomId)
+              );
               if (!room || assigned <= 0) return null;
               return (
                 <Card
@@ -146,7 +173,7 @@ export default function ReviewConfirmationForm({
                       <span className="font-medium">Assigned:</span> {assigned}{" "}
                       people
                     </p>
-                    a
+
                     <p className="text-gray-700">
                       <span className="font-medium">Location:</span>{" "}
                       {room.location}
@@ -169,7 +196,6 @@ export default function ReviewConfirmationForm({
           User Details
         </h3>
         {[...Array(totalPeople)].map((_, i) => {
-          const person = getPersonData(i);
           return (
             <Card
               key={i}
@@ -188,30 +214,38 @@ export default function ReviewConfirmationForm({
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div className="flex">
                       <dt className="font-medium text-gray-600 w-1/3">Name:</dt>
-                      <dd className="text-gray-800">{person.name || "N/A"}</dd>
+                      <dd className="text-gray-800">
+                        {formData?.guests[i]?.fullName || "N/A"}
+                      </dd>
                     </div>
                     <div className="flex">
                       <dt className="font-medium text-gray-600 w-1/3">
                         Email:
                       </dt>
-                      <dd className="text-gray-800">{person.email || "N/A"}</dd>
+                      <dd className="text-gray-800">
+                        {formData.guests[i]?.emailAddress || "N/A"}
+                      </dd>
                     </div>
                     <div className="flex">
                       <dt className="font-medium text-gray-600 w-1/3">
                         Phone:
                       </dt>
-                      <dd className="text-gray-800">{person.phone || "N/A"}</dd>
+                      <dd className="text-gray-800">
+                        {formData.guests[i]?.phoneNumber || "N/A"}
+                      </dd>
                     </div>
                     <div className="flex">
                       <dt className="font-medium text-gray-600 w-1/3">DOB:</dt>
-                      <dd className="text-gray-800">{person.dob || "N/A"}</dd>
+                      <dd className="text-gray-800">
+                        {formData.guests[i]?.dateOfBirth || "N/A"}
+                      </dd>
                     </div>
                     <div className="flex">
                       <dt className="font-medium text-gray-600 w-1/3">
                         Gender:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.gender || "N/A"}
+                        {formData.guests[i]?.gender || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -219,7 +253,7 @@ export default function ReviewConfirmationForm({
                         Nationality:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.nationality || "N/A"}
+                        {formData.guests[i]?.nationality || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -227,7 +261,7 @@ export default function ReviewConfirmationForm({
                         Address:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.address || "N/A"}
+                        {formData.guests[i]?.address || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -235,7 +269,7 @@ export default function ReviewConfirmationForm({
                         Notes:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.additionalNotes || "N/A"}
+                        {formData.guests[i]?.additionalNotes || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -243,7 +277,7 @@ export default function ReviewConfirmationForm({
                         Language:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.language || "N/A"}
+                        {formData.guests[i]?.language || "N/A"}
                       </dd>
                     </div>
                     {i === 0 && (
@@ -252,41 +286,81 @@ export default function ReviewConfirmationForm({
                           Branch:
                         </dt>
                         <dd className="text-gray-800">
-                          {person.branch || "N/A"}
+                          {formData?.branchId || "N/A"}
                         </dd>
                       </div>
                     )}
                   </dl>
                 </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
-                    Emergency Contact
-                  </h4>
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div className="flex">
-                      <dt className="font-medium text-gray-600 w-1/3">Name:</dt>
-                      <dd className="text-gray-800">
-                        {person.emergency?.name || "N/A"}
-                      </dd>
-                    </div>
-                    <div className="flex">
-                      <dt className="font-medium text-gray-600 w-1/3">
-                        Phone:
-                      </dt>
-                      <dd className="text-gray-800">
-                        {person.emergency?.phone || "N/A"}
-                      </dd>
-                    </div>
-                    <div className="flex">
-                      <dt className="font-medium text-gray-600 w-1/3">
-                        Relation:
-                      </dt>
-                      <dd className="text-gray-800">
-                        {person.emergency?.relation || "N/A"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
+                {formData.sameEmergencyContact ? (
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
+                      Emergency Contact
+                    </h4>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Name:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.emergencyContact?.fullName || "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Phone:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.emergencyContact?.phoneNumber || "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Relation:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.emergencyContact?.relationship || "N/A"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                ) : (
+                  <div>
+                    <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
+                      Emergency Contact
+                    </h4>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Name:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.guests[i].emergencyContact?.fullName ||
+                            "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Phone:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.guests[i].emergencyContact?.phoneNumber ||
+                            "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Relation:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {formData.guests[i].emergencyContact?.relationship ||
+                            "N/A"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
+
                 <div>
                   <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
                     Medical & Dietary
@@ -297,7 +371,7 @@ export default function ReviewConfirmationForm({
                         Medical Conditions:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.medical?.medicalConditions || "N/A"}
+                        {formData.guests[i]?.medicalCondition || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -305,7 +379,7 @@ export default function ReviewConfirmationForm({
                         Allergies:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.medical?.allergies || "N/A"}
+                        {formData.guests[i]?.allergies || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -313,7 +387,7 @@ export default function ReviewConfirmationForm({
                         Medications:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.medical?.currentMedications || "N/A"}
+                        {formData.guests[i]?.currentMedications || "N/A"}
                       </dd>
                     </div>
                     <div className="flex">
@@ -321,7 +395,7 @@ export default function ReviewConfirmationForm({
                         Dietary Requirements:
                       </dt>
                       <dd className="text-gray-800">
-                        {person.medical?.dietaryRequirements?.join(", ") ||
+                        {formData.guests[i]?.dietaryRequirements?.join(", ") ||
                           "N/A"}
                       </dd>
                     </div>
@@ -349,9 +423,9 @@ export default function ReviewConfirmationForm({
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="consent-accuracy"
-                  checked={formData.consents?.accuracy || false}
+                  checked={formData.consentAccuracy || false}
                   onCheckedChange={(checked) =>
-                    handleConsentChange("accuracy", checked as boolean)
+                    handleConsentChange("consentAccuracy", checked as boolean)
                   }
                   className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
                 />
@@ -375,9 +449,12 @@ export default function ReviewConfirmationForm({
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="consent-processing"
-                  checked={formData.consents?.processing || false}
+                  checked={formData.consentDataProcessing || false}
                   onCheckedChange={(checked) =>
-                    handleConsentChange("processing", checked as boolean)
+                    handleConsentChange(
+                      "consentDataProcessing",
+                      checked as boolean
+                    )
                   }
                   className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
                 />
@@ -391,7 +468,7 @@ export default function ReviewConfirmationForm({
               <div className="flex items-center space-x-3">
                 <Checkbox
                   id="consent-occupancy"
-                  checked={formData.consents?.occupancy || false}
+                  checked={formData?.occupancy || false}
                   onCheckedChange={(checked) =>
                     handleConsentChange("occupancy", checked as boolean)
                   }
@@ -433,18 +510,6 @@ export default function ReviewConfirmationForm({
                   }}
                 />
               </div>
-              {formData.signatureUrl && (
-                <div className="flex-1">
-                  <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
-                    Saved Signature Preview
-                  </h4>
-                  <img
-                    src={formData.signatureUrl}
-                    alt="Admin Signature"
-                    className="border-2 border-[#F87D7D] rounded-lg max-w-[300px] w-full"
-                  />
-                </div>
-              )}
             </div>
             <div className="flex gap-4 mt-4">
               <Button
@@ -456,9 +521,9 @@ export default function ReviewConfirmationForm({
               <Button
                 onClick={clearSignature}
                 variant="outline"
-                className="border-[#F87D7D] text-[#F87D7D] hover:bg-[#F87D7D] hover:text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+                className="text-red-500 border-red-500 hover:bg-red-50"
               >
-                Clear
+                Clear Signature
               </Button>
             </div>
           </CardContent>

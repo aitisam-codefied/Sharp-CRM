@@ -19,6 +19,7 @@ import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactF
 import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
 import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
+import { useCreateGuest } from "@/hooks/useCreateGuest";
 
 // Guest Emergency Contact
 interface EmergencyContact {
@@ -66,14 +67,18 @@ export interface CreateGuestForm {
   assignedRooms: string[]; // objectId[]
   medic?: string; // objectId
   emergencyContact?: EmergencyContact;
-  occupancyAgreement: UploadedFile;
-  signature: UploadedFile;
+  occupancyAgreement: any;
+  signature: any;
   areThereMultipleGuests?: boolean;
   consentAccuracy: boolean;
   consentDataProcessing: boolean;
   guests: Guest[];
   numKids?: number;
+  hasKids?: boolean;
   sameEmergencyContact?: boolean;
+  occupancy?: boolean;
+  sameMedic?: boolean;
+  roomRequirement?: number;
 }
 
 export default function NewUserPage() {
@@ -88,12 +93,13 @@ export default function NewUserPage() {
       relationship: "",
       phoneNumber: "",
     },
-    occupancyAgreement: { file: new File([], "") },
-    signature: { file: new File([], "") },
+    occupancyAgreement: null as File | null,
+    signature: null as File | null,
     areThereMultipleGuests: false,
     consentAccuracy: false,
     consentDataProcessing: false,
     sameEmergencyContact: false,
+    occupancy: false,
     guests: [
       {
         fullName: "",
@@ -241,9 +247,9 @@ export default function NewUserPage() {
 
   const isStep6Valid = () => {
     return (
-      formData.consents?.accuracy &&
-      formData.consents?.processing &&
-      !!formData.signatureUrl
+      formData.consentAccuracy &&
+      formData.consentDataProcessing &&
+      !!formData.signature
     );
   };
 
@@ -283,6 +289,16 @@ export default function NewUserPage() {
 
         if (response.data.success) {
           setRooms(response.data.data);
+
+          // Extract locationIds from response
+          const locationId = response.data.data.map(
+            (room: any) => room.locationId
+          );
+
+          setFormData((prev: any) => ({
+            ...prev,
+            locations: locationId, // array of string
+          }));
           setCurrentStep(currentStep + 1);
         } else {
           toast({
@@ -310,13 +326,197 @@ export default function NewUserPage() {
     }
   };
 
+  // Move this hook to the top-level of your component (not inside handleSubmit)
+  const createGuestMutation = useCreateGuest();
+
   const handleSubmit = () => {
-    console.log(JSON.stringify(formData, null, 2));
-    toast({
-      title: "Registration Complete",
-      description:
-        "New service user has been successfully registered and assigned accommodation.",
+    // Deep clone and clean data
+    let cleanedData = structuredClone(formData);
+
+    // 1. assignedRooms ko object → array of keys
+    if (
+      cleanedData.assignedRooms &&
+      typeof cleanedData.assignedRooms === "object"
+    ) {
+      cleanedData.assignedRooms = Object.keys(cleanedData.assignedRooms);
+    }
+
+    // 2. Remove extra fields
+    delete cleanedData?.hasKids;
+    delete cleanedData?.numKids;
+    delete cleanedData?.occupancy;
+    delete cleanedData?.sameEmergencyContact;
+    delete cleanedData?.sameMedic;
+    delete cleanedData?.roomRequirement;
+
+    // 3. Remove empty objects (recursive)
+    const removeEmptyObjects = (obj: any): any => {
+      if (Array.isArray(obj)) {
+        return obj
+          .map(removeEmptyObjects)
+          .filter(
+            (item) =>
+              !(
+                typeof item === "object" &&
+                !Array.isArray(item) &&
+                Object.keys(item).length === 0
+              )
+          );
+      } else if (typeof obj === "object" && obj !== null) {
+        const newObj: any = {};
+        Object.entries(obj).forEach(([key, value]) => {
+          if (typeof value === "object") {
+            const cleanedValue = removeEmptyObjects(value);
+            if (
+              !(
+                typeof cleanedValue === "object" &&
+                Object.keys(cleanedValue).length === 0
+              )
+            ) {
+              newObj[key] = cleanedValue;
+            }
+          } else if (value !== "" && value !== null && value !== undefined) {
+            newObj[key] = value;
+          }
+        });
+        return newObj;
+      }
+      return obj;
+    };
+
+    cleanedData = removeEmptyObjects(cleanedData);
+
+    console.log("📤 Final cleaned data", cleanedData);
+
+    // Prepare FormData with flattened fields
+    const apiFormData = new FormData();
+
+    // Append files
+    if (cleanedData.occupancyAgreement) {
+      apiFormData.append("occupancyAgreement", cleanedData.occupancyAgreement);
+    }
+    if (cleanedData.signature) {
+      apiFormData.append("signature", cleanedData.signature);
+    }
+
+    // Append simple fields
+    apiFormData.append("branchId", cleanedData.branchId || "");
+    apiFormData.append("medic", cleanedData.medic || "");
+    apiFormData.append(
+      "consentAccuracy",
+      String(cleanedData.consentAccuracy || false)
+    );
+    apiFormData.append(
+      "consentDataProcessing",
+      String(cleanedData.consentDataProcessing || false)
+    );
+    apiFormData.append(
+      "areThereMultipleGuests",
+      String(cleanedData.areThereMultipleGuests || false)
+    );
+
+    // Append assignedRooms as an array
+    (cleanedData.assignedRooms || []).forEach(
+      (roomId: string, index: number) => {
+        apiFormData.append(`assignedRooms[${index}]`, roomId);
+      }
+    );
+
+    // ✅ Sirf assignedRooms ke locationIds lo
+    const selectedLocationIds = (rooms || [])
+      .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
+      .map((room: any) => room.locationId);
+
+    selectedLocationIds.forEach((locId: string, index: number) => {
+      apiFormData.append(`locations[${index}]`, locId);
     });
+
+    // Append emergencyContact fields
+    if (cleanedData.emergencyContact) {
+      apiFormData.append(
+        "emergencyContact[fullName]",
+        cleanedData.emergencyContact.fullName || ""
+      );
+      apiFormData.append(
+        "emergencyContact[phoneNumber]",
+        cleanedData.emergencyContact.phoneNumber || ""
+      );
+      apiFormData.append(
+        "emergencyContact[relationship]",
+        cleanedData.emergencyContact.relationship || ""
+      );
+    }
+
+    // Append guests array with nested fields
+    (cleanedData.guests || []).forEach((guest: Guest, index: number) => {
+      apiFormData.append(`guests[${index}][fullName]`, guest.fullName || "");
+      apiFormData.append(
+        `guests[${index}][emailAddress]`,
+        guest.emailAddress || ""
+      );
+      apiFormData.append(
+        `guests[${index}][phoneNumber]`,
+        guest.phoneNumber || ""
+      );
+      apiFormData.append(
+        `guests[${index}][dateOfBirth]`,
+        guest.dateOfBirth || ""
+      );
+      apiFormData.append(`guests[${index}][gender]`, guest.gender || "");
+      apiFormData.append(
+        `guests[${index}][nationality]`,
+        guest.nationality || ""
+      );
+      apiFormData.append(`guests[${index}][language]`, guest.language || "");
+      apiFormData.append(
+        `guests[${index}][numberOfDependents]`,
+        String(guest.numberOfDependents || 0)
+      );
+      apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
+      apiFormData.append(`guests[${index}][address]`, guest.address || "");
+      apiFormData.append(
+        `guests[${index}][medicalCondition]`,
+        guest.medicalCondition || ""
+      );
+      apiFormData.append(`guests[${index}][allergies]`, guest.allergies || "");
+      apiFormData.append(
+        `guests[${index}][currentMedications]`,
+        guest.currentMedications || ""
+      );
+      apiFormData.append(
+        `guests[${index}][additionalNotes]`,
+        guest.additionalNotes || ""
+      );
+
+      // Append dietaryRequirements as an array
+      (guest.dietaryRequirements || []).forEach(
+        (req: string, reqIndex: number) => {
+          apiFormData.append(
+            `guests[${index}][dietaryRequirements][${reqIndex}]`,
+            req
+          );
+        }
+      );
+
+      // Append emergencyContact for each guest
+      if (guest.emergencyContact) {
+        apiFormData.append(
+          `guests[${index}][emergencyContact][fullName]`,
+          guest.emergencyContact.fullName || ""
+        );
+        apiFormData.append(
+          `guests[${index}][emergencyContact][phoneNumber]`,
+          guest.emergencyContact.phoneNumber || ""
+        );
+        apiFormData.append(
+          `guests[${index}][emergencyContact][relationship]`,
+          guest.emergencyContact.relationship || ""
+        );
+      }
+    });
+
+    // Call API via mutation
+    createGuestMutation.mutate(apiFormData);
   };
 
   const renderStepContent = () => {
