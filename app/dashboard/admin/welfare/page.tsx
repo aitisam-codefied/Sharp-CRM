@@ -39,124 +39,54 @@ import {
   Plus,
   Edit,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useGetWelfareChecks } from "@/hooks/useGetWelfareChecks";
+import { CustomPagination } from "@/components/CustomPagination";
+import { WelfareCheck } from "@/lib/types";
 
 export default function WelfarePage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const { toast } = useToast();
 
-  const welfareChecks = [
-    {
-      id: "WEL001",
-      residentId: "SMS-USER-1001",
-      residentName: "John Smith",
-      room: "204A",
-      branch: "Manchester",
-      checkDate: "2024-01-15",
-      checkTime: "09:30",
-      staffMember: "Sarah Johnson",
-      physicalHealth: "Good",
-      mentalState: "Stable",
-      socialInteraction: "Engaging",
-      covidSymptoms: false,
-      isolationRequired: false,
-      criticalFlag: false,
-      status: "completed",
-      followUpRequired: false,
-      notes: "Resident is settling in well, no concerns noted.",
-    },
-    {
-      id: "WEL002",
-      residentId: "SMS-USER-1002",
-      residentName: "Ahmed Hassan",
-      room: "205B",
-      branch: "Manchester",
-      checkDate: "2024-01-15",
-      checkTime: "10:15",
-      staffMember: "Ahmed Hassan",
-      physicalHealth: "Fair",
-      mentalState: "Anxious",
-      socialInteraction: "Limited",
-      covidSymptoms: false,
-      isolationRequired: false,
-      criticalFlag: true,
-      status: "critical",
-      followUpRequired: true,
-      notes:
-        "Resident showing signs of anxiety, requires mental health support.",
-    },
-    {
-      id: "WEL003",
-      residentId: "SMS-USER-1003",
-      residentName: "Maria Garcia",
-      room: "206A",
-      branch: "Birmingham",
-      checkDate: "2024-01-15",
-      checkTime: "11:00",
-      staffMember: "Emma Wilson",
-      physicalHealth: "Good",
-      mentalState: "Positive",
-      socialInteraction: "Engaging",
-      covidSymptoms: false,
-      isolationRequired: false,
-      criticalFlag: false,
-      status: "completed",
-      followUpRequired: false,
-      notes: "Resident is doing well, actively participating in activities.",
-    },
-    {
-      id: "WEL004",
-      residentId: "SMS-USER-1004",
-      residentName: "David Wilson",
-      room: "207B",
-      branch: "Liverpool",
-      checkDate: "2024-01-15",
-      checkTime: "14:30",
-      staffMember: "Lisa Chen",
-      physicalHealth: "Poor",
-      mentalState: "Distressed",
-      socialInteraction: "Withdrawn",
-      covidSymptoms: true,
-      isolationRequired: true,
-      criticalFlag: true,
-      status: "critical",
-      followUpRequired: true,
-      notes:
-        "Resident showing COVID symptoms, isolated immediately. Requires medical attention.",
-    },
-  ];
+  // Reset pagination when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
 
-  const branches = [
-    "Manchester",
-    "Birmingham",
-    "London Central",
-    "Liverpool",
-    "Leeds",
-  ];
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
+    setCurrentPage(1);
+  };
 
-  const filteredChecks = welfareChecks.filter((check) => {
-    const matchesSearch =
-      check.residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      check.residentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      check.room.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleLimitChange = (value: string) => {
+    setLimit(Number(value));
+    setCurrentPage(1);
+  };
 
-    const matchesBranch =
-      selectedBranch === "all" || check.branch === selectedBranch;
-    const matchesStatus =
-      selectedStatus === "all" || check.status === selectedStatus;
-
-    return matchesSearch && matchesBranch && matchesStatus;
+  // Fetch welfare checks data with server-side filtering
+  const { data: welfareData, isLoading, error } = useGetWelfareChecks({
+    page: currentPage,
+    limit,
+    search: searchTerm,
+    status: selectedStatus,
   });
 
+
+  // Use server-side data directly (pagination is handled by the API)
+  const welfareChecks = welfareData?.data?.results || [];
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
+    switch (status.toLowerCase()) {
+      case "ok":
         return "bg-green-100 text-green-800";
       case "critical":
         return "bg-red-100 text-red-800";
@@ -170,13 +100,13 @@ export default function WelfarePage() {
   };
 
   const getHealthColor = (health: string) => {
-    switch (health) {
-      case "Excellent":
-      case "Good":
+    switch (health.toLowerCase()) {
+      case "ok":
         return "text-green-600";
-      case "Fair":
+      case "fair":
         return "text-yellow-600";
-      case "Poor":
+      case "poor":
+      case "critical":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -184,13 +114,17 @@ export default function WelfarePage() {
   };
 
   const getMentalStateColor = (state: string) => {
-    switch (state) {
-      case "Positive":
-      case "Stable":
+    switch (state.toLowerCase()) {
+      case "ok":
+      case "positive":
+      case "stable":
         return "text-green-600";
-      case "Anxious":
+      case "anxious":
+      case "fair":
         return "text-yellow-600";
-      case "Distressed":
+      case "distressed":
+      case "poor":
+      case "critical":
         return "text-red-600";
       default:
         return "text-gray-600";
@@ -212,24 +146,62 @@ export default function WelfarePage() {
   };
 
   const getStats = () => {
-    const totalChecks = filteredChecks.length;
-    const criticalChecks = filteredChecks.filter((c) => c.criticalFlag).length;
-    const completedToday = filteredChecks.filter(
-      (c) => c.checkDate === new Date().toISOString().split("T")[0]
-    ).length;
-    const followUpRequired = filteredChecks.filter(
-      (c) => c.followUpRequired
-    ).length;
+    const totalChecks = welfareData?.data?.totalResults || 0;
+    const criticalChecks = welfareChecks.filter((c) => c.status === "CRITICAL").length;
+    const completedChecks = welfareChecks.filter((c) => c.isCompleted).length;
+    const followUpRequired = welfareChecks.filter((c) => c.followUpRequired).length;
 
-    return { totalChecks, criticalChecks, completedToday, followUpRequired };
+    return { totalChecks, criticalChecks, completedChecks, followUpRequired };
   };
 
   const stats = getStats();
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <DashboardLayout
+        title="Welfare Check Management"
+        description="Monitor and manage resident welfare checks across all branches"
+      >
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Loading welfare checks...</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <DashboardLayout
+        title="Welfare Check Management"
+        description="Monitor and manage resident welfare checks across all branches"
+      >
+        <div className="flex items-center justify-center h-64">
+          <AlertTriangle className="h-8 w-8 text-red-500" />
+          <span className="ml-2 text-red-500">Error loading welfare checks</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout
       title="Welfare Check Management"
       description="Monitor and manage resident welfare checks across all branches"
+      actions={
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+          {/* <Button size="sm" onClick={handleNewCheck}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Check
+          </Button> */}
+        </div>
+      }
     >
       <div className="space-y-6">
         {/* Stats Cards */}
@@ -265,9 +237,9 @@ export default function WelfarePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">
-                    Completed Today
+                    Completed Checks
                   </p>
-                  <p className="text-2xl font-bold">{stats.completedToday}</p>
+                  <p className="text-2xl font-bold">{stats.completedChecks}</p>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
@@ -304,9 +276,9 @@ export default function WelfarePage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by name, ID, or room..."
+                    placeholder="Search by observations or assessment..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => handleSearchChange(e.target.value)}
                     className="pl-10"
                   />
                 </div>
@@ -317,109 +289,112 @@ export default function WelfarePage() {
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full md:w-48"
               />
-              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Branches</SelectItem>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <Select value={selectedStatus} onValueChange={handleStatusChange}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="ok">OK</SelectItem>
                   <SelectItem value="critical">Critical</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm">
+              {/* <Button variant="outline" size="sm">
                 <Filter className="h-4 w-4 mr-2" />
                 More Filters
-              </Button>
+              </Button> */}
             </div>
 
             <div className="rounded-md border">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Resident</TableHead>
-                    <TableHead>Branch & Room</TableHead>
-                    <TableHead>Check Details</TableHead>
-                    <TableHead>Health Status</TableHead>
-                    <TableHead>Mental State</TableHead>
-
+                    <TableHead>Welfare Check ID</TableHead>
+                    <TableHead>Week Period</TableHead>
+                    <TableHead>Physical Health</TableHead>
+                    <TableHead>Mental Health</TableHead>
+                    <TableHead>Emotional Wellbeing</TableHead>
+                    <TableHead>Social Support</TableHead>
+                    <TableHead>Overall Assessment</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="">Actions</TableHead>
+                    {/* <TableHead>Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredChecks.map((check) => (
-                    <TableRow key={check.id}>
+                  {welfareChecks.map((check: WelfareCheck) => (
+                    <TableRow key={check._id}>
                       <TableCell>
                         <div>
                           <div className="font-medium">
-                            {check.residentName}
+                            {check._id.slice(-8)}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {check.residentId}
+                            {check.guestId?.userId?.fullName|| "No Guest"}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="text-sm font-medium">
-                            {check.branch}
+                          <div className="text-sm">
+                            {new Date(check.weekStartDate).toLocaleDateString()}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Room {check.room}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <div className="text-sm">{check.checkDate}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {check.checkTime}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            by {check.staffMember}
+                            to {new Date(check.weekEndDate).toLocaleDateString()}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                         <span
                           className={`font-medium ${getHealthColor(
-                            check.physicalHealth
+                            check.physicalHealth.status
                           )}`}
                         >
-                          {check.physicalHealth}
+                          {check.physicalHealth.status}
                         </span>
                       </TableCell>
                       <TableCell>
                         <span
                           className={`font-medium ${getMentalStateColor(
-                            check.mentalState
+                            check.mentalHealth.status
                           )}`}
                         >
-                          {check.mentalState}
+                          {check.mentalHealth.status}
                         </span>
                       </TableCell>
-
+                      <TableCell>
+                        <span
+                          className={`font-medium ${getHealthColor(
+                            check.emotionalWellbeing.status
+                          )}`}
+                        >
+                          {check.emotionalWellbeing.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`font-medium ${getHealthColor(
+                            check.socialSupport.status
+                          )}`}
+                        >
+                          {check.socialSupport.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`font-medium ${getHealthColor(
+                            check.overallAssessment
+                          )}`}
+                        >
+                          {check.overallAssessment}
+                        </span>
+                      </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(check.status)}>
                           {check.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex items-center gap-2">
                           <Button variant="ghost" size="sm">
                             <Eye className="h-4 w-4" />
@@ -431,29 +406,43 @@ export default function WelfarePage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
             </div>
 
-            {filteredChecks.length === 0 && (
+            {welfareChecks.length === 0 && (
               <div className="text-center py-8">
                 <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-lg font-medium mb-2">
                   No welfare checks found
                 </h3>
                 <p className="text-muted-foreground">
-                  Try adjusting your search criteria.
+                  {isLoading ? "Loading..." : "No welfare checks available for this page."}
                 </p>
               </div>
             )}
+
+            {/* Server-Side Pagination */}
+            {/* {welfareData?.data?.totalPages && welfareData.data.totalPages > 1 && (
+      
+            )} */}
+              <div className="flex justify-center mt-6 pt-4 border-t">
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={welfareData?.data?.totalPages || 1}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
           </CardContent>
         </Card>
 
         {/* Critical Alerts */}
-        {/* {stats.criticalChecks > 0 && (
+     
+
+   {/* {stats.criticalChecks > 0 && (
           <Card className="border-red-200 bg-red-50">
             <CardHeader>
               <CardTitle className="text-red-800 flex items-center gap-2">
@@ -461,31 +450,31 @@ export default function WelfarePage() {
                 Critical Welfare Alerts
               </CardTitle>
               <CardDescription className="text-red-600">
-                {stats.criticalChecks} residents require immediate attention
+                {stats.criticalChecks} welfare checks require immediate attention
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {filteredChecks
-                  .filter((check) => check.criticalFlag)
+                {welfareChecks
+                  .filter((check: WelfareCheck) => check.status === "CRITICAL")
                   .map((check) => (
                     <div
-                      key={check.id}
+                      key={check._id}
                       className="flex items-center justify-between p-3 bg-white rounded-lg"
                     >
                       <div>
                         <p className="font-medium text-red-900">
-                          {check.residentName} - Room {check.room}
+                          Welfare Check {check._id.slice(-8)}
                         </p>
-                        <p className="text-sm text-red-600">{check.notes}</p>
+                        <p className="text-sm text-red-600">{check.observations}</p>
                         <p className="text-xs text-red-500">
-                          {check.branch} • Checked by {check.staffMember}
+                          Created: {new Date(check.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => handleViewDetails(check.id)}
+                        onClick={() => handleViewDetails(check._id)}
                       >
                         Review
                       </Button>
@@ -494,7 +483,8 @@ export default function WelfarePage() {
               </div>
             </CardContent>
           </Card>
-        )} */}
+        )}
+          */}
       </div>
     </DashboardLayout>
   );

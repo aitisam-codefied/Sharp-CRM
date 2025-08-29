@@ -362,3 +362,53 @@ export interface Location {
   _id: string;
   name: string;
 }
+
+export interface GuestId {
+  _id: string;
+  familyId: string;
+  isPrimaryGuest: boolean;
+  userId: {
+    fullName: string;
+    portNumber: string;
+    _id: string;
+  };
+}
+// Welfare Check Types
+export interface WelfareCheck {
+  _id: string;
+  guestId: GuestId | null;
+  weekStartDate: string;
+  weekEndDate: string;
+  status: string;
+  physicalHealth: {
+    status: string;
+  };
+  mentalHealth: {
+    status: string;
+  };
+  emotionalWellbeing: {
+    status: string;
+  };
+  socialSupport: {
+    status: string;
+  };
+  overallAssessment: string;
+  observations: string;
+  recommendations: string;
+  followUpRequired: boolean;
+  isCompleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WelfareCheckResponse {
+  success: boolean;
+  message: string;
+  data: {
+    results: WelfareCheck[];
+    totalResults: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
