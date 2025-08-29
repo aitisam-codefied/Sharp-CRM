@@ -28,6 +28,7 @@ import {
   LogOutIcon,
   Building,
   User,
+  ShoppingBasket,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,7 @@ export function AppNavbar() {
     )
       return "operations";
     if (
-      pathname.includes("/incidents") 
+      pathname.includes("/incidents")
       // pathname.includes("/observations") ||
       // pathname.includes("/safeguarding")
     )
@@ -85,7 +86,8 @@ export function AppNavbar() {
       pathname.includes("/service-users") ||
       // pathname.includes("/rooms") ||
       pathname.includes("/new-user") ||
-      pathname.includes("/in-transit")
+      pathname.includes("/in-transit") ||
+      pathname.includes("/su-basket")
     )
       return "users";
     if (pathname.includes("/reports")) return "reports";
@@ -185,12 +187,12 @@ export function AppNavbar() {
         icon: Users,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-      {
-        title: "Staff Scheduler",
-        href: "/dashboard/admin/scheduler",
-        icon: Calendar,
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-      },
+      // {
+      //   title: "Staff Scheduler",
+      //   href: "/dashboard/admin/scheduler",
+      //   icon: Calendar,
+      //   color: "bg-blue-100 text-blue-700 border-blue-200",
+      // },
       {
         title: "QR Clock In/Out",
         href: "/dashboard/admin/clock-system",
@@ -242,6 +244,12 @@ export function AppNavbar() {
         href: "/dashboard/admin/in-transit",
         icon: Truck,
         color: "bg-orange-100 text-orange-700 border-orange-200",
+      },
+      {
+        title: "Service User Baskets",
+        href: "/dashboard/admin/su-basket",
+        icon: ShoppingBasket,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
       },
     ],
   };

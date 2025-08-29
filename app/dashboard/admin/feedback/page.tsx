@@ -1,3 +1,4 @@
+// Updated FeedbackPage component
 "use client";
 
 import { useState } from "react";
@@ -19,14 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import {
   MessageSquare,
@@ -42,6 +35,9 @@ import {
   Trash2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useFoodFeedbacks } from "@/hooks/useGetFoodFeedback";
+import { FeedbackTable } from "@/components/feedback/FeedbackTable";
+import { DisplayFeedback } from "@/hooks/useGetFoodFeedback";
 
 export default function FeedbackPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -53,101 +49,42 @@ export default function FeedbackPage() {
   );
   const { toast } = useToast();
 
-  const feedbackData = [
-    {
-      id: "FB001",
-      residentId: "SMS-USER-1001",
-      residentName: "John Smith",
-      room: "204A",
-      branch: "Manchester",
-      mealType: "Breakfast",
-      date: "2024-01-15",
-      time: "09:00",
-      ratings: {
-        taste: 4,
-        freshness: 5,
-        portion: 4,
-        temperature: 4,
-        overall: 4.2,
-      },
-      comments: "Good breakfast, enjoyed the variety of options available.",
-      staffMember: "Sarah Johnson",
-      dietary: ["Halal"],
-    },
-    {
-      id: "FB002",
-      residentId: "SMS-USER-1002",
-      residentName: "Ahmed Hassan",
-      room: "205B",
-      branch: "Manchester",
-      mealType: "Lunch",
-      date: "2024-01-15",
-      time: "13:00",
-      ratings: {
-        taste: 3,
-        freshness: 3,
-        portion: 4,
-        temperature: 2,
-        overall: 3.0,
-      },
-      comments:
-        "Food was cold when served, taste was okay but could be better.",
-      staffMember: "Ahmed Hassan",
-      dietary: ["Vegetarian"],
-    },
-    {
-      id: "FB003",
-      residentId: "SMS-USER-1003",
-      residentName: "Maria Garcia",
-      room: "206A",
-      branch: "Birmingham",
-      mealType: "Dinner",
-      date: "2024-01-15",
-      time: "19:30",
-      ratings: {
-        taste: 5,
-        freshness: 5,
-        portion: 5,
-        temperature: 5,
-        overall: 5.0,
-      },
-      comments:
-        "Excellent dinner! The curry was perfectly spiced and very fresh.",
-      staffMember: "Emma Wilson",
-      dietary: [],
-    },
-    {
-      id: "FB004",
-      residentId: "SMS-USER-1004",
-      residentName: "David Wilson",
-      room: "207B",
-      branch: "Liverpool",
-      mealType: "Breakfast",
-      date: "2024-01-15",
-      time: "08:30",
-      ratings: {
-        taste: 2,
-        freshness: 3,
-        portion: 3,
-        temperature: 3,
-        overall: 2.8,
-      },
-      comments: "Breakfast was not very tasty, needs improvement in seasoning.",
-      staffMember: "Lisa Chen",
-      dietary: ["Gluten Free"],
-    },
-  ];
+  const { data, isLoading, error } = useFoodFeedbacks();
 
-  const branches = [
-    "Manchester",
-    "Birmingham",
-    "London Central",
-    "Liverpool",
-    "Leeds",
-  ];
-  const mealTypes = ["Breakfast", "Lunch", "Dinner"];
+  if (isLoading) {
+    return <div>Loading feedback data...</div>;
+  }
 
-  const filteredFeedback = feedbackData.filter((feedback) => {
+  if (error) {
+    return <div>Error loading feedback: {error.message}</div>;
+  }
+
+  const transformed: DisplayFeedback[] =
+    data?.map((fb: any) => ({
+      id: fb._id,
+      residentId: fb.guestId.userId.portNumber,
+      residentName: fb.guestId.userId?.fullName,
+      room: "N/A", // No room data in API
+      branch: fb.branchId?.name,
+      mealType: "Weekly", // API is weekly feedback, not per meal
+      date: new Date(fb.weekStartDate).toISOString().split("T")[0],
+      time: "", // No time data
+      ratings: {
+        taste: 0, // No breakdown in API
+        freshness: 0,
+        portion: 0,
+        temperature: 0,
+        overall: fb.overallRating,
+      },
+      comments: fb.comments,
+      staffMember: fb.staffId?.fullName,
+      dietary: [], // No dietary data
+    })) || [];
+
+  const branches = Array.from(new Set(transformed.map((f) => f.branch)));
+  const mealTypes = ["Weekly"]; // Adjusted to match API data
+
+  const filteredFeedback = transformed.filter((feedback) => {
     const matchesSearch =
       feedback.residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       feedback.residentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -167,8 +104,15 @@ export default function FeedbackPage() {
         feedback.ratings.overall >= 2.5 &&
         feedback.ratings.overall < 3.5) ||
       (selectedRating === "poor" && feedback.ratings.overall < 2.5);
+    const matchesDate = selectedDate === "" || feedback.date === selectedDate;
 
-    return matchesSearch && matchesBranch && matchesMeal && matchesRating;
+    return (
+      matchesSearch &&
+      matchesBranch &&
+      matchesMeal &&
+      matchesRating &&
+      matchesDate
+    );
   });
 
   const getRatingColor = (rating: number) => {
@@ -193,6 +137,8 @@ export default function FeedbackPage() {
         return "bg-green-100 text-green-800";
       case "Dinner":
         return "bg-blue-100 text-blue-800";
+      case "Weekly":
+        return "bg-purple-100 text-purple-800"; // Added for weekly feedback
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -273,12 +219,12 @@ export default function FeedbackPage() {
                   />
                 </div>
               </div>
-              <Input
+              {/* <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full md:w-48"
-              />
+              /> */}
               <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Branches" />
@@ -319,85 +265,11 @@ export default function FeedbackPage() {
               </Select>
             </div>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Resident</TableHead>
-                    <TableHead>Meal Details</TableHead>
-
-                    <TableHead>Overall</TableHead>
-                    <TableHead>Comments</TableHead>
-                    <TableHead>Staff</TableHead>
-                    <TableHead className="">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredFeedback.map((feedback) => (
-                    <TableRow key={feedback.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {feedback.residentName}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {feedback.branch} • Room {feedback.room}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          <Badge
-                            className={getMealTypeColor(feedback.mealType)}
-                          >
-                            {feedback.mealType}
-                          </Badge>
-                          <div className="text-xs text-muted-foreground">
-                            {feedback.date} at {feedback.time}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500" />
-                          <span
-                            className={`font-bold ${getRatingColor(
-                              feedback.ratings.overall
-                            )}`}
-                          >
-                            {feedback.ratings.overall.toFixed(1)}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <p className="text-sm line-clamp-2 max-w-xs">
-                          {feedback.comments}
-                        </p>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm text-muted-foreground">
-                          {feedback.staffMember}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <FeedbackTable
+              filteredFeedback={filteredFeedback}
+              getRatingColor={getRatingColor}
+              getMealTypeColor={getMealTypeColor}
+            />
 
             {filteredFeedback.length === 0 && (
               <div className="text-center py-8">
