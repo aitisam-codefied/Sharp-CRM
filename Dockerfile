@@ -9,12 +9,17 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* .npmrc* ./
+
 RUN \
-  # if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  if [ -f package-lock.json ]; then npm ci --force; \
-  # elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
+  if [ -f pnpm-lock.yaml ]; then \
+    corepack enable pnpm && pnpm install --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then \
+    npm ci --force; \
+  elif [ -f yarn.lock ]; then \
+    yarn install --frozen-lockfile; \
+  else \
+    npm install; \
   fi
 
 
@@ -63,4 +68,5 @@ ENV PORT=3000
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
 ENV HOSTNAME="0.0.0.0"
+
 CMD ["node", "server.js"]
