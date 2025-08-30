@@ -4,6 +4,11 @@
 /node_modules
 package-lock.json
 
+# capacitor
+/android
+/ios
+/www
+
 # next.js
 /.next/
 /out/
