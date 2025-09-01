@@ -172,11 +172,7 @@ export function GuestDetailsSection({
       changedData.additionalNotes = data.additionalNotes;
     if (dirtyFields.dietaryRequirements)
       changedData.dietaryRequirements = data.dietaryRequirements;
-    if (dirtyFields.supportServices)
-      changedData.supportServices = data.supportServices;
-    if (dirtyFields.priorityLevel)
-      changedData.priorityLevel = data.priorityLevel;
-    if (dirtyFields.documents) changedData.documents = data.documents;
+
     if (dirtyFields.branch?._id) changedData.branch = data.branch._id;
     if (dirtyFields.assignedRoom?._id)
       changedData.assignedRoom = data.assignedRoom._id;
@@ -229,7 +225,7 @@ export function GuestDetailsSection({
       <h3 className="text-lg font-semibold mb-4">Details</h3>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 gap-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="branch._id">Branch</Label>
             <Controller
               name="branch._id"
@@ -267,9 +263,9 @@ export function GuestDetailsSection({
                 {errors.branch._id.message}
               </p>
             )}
-          </div>
+          </div> */}
         </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        {/* <div className="grid grid-cols-2 gap-4 mt-4">
           {branchChanged && (
             <>
               <div className="space-y-2">
@@ -342,7 +338,7 @@ export function GuestDetailsSection({
               </div>
             </>
           )}
-        </div>
+        </div> */}
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
@@ -420,7 +416,7 @@ export function GuestDetailsSection({
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="numberOfDependents">Number of Dependents</Label>
             <Input
@@ -438,59 +434,8 @@ export function GuestDetailsSection({
               {...register("address")}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="priorityLevel">Priority Level</Label>
-            <Controller
-              name="priorityLevel"
-              control={control}
-              rules={{ required: "Priority level is required" }}
-              render={({ field }) => (
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.priorityLevel && (
-              <p className="text-red-500 text-xs">
-                {errors.priorityLevel.message}
-              </p>
-            )}
-          </div>
         </div>
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          <div className="space-y-2">
-            <Label htmlFor="dental.name">Dental Clinic Name</Label>
-            <Input
-              id="dental.name"
-              placeholder="Dental Clinic"
-              {...register("dental.name")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dental.phoneNumber">Dental Phone</Label>
-            <Input
-              id="dental.phoneNumber"
-              placeholder="+1111111111"
-              {...register("dental.phoneNumber")}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dental.emailAddress">Dental Email</Label>
-            <Input
-              id="dental.emailAddress"
-              type="email"
-              placeholder="clinic@example.com"
-              {...register("dental.emailAddress")}
-            />
-          </div>
-        </div>
+
         <ContactFields2 control={control} register={register} />
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
@@ -576,60 +521,7 @@ export function GuestDetailsSection({
             />
           </div>
         </div>
-        <div className="space-y-2 mt-4">
-          <Label htmlFor="supportServices">Support Services</Label>
-          <Controller
-            name="supportServices"
-            control={control}
-            render={({ field }) => {
-              const selectedValues: string[] = field.value || [];
-              return (
-                <div className="space-y-2">
-                  <Select
-                    onValueChange={(value) => {
-                      let updatedValues = [...selectedValues];
-                      if (updatedValues.includes(value)) {
-                        updatedValues = updatedValues.filter(
-                          (v) => v !== value
-                        );
-                      } else {
-                        updatedValues.push(value);
-                      }
-                      field.onChange(updatedValues);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select support services" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(SUPPORT_SERVICE_TYPES)?.map((service) => (
-                        <SelectItem key={service} value={service}>
-                          {service}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedValues.map((service) => (
-                      <Badge
-                        key={service}
-                        variant="secondary"
-                        className="cursor-pointer"
-                        onClick={() =>
-                          field.onChange(
-                            selectedValues.filter((v) => v !== service)
-                          )
-                        }
-                      >
-                        {service} <X className="ml-2 h-3 w-3" />
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              );
-            }}
-          />
-        </div>
+
         <div className="space-y-2 mt-4">
           <Label htmlFor="additionalNotes">Additional Notes</Label>
           <Textarea
@@ -638,40 +530,10 @@ export function GuestDetailsSection({
             {...register("additionalNotes")}
           />
         </div>
-        <div className="space-y-2 mt-4">
-          <Label htmlFor="roomTypePreference">Room Type Preference</Label>
-          <Controller
-            name="roomTypePreference"
-            control={control}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select room type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(ROOM_PREFERENCE_TYPES)?.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-        <DocumentFields2 index={0} control={control} register={register} />
+
+        {/* <DocumentFields2 index={0} control={control} register={register} /> */}
         <ConsentFields2 register={register} />
-        <div className="space-y-2 mt-4">
-          <Label htmlFor="signature">Signature</Label>
-          <Input
-            id="signature"
-            placeholder="Enter signature"
-            {...register("signature", { required: "Signature is required" })}
-          />
-          {errors.signature && (
-            <p className="text-red-500 text-xs">{errors.signature.message}</p>
-          )}
-        </div>
+
         <div className="mt-4 flex justify-end">
           <Button type="submit" disabled={updateGuest.isPending}>
             {updateGuest.isPending ? "Updating..." : "Update Details"}
