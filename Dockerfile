@@ -19,7 +19,7 @@ RUN \
   elif [ -f yarn.lock ]; then \
     yarn install --frozen-lockfile; \
   else \
-    npm install; \
+    echo "No lockfile found, falling back to npm install" && npm install --force; \
   fi
 
 
