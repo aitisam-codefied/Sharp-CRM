@@ -11,7 +11,7 @@ import { AlertCircle, ArrowLeft, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function OTPVerificationPage() {
-  const [otp, setOtp] = useState(Array(8).fill(""));
+  const [otp, setOtp] = useState(Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const router = useRouter();
   const { toast } = useToast();
@@ -32,10 +32,10 @@ export default function OTPVerificationPage() {
   const handleVerifyOtp = () => {
     const otpString = otp.join("");
 
-    if (otpString.length !== 8) {
+    if (otpString.length !== 6) {
       toast({
         title: "Invalid OTP",
-        description: "Please enter all 8 digits.",
+        description: "Please enter all 6 digits.",
         variant: "destructive",
       });
       return;
@@ -47,7 +47,7 @@ export default function OTPVerificationPage() {
           title: "OTP Verified",
           description: "Redirecting to reset password...",
         });
-       router.push(`/reset-password?otp=${otpString}`);
+        router.push(`/reset-password?otp=${otpString}`);
       },
       onError: () => {
         toast({
@@ -78,7 +78,7 @@ export default function OTPVerificationPage() {
             Enter Verification Code
           </h1>
           <p className="text-sm text-gray-600">
-            Enter the 8-digit code sent to your email
+            Enter the 6-digit code sent to your email
           </p>
         </div>
 
