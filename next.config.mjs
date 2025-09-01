@@ -36,7 +36,7 @@ const isNative = process.env.NEXT_PUBLIC_IS_NATIVE === 'true';
 
 /** @type {import('next').NextConfig} */
 const baseConfig = {
-  output: 'export',
+  output: 'standalone',
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
