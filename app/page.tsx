@@ -1,24 +1,30 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/providers/auth-provider"
-import { Card, CardContent } from "@/components/ui/card"
-import { Building2 } from "lucide-react"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/providers/auth-provider";
+import { Card, CardContent } from "@/components/ui/card";
+import { Building2 } from "lucide-react";
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth()
-  const router = useRouter()
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   if (!isLoading) {
+  //     if (user) {
+  //       router.push(`/dashboard/${user.role}`);
+  //     } else {
+  //       router.push("/login");
+  //     }
+  //   }
+  // }, [user, isLoading, router]);
 
   useEffect(() => {
     if (!isLoading) {
-      if (user) {
-        router.push(`/dashboard/${user.role}`)
-      } else {
-        router.push("/login")
-      }
+      router.push("/login");
     }
-  }, [user, isLoading, router])
+  }, [isLoading, router]);
 
   if (isLoading) {
     return (
@@ -28,13 +34,15 @@ export default function HomePage() {
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary animate-pulse">
               <Building2 className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Sharp Management System</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Sharp Management System
+            </h2>
             <p className="text-muted-foreground">Loading...</p>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }
