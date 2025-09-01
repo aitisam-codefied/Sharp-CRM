@@ -408,11 +408,11 @@ export function AppNavbar() {
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
-                router.push("/dashboard/admin/settings");
+                router.push("/dashboard/admin/profile");
               }}
               className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
             >
-              <Settings className="mr-2 h-4 w-4" /> Settings
+              <User className="mr-2 h-4 w-4" /> Profile
             </button>
             <button
               onClick={() => {
