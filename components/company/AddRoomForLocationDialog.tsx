@@ -50,6 +50,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
@@ -73,6 +74,7 @@ export default function AddRoomForLocationDialog({
   const [room, setRoom] = useState<Room>({
     roomNumber: "",
     type: ROOM_PREFERENCE_TYPES.SINGLE,
+    capacity: 1,
     amenities: [],
   });
   const { toast } = useToast();
@@ -145,6 +147,7 @@ export default function AddRoomForLocationDialog({
       roomData: {
         roomNumber: room.roomNumber,
         type: room.type,
+        capacity: room.capacity,
         amenities: room.amenities.length > 0 ? room.amenities : [""],
       },
     };
@@ -165,6 +168,7 @@ export default function AddRoomForLocationDialog({
         setRoom({
           roomNumber: "",
           type: ROOM_PREFERENCE_TYPES.SINGLE,
+          capacity: 1,
           amenities: [],
         });
       },
@@ -198,7 +202,7 @@ export default function AddRoomForLocationDialog({
           Add Room
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
+      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
         <DialogHeader>
           <DialogTitle>Add New Room</DialogTitle>
           <DialogDescription>
@@ -232,6 +236,24 @@ export default function AddRoomForLocationDialog({
                 {Object.values(ROOM_PREFERENCE_TYPES).map((type) => (
                   <SelectItem key={type} value={type}>
                     {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Room Capacity *</Label>
+            <Select
+              value={room.capacity}
+              onValueChange={(value) => updateRoom("capacity", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Capacity" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <SelectItem key={num} value={String(num)}>
+                    {num}
                   </SelectItem>
                 ))}
               </SelectContent>

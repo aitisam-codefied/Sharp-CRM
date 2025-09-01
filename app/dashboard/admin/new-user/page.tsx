@@ -351,6 +351,9 @@ export default function NewUserPage() {
 
     // 3. Remove empty objects (recursive)
     const removeEmptyObjects = (obj: any): any => {
+      if (obj instanceof File || obj instanceof Blob) {
+        return obj; // Preserve File or Blob objects
+      }
       if (Array.isArray(obj)) {
         return obj
           .map(removeEmptyObjects)
@@ -358,6 +361,7 @@ export default function NewUserPage() {
             (item) =>
               !(
                 typeof item === "object" &&
+                !(item instanceof File || item instanceof Blob) &&
                 !Array.isArray(item) &&
                 Object.keys(item).length === 0
               )
@@ -365,11 +369,16 @@ export default function NewUserPage() {
       } else if (typeof obj === "object" && obj !== null) {
         const newObj: any = {};
         Object.entries(obj).forEach(([key, value]) => {
-          if (typeof value === "object") {
+          if (value instanceof File || value instanceof Blob) {
+            newObj[key] = value; // Preserve File or Blob objects
+          } else if (typeof value === "object") {
             const cleanedValue = removeEmptyObjects(value);
             if (
               !(
                 typeof cleanedValue === "object" &&
+                !(
+                  cleanedValue instanceof File || cleanedValue instanceof Blob
+                ) &&
                 Object.keys(cleanedValue).length === 0
               )
             ) {
@@ -388,14 +397,29 @@ export default function NewUserPage() {
 
     console.log("📤 Final cleaned data", cleanedData);
 
+    // Verify File objects
+    if (!(cleanedData.occupancyAgreement instanceof File)) {
+      console.error(
+        "occupancyAgreement is not a File:",
+        cleanedData.occupancyAgreement
+      );
+    }
+    if (!(cleanedData.signature instanceof File)) {
+      console.error("signature is not a File:", cleanedData.signature);
+    }
+
     // Prepare FormData with flattened fields
     const apiFormData = new FormData();
 
+    console.log("pdf", cleanedData.occupancyAgreement instanceof File);
     // Append files
-    if (cleanedData.occupancyAgreement) {
+    if (cleanedData.occupancyAgreement instanceof File) {
+      console.log("object", cleanedData.occupancyAgreement instanceof File);
       apiFormData.append("occupancyAgreement", cleanedData.occupancyAgreement);
     }
-    if (cleanedData.signature) {
+    console.log("signature", cleanedData.signature instanceof File);
+    if (cleanedData.signature instanceof File) {
+      console.log("object", cleanedData.signature instanceof File);
       apiFormData.append("signature", cleanedData.signature);
     }
 
@@ -516,6 +540,12 @@ export default function NewUserPage() {
         );
       }
     });
+
+    const formDataObj: Record<string, any> = {};
+    apiFormData.forEach((value, key) => {
+      formDataObj[key] = value;
+    });
+    console.log("📦 FormData key-value pairs:", formDataObj);
 
     // Call API via mutation
     createGuestMutation.mutate(apiFormData);

@@ -51,6 +51,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
@@ -90,6 +91,7 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
             amenities: [],
           },
         ],
@@ -133,6 +135,7 @@ export default function AddBranchForCompanyDialog({
             {
               roomNumber: "",
               type: ROOM_PREFERENCE_TYPES.SINGLE,
+              capacity: 1,
               amenities: [],
             },
           ],
@@ -169,6 +172,7 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
             amenities: [],
           },
         ],
@@ -263,6 +267,7 @@ export default function AddBranchForCompanyDialog({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -288,6 +293,7 @@ export default function AddBranchForCompanyDialog({
                 {
                   roomNumber: "",
                   type: ROOM_PREFERENCE_TYPES.SINGLE,
+                  capacity: 1,
                   amenities: [],
                 },
               ],
@@ -334,7 +340,7 @@ export default function AddBranchForCompanyDialog({
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -445,6 +451,26 @@ export default function AddBranchForCompanyDialog({
                                   </SelectItem>
                                 )
                               )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Room Capacity *</Label>
+                          <Select
+                            value={room.capacity}
+                            onValueChange={(value) =>
+                              updateRoom(locationIndex,roomIndex, "capacity", value)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select Capacity" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4, 5].map((num) => (
+                                <SelectItem key={num} value={String(num)}>
+                                  {num}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>

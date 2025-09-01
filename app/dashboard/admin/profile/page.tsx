@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +29,15 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/axios";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [editPhone, setEditPhone] = useState(user?.phoneNumber);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState(user?.fullName);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [emailPassword, setEmailPassword] = useState("");
@@ -48,19 +53,74 @@ export default function ProfilePage() {
   const [passwordVerified, setPasswordVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handlePhoneEdit = () => {
     setIsEditingPhone(true);
   };
 
-  //   const handlePhoneSave = () => {
-  //     setUser({ ...user, phone: editPhone });
-  //     setIsEditingPhone(false);
-  //   };
+  const handlePhoneSave = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.patch("user/update-profile", {
+        phoneNumber: editPhone,
+      });
+
+      setUser({ ...user, phoneNumber: editPhone });
+      setIsEditingPhone(false);
+      toast({
+        title: "Success",
+        description: "Phone number updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to update phone number.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePhoneCancel = () => {
     setEditPhone(user?.phoneNumber);
     setIsEditingPhone(false);
+  };
+
+  const handleNameEdit = () => {
+    setIsEditingName(true);
+  };
+
+  const handleNameSave = async () => {
+    try {
+      setIsLoading(true);
+      const response = await api.patch("user/update-profile", {
+        fullName: editName,
+      });
+
+      setUser({ ...user, fullName: editName });
+      setIsEditingName(false);
+      toast({
+        title: "Success",
+        description: "Full name updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to update full name.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNameCancel = () => {
+    setEditName(user?.fullName);
+    setIsEditingName(false);
   };
 
   const handleEmailEdit = () => {
@@ -69,55 +129,107 @@ export default function ProfilePage() {
     setEmailModalOpen(true);
   };
 
-  //   const handleEmailSave = async () => {
-  //     setIsLoading(true);
-  //     // Simulate API call
-  //     await new Promise((resolve) => setTimeout(resolve, 1000));
+  const handleEmailSave = async () => {
+    try {
+      setIsLoading(true);
 
-  //     if (emailPassword === "password123") {
-  //       setUser({ ...user, email: newEmail });
-  //       setEmailModalOpen(false);
-  //       setEmailPassword("");
-  //     } else {
-  //       alert("Incorrect password!");
-  //     }
-  //     setIsLoading(false);
-  //   };
+      // Verify password first
+      const passwordResponse = await api.post(
+        `/auth/check-password/${user?._id}`,
+        { currentPassword: emailPassword }
+      );
+
+      if (!passwordResponse.data.success) {
+        throw new Error("Password verification failed");
+      }
+
+      // Update email
+      const updateResponse = await api.patch("user/update-profile", {
+        emailAddress: newEmail,
+      });
+
+      setUser({ ...user, emailAddress: newEmail });
+      setEmailModalOpen(false);
+      setEmailPassword("");
+      toast({
+        title: "Success",
+        description: "Email updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePasswordVerification = async () => {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      setIsLoading(true);
+      const response = await api.post(`auth/check-password/${user?._id}`, {
+        currentPassword,
+      });
 
-    if (currentPassword === "password123") {
+      if (!response.data.success) {
+        throw new Error("Password verification failed");
+      }
+
       setPasswordVerified(true);
-    } else {
-      alert("Incorrect current password!");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to verify password.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   const handlePasswordChange = async () => {
     if (newPassword !== confirmPassword) {
-      alert("New passwords don't match!");
+      toast({
+        title: "Error",
+        description: "New password and confirm password do not match.",
+        variant: "destructive",
+      });
       return;
     }
 
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      setIsLoading(true);
+      await api.patch(`/auth/update-password/${user?._id}`, {
+        newPassword,
+        confirmPassword,
+      });
 
-    // Reset form
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordVerified(false);
-    setPasswordModalOpen(false);
-    alert("Password changed successfully!");
-    setIsLoading(false);
+      // Reset form
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordVerified(false);
+      setPasswordModalOpen(false);
+      toast({
+        title: "Success",
+        description: "Password changed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description:
+          error.response?.data?.message || "Failed to change password.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getRoleBadgeColor = (role: string) => {
+  const getRoleBadgeColor = (role: any) => {
     switch (role?.toLowerCase()) {
       case "Admin":
         return "bg-gradient-to-r from-[#F87D7D] to-[#F87D7D]/80 text-white border-[#F87D7D]";
@@ -173,8 +285,47 @@ export default function ProfilePage() {
                   <User className="h-4 w-4 text-[#F87D7D]" />
                   Full Name
                 </Label>
-                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="font-medium text-gray-900">{user?.fullName}</p>
+                <div className="flex items-center gap-2">
+                  {isEditingName ? (
+                    <>
+                      <Input
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="flex-1 border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30"
+                      />
+                      <Button
+                        onClick={handleNameSave}
+                        size="icon"
+                        className="bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                        disabled={isLoading}
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={handleNameCancel}
+                        size="icon"
+                        variant="outline"
+                        className="border-gray-300 hover:bg-gray-50 rounded-lg"
+                      >
+                        <AlertCircle className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex-1 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <p className="font-medium text-gray-900">
+                          {user?.fullName}
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleNameEdit}
+                        size="icon"
+                        className="bg-[#F87D7D] hover:bg-[#F87D7D]/90 text-white rounded-lg shadow-md"
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -226,9 +377,10 @@ export default function ProfilePage() {
                         className="flex-1 border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30"
                       />
                       <Button
-                        // onClick={handlePhoneSave}
+                        onClick={handlePhoneSave}
                         size="icon"
                         className="bg-green-500 hover:bg-green-600 text-white rounded-lg"
+                        disabled={isLoading}
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
@@ -359,7 +511,7 @@ export default function ProfilePage() {
               Cancel
             </Button>
             <Button
-              //   onClick={handleEmailSave}
+              onClick={handleEmailSave}
               disabled={isLoading || !newEmail || !emailPassword}
               className="bg-[#F87D7D] hover:bg-[#F87D7D]/90 text-white"
             >

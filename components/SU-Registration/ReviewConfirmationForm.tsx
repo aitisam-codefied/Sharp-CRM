@@ -54,7 +54,7 @@ export default function ReviewConfirmationForm({
       // Save to formData
       setFormData((prev: any) => ({
         ...prev,
-        signature: file.name // UploadedFile format
+        signature: file // UploadedFile format
       }));
     }
   };
@@ -103,7 +103,7 @@ export default function ReviewConfirmationForm({
           // ✅ direct File assign
           setFormData((prev: any) => ({
             ...prev,
-            occupancyAgreement: file.name,
+            occupancyAgreement: file,
           }));
         })
         .catch((error: any) => {

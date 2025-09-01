@@ -142,7 +142,7 @@ export function UserTable({
                   <TableHead>Personal Details</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Contact Info</TableHead>
-                  <TableHead>Status</TableHead>
+                  {/* <TableHead>Status</TableHead> */}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -209,11 +209,11 @@ export function UserTable({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Badge className={getStatusColor(user.status)}>
                         {user.status}
                       </Badge>
-                    </TableCell>
+                    </TableCell> */}
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <Button

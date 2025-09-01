@@ -41,7 +41,7 @@ export function UserDetailsModal({
         <DialogHeader className="mb-6">
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-primary capitalize">
             <User className="h-6 w-6 text-primary" />
-            {user.userId?.fullName}'s Profile
+            {user.userId?.fullName || "N/A"}'s Profile
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Detailed information about the service user
@@ -100,42 +100,47 @@ export function UserDetailsModal({
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   {user.userId?.phoneNumber || "N/A"}
                 </p>
+                <p>
+                  <strong>Address:</strong> {user.address || "N/A"}
+                </p>
               </CardContent>
             </Card>
           </div>
 
           <Separator className="my-4" />
 
-          {/* Location Information */}
+          {/* Room Information */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <MapPin className="h-5 w-5 text-primary" />
-                Location Information
+                <Home className="h-5 w-5 text-primary" />
+                Room Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <p className="flex items-center gap-2">
-                <span>
-                  <strong>Branch:</strong> {user.branch?.name || "N/A"}
-                </span>
-              </p>
-              <p className="">
-                <strong>Address:</strong> {user.branch?.address || "N/A"}
+              {user.familyRooms?.length > 0 ? (
+                user.familyRooms.map((room, index) => (
+                  <div key={index} className="mb-3 last:mb-0">
+                    <p>
+                      <strong>Room Number:</strong>{" "}
+                      {room.roomId?.roomNumber || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Room Type:</strong> {room.roomId?.type || "N/A"}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No room information available
+                </p>
+              )}
+              <p>
+                <strong>Is Primary Guest:</strong>{" "}
+                {user.isPrimaryGuest ? "Yes" : "No"}
               </p>
               <p>
-                <strong>Room:</strong> {user.assignedRoom?.roomNumber || "N/A"}{" "}
-                ({user.assignedRoom?.type || "N/A"})
-              </p>
-              <p>
-                <strong>Check-in Date:</strong>{" "}
-                {user.checkInDate
-                  ? new Date(user.checkInDate).toLocaleDateString()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Room Preference:</strong>{" "}
-                {user.roomTypePreference || "N/A"}
+                <strong>Family ID:</strong> {user.familyId || "N/A"}
               </p>
             </CardContent>
           </Card>
@@ -182,38 +187,35 @@ export function UserDetailsModal({
                   )}
                 </div>
               </p>
+              <p>
+                <strong>Medic ID:</strong> {user.medic || "N/A"}
+              </p>
             </CardContent>
           </Card>
 
           <Separator className="my-4" />
 
-          {/* Support Services and Emergency Contacts */}
+          {/* Case Worker and Emergency Contacts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Heart className="h-5 w-5 text-primary" />
-                  Support Services
+                  Case Worker
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {user.supportServices?.length > 0 ? (
-                    user.supportServices.map((service, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-primary/10 text-primary"
-                      >
-                        {service}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No support services assigned
-                    </p>
-                  )}
-                </div>
+              <CardContent className="space-y-3 text-sm">
+                <p>
+                  <strong>Name:</strong> {user.caseWorker?.fullName || "N/A"}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  {user.caseWorker?.phoneNumber || "N/A"}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  {user.caseWorker?.emailAddress || "N/A"}
+                </p>
               </CardContent>
             </Card>
 
@@ -227,16 +229,20 @@ export function UserDetailsModal({
               <CardContent>
                 {user.emergencyContacts?.length > 0 ? (
                   user.emergencyContacts.map((contact, index) => (
-                    <div key={index} className="text-sm mb-3 last:mb-0">
+                    <div
+                      key={index}
+                      className="text-sm mb-3 flex flex-col gap-2 last:mb-0"
+                    >
                       <p>
-                        <strong>Name:</strong> {contact.fullName}
+                        <strong>Name:</strong> {contact.fullName || "N/A"}
                       </p>
                       <p>
-                        <strong>Relationship:</strong> {contact.relationship}
+                        <strong>Relationship:</strong>{" "}
+                        {contact.relationship || "N/A"}
                       </p>
                       <p className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        {contact.phoneNumber}
+                        {contact.phoneNumber || "N/A"}
                       </p>
                     </div>
                   ))
@@ -261,28 +267,36 @@ export function UserDetailsModal({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.documents?.length > 0 ? (
-                  user.documents.map((doc, index) => (
-                    <div
-                      key={index}
-                      className="text-sm mb-3 last:mb-0 flex items-center gap-2"
+                <p className="text-sm">
+                  <strong>Occupancy Agreement:</strong>{" "}
+                  {user.occupancyAgreementUrl ? (
+                    <a
+                      href={user.occupancyAgreementUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
                     >
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {doc.type}
-                      </a>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No documents uploaded
-                  </p>
-                )}
+                      View Agreement
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </p>
+                <p className="text-sm mt-3">
+                  <strong>Signature:</strong>{" "}
+                  {user.signatureUrl ? (
+                    <a
+                      href={user.signatureUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      View Signature
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </p>
               </CardContent>
             </Card>
 
@@ -299,17 +313,6 @@ export function UserDetailsModal({
                   {user.additionalNotes || "N/A"}
                 </p>
                 <p>
-                  <strong>Signature:</strong> {user.signature || "N/A"}
-                </p>
-                <p>
-                  <strong>Priority Level:</strong>{" "}
-                  <Badge
-                    className={getStatusColor(user.priorityLevel || "Unknown")}
-                  >
-                    {user.priorityLevel || "Unknown"}
-                  </Badge>
-                </p>
-                <p>
                   <strong>Consent - Accuracy:</strong>{" "}
                   {user.consentAccuracy ? "Yes" : "No"}
                 </p>
@@ -317,40 +320,62 @@ export function UserDetailsModal({
                   <strong>Consent - Data Processing:</strong>{" "}
                   {user.consentDataProcessing ? "Yes" : "No"}
                 </p>
-                <p>
-                  <strong>Consent - Data Retention:</strong>{" "}
-                  {user.consentDataRetention ? "Yes" : "No"}
-                </p>
               </CardContent>
             </Card>
           </div>
 
-          {/* Dental Information */}
-          {user.dental && (
-            <>
-              <Separator className="my-4" />
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Stethoscope className="h-5 w-5 text-primary" />
-                    Dental Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p>
-                    <strong>Clinic Name:</strong> {user.dental.name || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {user.dental.emailAddress || "N/A"}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    {user.dental.phoneNumber || "N/A"}
-                  </p>
-                </CardContent>
-              </Card>
-            </>
-          )}
+          {/* Removal Information */}
+          <Separator className="my-4" />
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5 text-primary" />
+                Removal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p>
+                <strong>Status:</strong>{" "}
+                <Badge
+                  className={getStatusColor(user.removal?.status || "Unknown")}
+                >
+                  {user.removal?.status || "N/A"}
+                </Badge>
+              </p>
+              <p>
+                <strong>Reason:</strong> {user.removal?.reason || "N/A"}
+              </p>
+              <p>
+                <strong>Scheduled At:</strong>{" "}
+                {user.removal?.scheduledAt
+                  ? new Date(user.removal.scheduledAt).toLocaleDateString()
+                  : "N/A"}
+              </p>
+              <p>
+                <strong>Scheduled By:</strong>{" "}
+                {user.removal?.scheduledBy || "N/A"}
+              </p>
+              <p>
+                <strong>Notes:</strong> {user.removal?.notes || "N/A"}
+              </p>
+              <p>
+                <strong>Executed At:</strong>{" "}
+                {user.removal?.executedAt
+                  ? new Date(user.removal.executedAt).toLocaleDateString()
+                  : "N/A"}
+              </p>
+              <p>
+                <strong>Executed By:</strong>{" "}
+                {user.removal?.executedBy || "N/A"}
+              </p>
+              <p>
+                <strong>Last Error:</strong> {user.removal?.lastError || "N/A"}
+              </p>
+              <p>
+                <strong>Transfer:</strong> {user.removal?.transfer || "N/A"}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
@@ -360,12 +385,14 @@ export function UserDetailsModal({
 // Helper function to reuse status color logic
 function getStatusColor(status: string) {
   switch (status) {
-    case "High":
-      return "bg-red-100 text-red-800";
-    case "Medium":
+    case "none":
+      return "bg-gray-100 text-gray-800";
+    case "scheduled":
       return "bg-yellow-100 text-yellow-800";
-    case "Low":
+    case "executed":
       return "bg-green-100 text-green-800";
+    case "error":
+      return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
   }

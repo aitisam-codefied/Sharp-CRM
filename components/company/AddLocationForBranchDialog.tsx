@@ -50,6 +50,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
@@ -84,6 +85,7 @@ export default function AddLocationForBranchDialog({
     rooms: [
       {
         roomNumber: "",
+        capacity: 1,
         type: ROOM_PREFERENCE_TYPES.SINGLE,
         amenities: [],
       },
@@ -125,6 +127,7 @@ export default function AddLocationForBranchDialog({
         {
           roomNumber: "",
           type: ROOM_PREFERENCE_TYPES.SINGLE,
+          capacity: 1,
           amenities: [],
         },
       ],
@@ -203,6 +206,7 @@ export default function AddLocationForBranchDialog({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         },
@@ -236,6 +240,7 @@ export default function AddLocationForBranchDialog({
             {
               roomNumber: "",
               type: ROOM_PREFERENCE_TYPES.SINGLE,
+              capacity: 1,
               amenities: [],
             },
           ],
@@ -274,7 +279,7 @@ export default function AddLocationForBranchDialog({
           Add Location
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Location</DialogTitle>
           <DialogDescription>
@@ -312,7 +317,7 @@ export default function AddLocationForBranchDialog({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Room Number *</Label>
                     <Input
@@ -338,6 +343,26 @@ export default function AddLocationForBranchDialog({
                         {Object.values(ROOM_PREFERENCE_TYPES).map((type) => (
                           <SelectItem key={type} value={type}>
                             {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Room Capacity *</Label>
+                    <Select
+                      value={room.capacity}
+                      onValueChange={(value) =>
+                        updateRoom(roomIndex, "capacity", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Capacity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <SelectItem key={num} value={String(num)}>
+                            {num}
                           </SelectItem>
                         ))}
                       </SelectContent>

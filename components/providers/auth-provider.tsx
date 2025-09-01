@@ -42,6 +42,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
+  setUser: (user: User | null) => void;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateUserCompanies: (newCompanies: Company[]) => void;
@@ -176,6 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         login,
         logout,
         isLoading,
