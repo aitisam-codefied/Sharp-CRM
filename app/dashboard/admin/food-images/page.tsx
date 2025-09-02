@@ -228,13 +228,13 @@ export default function FoodImagesPage() {
     );
   };
 
-  const handleDelete = (foodId: string) => {
-    toast({
-      title: "Food Deleted",
-      description: "Food has been removed from the system.",
-      variant: "destructive",
-    });
-  };
+  // const handleDelete = (foodId: string) => {
+  //   toast({
+  //     title: "Food Deleted",
+  //     description: "Food has been removed from the system.",
+  //     variant: "destructive",
+  //   });
+  // };
 
   // Filter foods based on search and filters
   const filteredFoods =
@@ -765,20 +765,14 @@ export default function FoodImagesPage() {
                       <div className="relative">
                         <img
                           src={
-                            food.images?.[0] ||
-                            "/placeholder.svg?height=200&width=300&text=Food+Image"
+                            food.images?.[0]
+                              ? `http://localhost:5001${food.images[0]}`
+                              : "/placeholder.svg?height=200&width=300&text=Food+Image"
                           }
                           alt={food.name}
                           className="w-full h-48 object-cover"
                         />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="absolute top-2 right-2 h-8 w-8 p-0 bg-white/90 hover:bg-white shadow-sm"
-                          onClick={() => handleDelete(food._id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-gray-600" />
-                        </Button>
+
                         <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-sm">
                           <span className="font-medium">{food.mealType}</span>
                         </div>
@@ -788,8 +782,9 @@ export default function FoodImagesPage() {
                           <h3 className="font-medium text-sm leading-tight line-clamp-2">
                             {food.name}
                           </h3>
+                          <p className="text-xs">{food.description}</p>
 
-                          <div className="flex flex-wrap gap-1">
+                          {/* <div className="flex flex-wrap gap-1">
                             {food.dietaryTags.map((tag) => (
                               <Badge
                                 key={tag}
@@ -799,15 +794,9 @@ export default function FoodImagesPage() {
                                 {tag}
                               </Badge>
                             ))}
-                          </div>
+                          </div> */}
 
                           <div className="space-y-1 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              <span>
-                                {food.branchId?.name || "Unknown Branch"}
-                              </span>
-                            </div>
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
                               <span>
@@ -819,13 +808,6 @@ export default function FoodImagesPage() {
                               <span>{food.preparationTime} min</span>
                             </div>
                           </div>
-
-                          <Button
-                            className="w-full bg-red-500 hover:bg-red-600 text-white"
-                            size="sm"
-                          >
-                            View Details →
-                          </Button>
                         </div>
                       </CardContent>
                     </Card>

@@ -416,8 +416,8 @@ export function GuestDetailsSection({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 gap-4 mt-4">
+          {/* <div className="space-y-2">
             <Label htmlFor="numberOfDependents">Number of Dependents</Label>
             <Input
               id="numberOfDependents"
@@ -425,7 +425,7 @@ export function GuestDetailsSection({
               placeholder="0"
               {...register("numberOfDependents", { valueAsNumber: true })}
             />
-          </div>
+          </div> */}
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input

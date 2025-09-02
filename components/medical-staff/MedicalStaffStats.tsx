@@ -8,9 +8,13 @@ interface MedicalStaffStatsProps {
 export function MedicalStaffStats({ filteredStaff }: MedicalStaffStatsProps) {
   const getStats = () => {
     const totalStaff = filteredStaff.length;
-    const activeStaff = filteredStaff.filter((s) => s.status === "active").length;
-    const onLeaveStaff = filteredStaff.filter((s) => s.status === "on-leave").length;
-    return { totalStaff, activeStaff, onLeaveStaff };
+    const activeStaff = filteredStaff.filter(
+      (s) => s.status === "active"
+    ).length;
+    const inactiveStaff = filteredStaff.filter(
+      (s) => s.status === "inactive"
+    ).length;
+    return { totalStaff, activeStaff, inactiveStaff };
   };
 
   const stats = getStats();
@@ -33,7 +37,9 @@ export function MedicalStaffStats({ filteredStaff }: MedicalStaffStatsProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Active Staff</p>
-              <p className="text-2xl font-bold text-green-600">{stats.activeStaff}</p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.activeStaff}
+              </p>
             </div>
             <UserCheck className="h-8 w-8 text-green-600" />
           </div>
@@ -43,8 +49,10 @@ export function MedicalStaffStats({ filteredStaff }: MedicalStaffStatsProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">On Leave</p>
-              <p className="text-2xl font-bold text-yellow-600">{stats.onLeaveStaff}</p>
+              <p className="text-sm text-muted-foreground">In Active</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {stats.inactiveStaff}
+              </p>
             </div>
             <UserPlus className="h-8 w-8 text-yellow-600" />
           </div>

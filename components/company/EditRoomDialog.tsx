@@ -92,12 +92,16 @@ export default function EditRoomDialog({
       {
         onSuccess: (data) => {
           toast({ title: "Room updated successfully" });
+
+          // ✅ API response se sahi field access karo
           onRoomUpdated({
-            _id: data.updatedRoom._id,
-            roomNumber: data.updatedRoom.roomNumber,
-            type: data.updatedRoom.type,
-            amenities: data.updatedRoom.amenities,
+            _id: data._id,
+            roomNumber: data.roomNumber,
+            type: data.type,
+            amenities: data.amenities,
           });
+
+          // ✅ dialog close karo
           onOpenChange(false);
         },
         onError: () => {

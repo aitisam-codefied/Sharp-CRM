@@ -16,7 +16,7 @@ export const useUpdateRoom = () => {
       const { _id, ...payload } = roomData;
 
       const res = await api.patch(`/room/${roomId}`, payload);
-      return res.data;
+      return res.data.room;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["companies"] });

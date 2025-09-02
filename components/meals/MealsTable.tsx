@@ -16,6 +16,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { CheckCircle, Clock } from "lucide-react";
+import { useEffect } from "react";
 
 const CustomPagination = ({ currentPage, totalPages, onPageChange }: any) => {
   if (totalPages <= 1) return null;
@@ -91,6 +93,10 @@ export default function MealsTable({
     startIndex + itemsPerPage
   );
 
+  useEffect(() => {
+    console.log("residents", residents);
+  });
+
   return (
     <div>
       <div className="rounded-md border">
@@ -135,14 +141,19 @@ export default function MealsTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${resident.id}-breakfast`}
-                      checked={resident.meals.breakfast.marked}
-                      onCheckedChange={(checked) =>
-                        handleMealToggle(resident.id, "breakfast", checked)
-                      }
-                    />
-                    {resident.meals.breakfast.marked && (
+                    {resident.meals.breakfast.marked === true ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <span className="text-xs"> Delivered</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-red-600" />
+                        <span className="text-xs">Not Delivered</span>
+                      </>
+                    )}
+                    <br />
+                    {resident.meals.breakfast.marked === true && (
                       <div className="text-xs text-muted-foreground">
                         <div>{resident.meals.breakfast.time}</div>
                         <div>{resident.meals.breakfast.staff}</div>
@@ -152,14 +163,18 @@ export default function MealsTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${resident.id}-lunch`}
-                      checked={resident.meals.lunch.marked}
-                      onCheckedChange={(checked) =>
-                        handleMealToggle(resident.id, "lunch", checked)
-                      }
-                    />
-                    {resident.meals.lunch.marked && (
+                    {resident.meals.lunch.marked === true ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <span className="text-xs"> Delivered</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-red-600" />
+                        <span className="text-xs">Not Delivered</span>
+                      </>
+                    )}
+                    {resident.meals.lunch.marked === true && (
                       <div className="text-xs text-muted-foreground">
                         <div>{resident.meals.lunch.time}</div>
                         <div>{resident.meals.lunch.staff}</div>
@@ -169,14 +184,18 @@ export default function MealsTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${resident.id}-dinner`}
-                      checked={resident.meals.dinner.marked}
-                      onCheckedChange={(checked) =>
-                        handleMealToggle(resident.id, "dinner", checked)
-                      }
-                    />
-                    {resident.meals.dinner.marked && (
+                    {resident.meals.dinner.marked === true ? (
+                      <>
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <span className="text-xs"> Delivered</span>
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-red-600" />
+                        <span className="text-xs">Not Delivered</span>
+                      </>
+                    )}
+                    {resident.meals.dinner.marked === true && (
                       <div className="text-xs text-muted-foreground">
                         <div>{resident.meals.dinner.time}</div>
                         <div>{resident.meals.dinner.staff}</div>

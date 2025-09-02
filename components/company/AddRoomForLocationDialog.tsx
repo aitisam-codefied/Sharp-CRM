@@ -32,6 +32,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -223,13 +232,21 @@ export default function AddRoomForLocationDialog({
               <p className="text-red-600 text-sm">{roomNumberError}</p>
             )}
           </div>
-          <div className="space-y-2">
+          <div>
             <Label>Room Type *</Label>
             <Select
               value={room.type}
-              onValueChange={(value) => updateRoom("type", value)}
+              onValueChange={(value) => {
+                updateRoom("type", value);
+
+                // Auto-update capacity if mapping exists
+                const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                if (autoCapacity) {
+                  updateRoom("capacity", String(autoCapacity));
+                }
+              }}
             >
-              <SelectTrigger className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30">
+              <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>

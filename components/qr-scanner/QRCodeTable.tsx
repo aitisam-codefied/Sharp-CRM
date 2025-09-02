@@ -87,7 +87,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
   const [selectedQRId, setSelectedQRId] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState(false);
   const { toast } = useToast();
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const totalPages = Math.ceil(qrcodes.length / itemsPerPage);
 
   const paginatedQRCodes = qrcodes.slice(

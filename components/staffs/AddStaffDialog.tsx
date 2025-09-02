@@ -155,7 +155,27 @@ export default function AddStaffDialog() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    setFormData((prev) => {
+      let updatedForm = { ...prev, [id]: value };
+
+      // 🔹 If shiftStart is updated, auto-set shiftEnd = shiftStart + 12 hours
+      if (id === "shiftStart" && value) {
+        const [hours, minutes] = value.split(":").map(Number);
+        const newDate = new Date();
+        newDate.setHours(hours, minutes, 0, 0);
+        newDate.setHours(newDate.getHours() + 12);
+
+        // Format back to HH:mm
+        const newHours = String(newDate.getHours()).padStart(2, "0");
+        const newMinutes = String(newDate.getMinutes()).padStart(2, "0");
+
+        updatedForm.shiftEnd = `${newHours}:${newMinutes}`;
+      }
+
+      return updatedForm;
+    });
+
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 

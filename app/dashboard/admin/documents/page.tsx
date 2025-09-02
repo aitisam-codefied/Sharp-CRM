@@ -47,12 +47,23 @@ export default function DocumentsPage() {
   const { data, isLoading, error } = useSOPDocuments(currentPage, limit);
   const { data: branchData } = useBranches();
 
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+      company: branch.companyId.name,
+    })) || [];
+
   const documents = data?.data || [];
   const totalDocuments = data?.total || 0;
   const totalPages = Math.ceil(totalDocuments / limit);
 
   if (isLoading) {
-    return <div>Loading documents...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading Document data...
+      </div>
+    );
   }
 
   if (error) {
@@ -69,12 +80,6 @@ export default function DocumentsPage() {
     "template",
     "other",
   ];
-
-  const allBranches: Branch[] =
-    branchData?.map((branch: any) => ({
-      id: branch._id,
-      name: branch.name,
-    })) || [];
 
   const branches = allBranches.map((b) => b.name);
 

@@ -24,10 +24,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Upload } from "lucide-react";
 import { useCreateSOPDocument } from "@/hooks/useCreateSOPDocument";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "../ui/badge";
 
 interface Branch {
   id: string;
   name: string;
+  company: string;
 }
 
 interface NewDocumentDialogProps {
@@ -130,7 +132,7 @@ export default function NewDocumentDialog({
           Upload Document
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[800px] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload New Document</DialogTitle>
           <DialogDescription>
@@ -159,6 +161,12 @@ export default function NewDocumentDialog({
               accept=".pdf,.doc,.docx,.png"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
+
+            {file && (
+              <p className="text-sm text-gray-600 mt-2">
+                <span className="font-medium">Selected:</span> {file.name}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -218,7 +226,12 @@ export default function NewDocumentDialog({
                 <SelectContent>
                   {branches.map((branch) => (
                     <SelectItem key={branch.id} value={branch.id}>
-                      {branch.name}
+                      <div className="flex items-center gap-2">
+                        <span>{branch.name}</span>-
+                        <Badge className="bg-[#F87D7D] text-white">
+                          {branch.company}
+                        </Badge>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>

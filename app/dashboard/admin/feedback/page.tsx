@@ -52,7 +52,11 @@ export default function FeedbackPage() {
   const { data: branchData } = useBranches();
 
   if (isLoading) {
-    return <div>Loading feedback data...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading FeedBack data...
+      </div>
+    );
   }
 
   if (error) {
@@ -151,13 +155,6 @@ export default function FeedbackPage() {
       default:
         return "bg-gray-100 text-gray-800";
     }
-  };
-
-  const handleViewDetails = (feedbackId: string) => {
-    toast({
-      title: "View Feedback",
-      description: `Opening detailed view for feedback ${feedbackId}`,
-    });
   };
 
   const getStats = () => {

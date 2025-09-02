@@ -33,6 +33,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -411,7 +420,7 @@ export default function AddBranchForCompanyDialog({
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label>Room Number *</Label>
                           <Input
@@ -427,20 +436,31 @@ export default function AddBranchForCompanyDialog({
                             placeholder="e.g., 101, A-1"
                           />
                         </div>
-                        <div className="space-y-2">
+                        <div>
                           <Label>Room Type *</Label>
                           <Select
                             value={room.type}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => {
                               updateRoom(
                                 locationIndex,
                                 roomIndex,
                                 "type",
                                 value
-                              )
-                            }
+                              );
+
+                              // Auto-update capacity if mapping exists
+                              const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                              if (autoCapacity) {
+                                updateRoom(
+                                  locationIndex,
+                                  roomIndex,
+                                  "capacity",
+                                  String(autoCapacity)
+                                );
+                              }
+                            }}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -459,7 +479,12 @@ export default function AddBranchForCompanyDialog({
                           <Select
                             value={room.capacity}
                             onValueChange={(value) =>
-                              updateRoom(locationIndex,roomIndex, "capacity", value)
+                              updateRoom(
+                                locationIndex,
+                                roomIndex,
+                                "capacity",
+                                value
+                              )
                             }
                           >
                             <SelectTrigger>

@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -6,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,9 +25,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, Search, Eye, Calendar } from "lucide-react";
+import { Package, Search, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Basket } from "@/hooks/useGetBaskets";
+import { CustomPagination } from "../CustomPagination";
 
 interface BasketsTableProps {
   baskets: Basket[];
@@ -36,6 +38,9 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const { toast } = useToast();
 
   const branches = [
@@ -51,19 +56,35 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
     "On Hold",
   ];
 
-  const filteredBaskets = baskets.filter((basket) => {
-    const matchesSearch =
-      basket.guestId.userId.fullName
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      basket.notes.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesBranch =
-      selectedBranch === "all" || basket.branchId?.name === selectedBranch;
-    const matchesStatus =
-      selectedStatus === "all" || basket.status === selectedStatus;
+  // 🔹 Filtered + Sorted Data
+  const filteredBaskets = useMemo(() => {
+    return baskets
+      .filter((basket) => {
+        const matchesSearch =
+          basket.guestId.userId.fullName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          basket.notes.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesBranch =
+          selectedBranch === "all" || basket.branchId?.name === selectedBranch;
+        const matchesStatus =
+          selectedStatus === "all" || basket.status === selectedStatus;
 
-    return matchesSearch && matchesBranch && matchesStatus;
-  });
+        return matchesSearch && matchesBranch && matchesStatus;
+      })
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ); // latest pehle
+  }, [baskets, searchTerm, selectedBranch, selectedStatus]);
+
+  // 🔹 Pagination
+  const totalPages = Math.ceil(filteredBaskets.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentData = filteredBaskets.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -80,13 +101,6 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
       default:
         return "bg-gray-100 text-gray-800";
     }
-  };
-
-  const handleViewBasket = (basketId: string) => {
-    toast({
-      title: "View Basket",
-      description: `Opening basket ${basketId}`,
-    });
   };
 
   return (
@@ -113,21 +127,6 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
               />
             </div>
           </div>
-          {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="All Branches" />
-            </SelectTrigger>
-            <SelectContent>
-              {branches.map((branch) => (
-                <SelectItem
-                  key={branch ?? "Not Assigned"}
-                  value={branch ?? "Not Assigned"}
-                >
-                  {branch ?? "Not Assigned"}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select> */}
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
             <SelectTrigger className="w-full md:w-48">
               <SelectValue placeholder="All Statuses" />
@@ -151,11 +150,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                 <TableHead>Key Metrics</TableHead>
                 <TableHead>Assignment Details</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredBaskets.map((basket) => (
+              {currentData.map((basket) => (
                 <TableRow key={basket._id}>
                   <TableCell>
                     <div className="space-y-1">
@@ -171,10 +169,8 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">
-                        {basket.branchId?.name || "Not Assigned"}
-                      </div>
+                    <div className="text-sm text-muted-foreground">
+                      {basket.branchId?.name || "Not Assigned"}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -203,29 +199,23 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-2">
-                      <Badge className={getStatusColor(basket.status)}>
-                        {basket.status.charAt(0).toUpperCase() +
-                          basket.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewBasket(basket._id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <Badge className={getStatusColor(basket.status)}>
+                      {basket.status.charAt(0).toUpperCase() +
+                        basket.status.slice(1)}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
+
+        {/* 🔹 Pagination */}
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page: any) => setCurrentPage(page)}
+        />
 
         {filteredBaskets.length === 0 && (
           <div className="text-center py-8">

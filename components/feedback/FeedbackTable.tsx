@@ -1,4 +1,5 @@
-// components/feedback/FeedbackTable.tsx
+"use client";
+
 import {
   Table,
   TableBody,
@@ -11,6 +12,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, Eye, Edit, Trash2 } from "lucide-react";
 import { DisplayFeedback } from "@/hooks/useGetFoodFeedback";
+import { useEffect, useMemo, useState } from "react";
+import { CustomPagination } from "../CustomPagination";
 
 interface Props {
   filteredFeedback: DisplayFeedback[];
@@ -23,6 +26,32 @@ export const FeedbackTable = ({
   getRatingColor,
   getMealTypeColor,
 }: Props) => {
+  // 🔹 Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // useEffect(() => {
+  //   console.log("object", filteredFeedback);
+  // });
+
+  const sortedFeedback = useMemo(() => {
+    return [...filteredFeedback].sort((a, b) => {
+      const dateA = new Date(`${a.date} ${a.time}`).getTime();
+      const dateB = new Date(`${b.date} ${b.time}`).getTime();
+      return dateB - dateA; // latest pehle
+    });
+  }, [filteredFeedback]);
+
+  // 🔹 Total Pages
+  const totalPages = Math.ceil(sortedFeedback.length / itemsPerPage);
+
+  // 🔹 Current Page Data
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentData = sortedFeedback.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -37,7 +66,7 @@ export const FeedbackTable = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredFeedback.map((feedback) => (
+          {currentData.map((feedback) => (
             <TableRow key={feedback.id}>
               <TableCell>
                 <div>
@@ -53,7 +82,7 @@ export const FeedbackTable = ({
                     {feedback.mealType}
                   </Badge>
                   <div className="text-xs text-muted-foreground">
-                    {feedback.date} at {feedback.time}
+                    {feedback.date}
                   </div>
                 </div>
               </TableCell>
@@ -76,7 +105,9 @@ export const FeedbackTable = ({
               </TableCell>
               <TableCell>
                 <div className="text-sm text-muted-foreground">
-                  {feedback.staffMember ? feedback.staffMember : "No Staff Assigned"}
+                  {feedback.staffMember
+                    ? feedback.staffMember
+                    : "No Staff Assigned"}
                 </div>
               </TableCell>
               {/* <TableCell>
@@ -96,6 +127,12 @@ export const FeedbackTable = ({
           ))}
         </TableBody>
       </Table>
+
+      <CustomPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 };
