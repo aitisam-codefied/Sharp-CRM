@@ -117,13 +117,18 @@ export default function StaffTable() {
     isError: isBranchError,
   } = useBranches();
 
+  useEffect(() => {
+    console.log("branch data", branchData);
+  });
+
   const allBranches =
     branchData?.map((branch: any) => ({
       id: branch._id,
       name: branch.name,
+      company: branch.companyId.name,
     })) || [];
 
-  const branches = allBranches.map((b) => b.name);
+  // const branches = allBranches.map((b) => b.name);
 
   // useEffect(() => {
   //   console.log("branchesssss", branches);
@@ -161,6 +166,7 @@ export default function StaffTable() {
         Array.isArray(staff.locations) && staff.locations.length > 0
           ? staff.locations.map((l: any) => l.name)
           : [],
+      branchIds: staff.branches?.map((b: any) => b._id) || [],
       branch:
         Array.isArray(staff.branches) && staff.branches.length > 0
           ? staff.branches
@@ -200,7 +206,7 @@ export default function StaffTable() {
     const matchesBranch =
       selectedBranches.length === 0 ||
       selectedBranches.includes("all") ||
-      selectedBranches.includes(staff.branch);
+      staff.branchIds.some((id: string) => selectedBranches.includes(id));
     const matchesRole =
       selectedRoles.length === 0 ||
       selectedRoles.includes("all") ||
@@ -348,8 +354,8 @@ export default function StaffTable() {
           )}
           {!isLoading && !isError && (
             <>
-              <div className="flex flex-col md:flex-row gap-4 mb-6">
-                <div className="flex-1">
+              <div className="grid grid-cols-4 justify-between gap-4 mb-6">
+                <div className="max-w-sm">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -364,14 +370,19 @@ export default function StaffTable() {
                   value={selectedBranches[0] || "all"}
                   onValueChange={(value) => setSelectedBranches([value])}
                 >
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Branches</SelectItem>
-                    {branches.map((branch) => (
-                      <SelectItem key={branch._id} value={branch}>
-                        {branch}
+                    {allBranches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{branch.name}</span>-
+                          <Badge className="bg-[#F87D7D] text-white">
+                            {branch.company}
+                          </Badge>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -380,7 +391,7 @@ export default function StaffTable() {
                   value={selectedRoles[0] || "all"}
                   onValueChange={(value) => setSelectedRoles([value])}
                 >
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Roles" />
                   </SelectTrigger>
                   <SelectContent>
@@ -396,7 +407,7 @@ export default function StaffTable() {
                   value={selectedStatus}
                   onValueChange={setSelectedStatus}
                 >
-                  <SelectTrigger className="w-full md:w-48">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Status" />
                   </SelectTrigger>
                   <SelectContent>

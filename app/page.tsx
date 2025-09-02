@@ -13,10 +13,12 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        // ✅ agar user nahi hai to login pe bhejo
         router.push("/login");
       }
-      // ✅ agar user hai to kuch mat karo (usi page pr rehne do)
+
+      if (user) {
+        router.push("/dashboard/admin");
+      }
     }
   }, [user, isLoading, router]);
 

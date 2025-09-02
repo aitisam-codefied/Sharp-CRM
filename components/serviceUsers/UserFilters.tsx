@@ -62,7 +62,7 @@ export function UserFilters({
           ))}
         </SelectContent>
       </Select>
-      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+      {/* <Select value={selectedStatus} onValueChange={setSelectedStatus}>
         <SelectTrigger className="w-full md:w-48">
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
@@ -74,7 +74,7 @@ export function UserFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
       <Select
         value={selectedNationality}
         onValueChange={setSelectedNationality}

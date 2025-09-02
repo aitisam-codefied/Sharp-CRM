@@ -41,35 +41,39 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useGetFoods, Food } from "@/hooks/useGetFoods";
 import { useCreateFood, CreateFoodData } from "@/hooks/useCreateFood";
-import { useGetFoodCategories, FoodCategory } from "@/hooks/useGetFoodCategories";
+import {
+  useGetFoodCategories,
+  FoodCategory,
+} from "@/hooks/useGetFoodCategories";
 import { useCreateFoodCategory } from "@/hooks/useCreateFoodCategory";
+import { useBranches } from "@/hooks/useGetBranches";
 
 export default function FoodImagesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedMeal, setSelectedMeal] = useState("all-meals");
   const [selectedDate, setSelectedDate] = useState("07/11/2026");
   const [activeFilter, setActiveFilter] = useState("All");
-  
+
   // State for upload dialog
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-  
+
   // Form state for food creation
   const [formData, setFormData] = useState<CreateFoodData>({
     categoryId: "",
     name: "",
     description: "",
     mealType: "Breakfast",
-    dietaryTags: [],
-    allergens: [],
+    // dietaryTags: [],
+    // allergens: [],
     nutritionalInfo: {},
     preparationTime: 0,
     images: [],
@@ -77,12 +81,23 @@ export default function FoodImagesPage() {
 
   // API hooks
   const { data: foods, isLoading: foodsLoading } = useGetFoods();
-  const { data: categories, isLoading: categoriesLoading } = useGetFoodCategories();
+  const { data: categories, isLoading: categoriesLoading } =
+    useGetFoodCategories();
   const createFoodMutation = useCreateFood();
   const createCategoryMutation = useCreateFoodCategory();
 
-  // Get user's branches
-  const userBranches = user?.companies?.flatMap(company => company.branches) || [];
+  const { data: branchData } = useBranches();
+
+  // useEffect(() => {
+  //   console.log("branch data", branchData);
+  // });
+
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+      company: branch.companyId.name,
+    })) || [];
 
   const stats = [
     {
@@ -106,7 +121,7 @@ export default function FoodImagesPage() {
     },
     {
       title: "Active Foods",
-      value: foods?.filter(food => food.isActive)?.length?.toString() || "0",
+      value: foods?.filter((food) => food.isActive)?.length?.toString() || "0",
       icon: Camera,
       color: "text-purple-600",
     },
@@ -115,30 +130,30 @@ export default function FoodImagesPage() {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setSelectedFiles(files);
-    setFormData(prev => ({ ...prev, images: files }));
+    setFormData((prev) => ({ ...prev, images: files }));
   };
 
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleDietaryTagChange = (tag: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      dietaryTags: checked 
-        ? [...prev.dietaryTags, tag]
-        : prev.dietaryTags.filter(t => t !== tag)
-    }));
-  };
+  // const handleDietaryTagChange = (tag: string, checked: boolean) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     dietaryTags: checked
+  //       ? [...prev.dietaryTags, tag]
+  //       : prev.dietaryTags.filter((t) => t !== tag),
+  //   }));
+  // };
 
-  const handleAllergenChange = (allergen: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      allergens: checked 
-        ? [...prev.allergens, allergen]
-        : prev.allergens.filter(a => a !== allergen)
-    }));
-  };
+  // const handleAllergenChange = (allergen: string, checked: boolean) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     allergens: checked
+  //       ? [...prev.allergens, allergen]
+  //       : prev.allergens.filter((a) => a !== allergen),
+  //   }));
+  // };
 
   const handleUpload = () => {
     if (!formData.categoryId || !formData.name) {
@@ -162,8 +177,8 @@ export default function FoodImagesPage() {
           name: "",
           description: "",
           mealType: "Breakfast",
-          dietaryTags: [],
-          allergens: [],
+          // dietaryTags: [],
+          // allergens: [],
           nutritionalInfo: {},
           preparationTime: 0,
           images: [],
@@ -190,23 +205,27 @@ export default function FoodImagesPage() {
       return;
     }
 
-    createCategoryMutation.mutate({ name: newCategoryName }, {
-      onSuccess: () => {
-        toast({
-          title: "Category Created",
-          description: "Food category has been successfully created.",
-        });
-        setIsCategoryDialogOpen(false);
-        setNewCategoryName("");
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error",
-          description: error.response?.data?.message || "Failed to create category",
-          variant: "destructive",
-        });
-      },
-    });
+    createCategoryMutation.mutate(
+      { name: newCategoryName },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Category Created",
+            description: "Food category has been successfully created.",
+          });
+          setIsCategoryDialogOpen(false);
+          setNewCategoryName("");
+        },
+        onError: (error: any) => {
+          toast({
+            title: "Error",
+            description:
+              error.response?.data?.message || "Failed to create category",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const handleDelete = (foodId: string) => {
@@ -218,14 +237,19 @@ export default function FoodImagesPage() {
   };
 
   // Filter foods based on search and filters
-  const filteredFoods = foods?.filter(food => {
-    const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         food.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMeal = selectedMeal === "all-meals" || food.mealType.toLowerCase() === selectedMeal;
-    const matchesFilter = activeFilter === "All" || food.mealType === activeFilter;
-    
-    return matchesSearch && matchesMeal && matchesFilter;
-  }) || [];
+  const filteredFoods =
+    foods?.filter((food) => {
+      const matchesSearch =
+        food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        food.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesMeal =
+        selectedMeal === "all-meals" ||
+        food.mealType.toLowerCase() === selectedMeal;
+      const matchesFilter =
+        activeFilter === "All" || food.mealType === activeFilter;
+
+      return matchesSearch && matchesMeal && matchesFilter;
+    }) || [];
 
   return (
     <DashboardLayout>
@@ -236,10 +260,10 @@ export default function FoodImagesPage() {
             <h1 className="text-2xl font-bold">Food Management</h1>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
+            {/* <Button variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               Export Gallery
-            </Button>
+            </Button> */}
             <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -274,7 +298,7 @@ export default function FoodImagesPage() {
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <Button 
+                      <Button
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
                       >
@@ -298,7 +322,9 @@ export default function FoodImagesPage() {
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={(e) => handleFormChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleFormChange("name", e.target.value)
+                        }
                         placeholder="Enter food name"
                       />
                     </div>
@@ -306,7 +332,9 @@ export default function FoodImagesPage() {
                       <Label htmlFor="mealType">Meal Type *</Label>
                       <Select
                         value={formData.mealType}
-                        onValueChange={(value) => handleFormChange("mealType", value)}
+                        onValueChange={(value) =>
+                          handleFormChange("mealType", value)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select meal type" />
@@ -315,7 +343,7 @@ export default function FoodImagesPage() {
                           <SelectItem value="Breakfast">Breakfast</SelectItem>
                           <SelectItem value="Lunch">Lunch</SelectItem>
                           <SelectItem value="Dinner">Dinner</SelectItem>
-                          <SelectItem value="Snack">Snack</SelectItem>
+                          {/* <SelectItem value="Snack">Snack</SelectItem> */}
                         </SelectContent>
                       </Select>
                     </div>
@@ -327,7 +355,9 @@ export default function FoodImagesPage() {
                     <div className="flex gap-2">
                       <Select
                         value={formData.categoryId}
-                        onValueChange={(value) => handleFormChange("categoryId", value)}
+                        onValueChange={(value) =>
+                          handleFormChange("categoryId", value)
+                        }
                       >
                         <SelectTrigger className="flex-1">
                           <SelectValue placeholder="Select category" />
@@ -340,10 +370,17 @@ export default function FoodImagesPage() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                      <Dialog
+                        open={isCategoryDialogOpen}
+                        onOpenChange={setIsCategoryDialogOpen}
+                      >
                         <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Plus className="h-4 w-4" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-[#F87D7D]"
+                          >
+                            <Plus className="h-5 w-5 text-white font-bold" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -355,11 +392,15 @@ export default function FoodImagesPage() {
                           </DialogHeader>
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="categoryName">Category Name</Label>
+                              <Label htmlFor="categoryName">
+                                Category Name
+                              </Label>
                               <Input
                                 id="categoryName"
                                 value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                onChange={(e) =>
+                                  setNewCategoryName(e.target.value)
+                                }
                                 placeholder="Enter category name"
                               />
                             </div>
@@ -386,58 +427,92 @@ export default function FoodImagesPage() {
                     <Textarea
                       id="description"
                       value={formData.description}
-                      onChange={(e) => handleFormChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleFormChange("description", e.target.value)
+                      }
                       placeholder="Describe the food item..."
                     />
                   </div>
 
                   {/* Preparation Time */}
                   <div className="space-y-2">
-                    <Label htmlFor="preparationTime">Preparation Time (minutes)</Label>
+                    <Label htmlFor="preparationTime">
+                      Preparation Time (minutes)
+                    </Label>
                     <Input
                       id="preparationTime"
                       type="number"
                       value={formData.preparationTime}
-                      onChange={(e) => handleFormChange("preparationTime", parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleFormChange(
+                          "preparationTime",
+                          parseInt(e.target.value) || 0
+                        )
+                      }
                       placeholder="Enter preparation time"
                     />
                   </div>
 
                   {/* Dietary Tags */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label>Dietary Tags</Label>
                     <div className="grid grid-cols-3 gap-2">
-                      {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Halal', 'Kosher'].map((tag) => (
-                        <label key={tag} className="flex items-center space-x-2">
+                      {[
+                        "Vegetarian",
+                        "Vegan",
+                        "Gluten-Free",
+                        "Dairy-Free",
+                        "Halal",
+                        "Kosher",
+                      ].map((tag) => (
+                        <label
+                          key={tag}
+                          className="flex items-center space-x-2"
+                        >
                           <input
                             type="checkbox"
                             checked={formData.dietaryTags.includes(tag)}
-                            onChange={(e) => handleDietaryTagChange(tag, e.target.checked)}
+                            onChange={(e) =>
+                              handleDietaryTagChange(tag, e.target.checked)
+                            }
                             className="rounded"
                           />
                           <span className="text-sm">{tag}</span>
                         </label>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Allergens */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label>Allergens</Label>
                     <div className="grid grid-cols-3 gap-2">
-                      {['Nuts', 'Dairy', 'Eggs', 'Soy', 'Wheat', 'Fish', 'Shellfish'].map((allergen) => (
-                        <label key={allergen} className="flex items-center space-x-2">
+                      {[
+                        "Nuts",
+                        "Dairy",
+                        "Eggs",
+                        "Soy",
+                        "Wheat",
+                        "Fish",
+                        "Shellfish",
+                      ].map((allergen) => (
+                        <label
+                          key={allergen}
+                          className="flex items-center space-x-2"
+                        >
                           <input
                             type="checkbox"
                             checked={formData.allergens.includes(allergen)}
-                            onChange={(e) => handleAllergenChange(allergen, e.target.checked)}
+                            onChange={(e) =>
+                              handleAllergenChange(allergen, e.target.checked)
+                            }
                             className="rounded"
                           />
                           <span className="text-sm">{allergen}</span>
                         </label>
                       ))}
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Nutritional Information */}
                   <div className="space-y-2">
@@ -449,10 +524,12 @@ export default function FoodImagesPage() {
                           id="calories"
                           type="number"
                           value={formData.nutritionalInfo.calories || ""}
-                          onChange={(e) => handleFormChange("nutritionalInfo", {
-                            ...formData.nutritionalInfo,
-                            calories: parseInt(e.target.value) || undefined
-                          })}
+                          onChange={(e) =>
+                            handleFormChange("nutritionalInfo", {
+                              ...formData.nutritionalInfo,
+                              calories: parseInt(e.target.value) || undefined,
+                            })
+                          }
                           placeholder="Calories"
                         />
                       </div>
@@ -462,10 +539,12 @@ export default function FoodImagesPage() {
                           id="protein"
                           type="number"
                           value={formData.nutritionalInfo.protein || ""}
-                          onChange={(e) => handleFormChange("nutritionalInfo", {
-                            ...formData.nutritionalInfo,
-                            protein: parseInt(e.target.value) || undefined
-                          })}
+                          onChange={(e) =>
+                            handleFormChange("nutritionalInfo", {
+                              ...formData.nutritionalInfo,
+                              protein: parseInt(e.target.value) || undefined,
+                            })
+                          }
                           placeholder="Protein"
                         />
                       </div>
@@ -479,11 +558,13 @@ export default function FoodImagesPage() {
                   >
                     Cancel
                   </Button>
-                  <Button 
+                  <Button
                     onClick={handleUpload}
                     disabled={createFoodMutation.isPending}
                   >
-                    {createFoodMutation.isPending ? "Creating..." : "Create Food"}
+                    {createFoodMutation.isPending
+                      ? "Creating..."
+                      : "Create Food"}
                   </Button>
                 </div>
               </DialogContent>
@@ -529,8 +610,8 @@ export default function FoodImagesPage() {
               </div>
 
               {/* Filters Row */}
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1 max-w-sm">
+              <div className="grid grid-cols-4 justify-between gap-4">
+                <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search foods..."
@@ -543,26 +624,31 @@ export default function FoodImagesPage() {
                   type="text"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-32"
+                  className="w-full"
                 />
                 <Select
                   value={selectedBranch}
                   onValueChange={setSelectedBranch}
                 >
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all-branches">All Branches</SelectItem>
-                    {userBranches.map((branch) => (
-                      <SelectItem key={branch._id} value={branch._id}>
-                        {branch.name}
+                    {allBranches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{branch.name}</span>-
+                          <Badge className="bg-[#F87D7D] text-white">
+                            {branch.company}
+                          </Badge>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
                 <Select value={selectedMeal} onValueChange={setSelectedMeal}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
                   </SelectTrigger>
                   <SelectContent>
@@ -572,10 +658,10 @@ export default function FoodImagesPage() {
                     <SelectItem value="dinner">Dinner</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm">
+                {/* <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
-                </Button>
+                </Button> */}
               </div>
 
               {/* Filter Tabs with Icons */}
@@ -643,7 +729,7 @@ export default function FoodImagesPage() {
                     Dinner
                   </div>
                 </Button>
-                <Button
+                {/* <Button
                   variant={activeFilter === "Snack" ? "default" : "outline"}
                   size="lg"
                   onClick={() => setActiveFilter("Snack")}
@@ -659,7 +745,7 @@ export default function FoodImagesPage() {
                     </div>
                     Snack
                   </div>
-                </Button>
+                </Button> */}
               </div>
 
               {/* Loading State */}
@@ -678,7 +764,10 @@ export default function FoodImagesPage() {
                     >
                       <div className="relative">
                         <img
-                          src={food.images?.[0] || "/placeholder.svg?height=200&width=300&text=Food+Image"}
+                          src={
+                            food.images?.[0] ||
+                            "/placeholder.svg?height=200&width=300&text=Food+Image"
+                          }
                           alt={food.name}
                           className="w-full h-48 object-cover"
                         />
@@ -715,11 +804,15 @@ export default function FoodImagesPage() {
                           <div className="space-y-1 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
-                              <span>{food.branchId?.name || "Unknown Branch"}</span>
+                              <span>
+                                {food.branchId?.name || "Unknown Branch"}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              <span>{food.categoryId?.name || "Unknown Category"}</span>
+                              <span>
+                                {food.categoryId?.name || "Unknown Category"}
+                              </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
@@ -746,10 +839,9 @@ export default function FoodImagesPage() {
                   <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-lg font-medium mb-2">No foods found</h3>
                   <p className="text-muted-foreground mb-4">
-                    {searchTerm || activeFilter !== "All" 
+                    {searchTerm || activeFilter !== "All"
                       ? "Try adjusting your search or filters"
-                      : "Get started by adding your first food item"
-                    }
+                      : "Get started by adding your first food item"}
                   </p>
                   {!searchTerm && activeFilter === "All" && (
                     <Button

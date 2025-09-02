@@ -20,6 +20,8 @@ import {
 import { Search } from "lucide-react";
 import { useGetQRCodes } from "@/hooks/useGetQRCodes";
 import { QRCodeTable } from "@/components/qr-scanner/QRCodeTable";
+import { useBranches } from "@/hooks/useGetBranches";
+import { Badge } from "@/components/ui/badge";
 
 interface QRCode {
   _id: string;
@@ -35,18 +37,18 @@ export default function QRScannerPage() {
   const [selectedBranch, setSelectedBranch] = useState("all");
   const { data: qrcodes = [], isPending: isQRCodesPending } = useGetQRCodes();
 
-  // Extract unique QR code types and branches for dropdowns
-  const types = useMemo(
-    () => [...new Set(qrcodes.map((qr: QRCode) => qr.type))].sort(),
-    [qrcodes]
-  );
-  const branches = useMemo(
-    () =>
-      [...new Set(qrcodes.map((qr: QRCode) => JSON.stringify(qr.branchId)))]
-        .map((branch) => JSON.parse(branch))
-        .sort((a, b) => a?.name.localeCompare(b?.name)),
-    [qrcodes]
-  );
+  const { data: branchData } = useBranches();
+
+  //  useEffect(() => {
+  //    console.log("branch data", branchData);
+  //  });
+
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+      company: branch.companyId.name,
+    })) || [];
 
   // Filter QR codes based on search term, type, and branch
   const filteredQRCodes = qrcodes.filter((qr: QRCode) => {
@@ -80,7 +82,7 @@ export default function QRScannerPage() {
               <div className="text-center py-8">Loading QR codes...</div>
             ) : (
               <>
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -97,14 +99,19 @@ export default function QRScannerPage() {
                     value={selectedBranch}
                     onValueChange={setSelectedBranch}
                   >
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="All Branches" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Branches</SelectItem>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch?._id} value={branch?._id}>
-                          {branch?.name}
+                      {allBranches.map((branch) => (
+                        <SelectItem key={branch?.id} value={branch?.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{branch.name}</span>-
+                            <Badge className="bg-[#F87D7D] text-white">
+                              {branch.company}
+                            </Badge>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

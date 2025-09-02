@@ -192,10 +192,10 @@ export default function WelfarePage() {
       description="Monitor and manage resident welfare checks across all branches"
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+          {/* <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
             Export Report
-          </Button>
+          </Button> */}
           {/* <Button size="sm" onClick={handleNewCheck}>
             <Plus className="h-4 w-4 mr-2" />
             New Check

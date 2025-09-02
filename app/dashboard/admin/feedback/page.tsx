@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useFoodFeedbacks } from "@/hooks/useGetFoodFeedback";
 import { FeedbackTable } from "@/components/feedback/FeedbackTable";
 import { DisplayFeedback } from "@/hooks/useGetFoodFeedback";
+import { useBranches } from "@/hooks/useGetBranches";
 
 export default function FeedbackPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,6 +49,7 @@ export default function FeedbackPage() {
   const { toast } = useToast();
 
   const { data, isLoading, error } = useFoodFeedbacks();
+  const { data: branchData } = useBranches();
 
   if (isLoading) {
     return <div>Loading feedback data...</div>;
@@ -79,7 +81,16 @@ export default function FeedbackPage() {
       dietary: [], // No dietary data
     })) || [];
 
-  const branches = Array.from(new Set(transformed.map((f) => f.branch)));
+  // useEffect(() => {
+  //   console.log("branch data", branchData);
+  // });
+
+  const allBranches =
+    branchData?.map((branch: any) => ({
+      id: branch._id,
+      name: branch.name,
+      company: branch.companyId.name,
+    })) || [];
   const mealTypes = ["Weekly"]; // Adjusted to match API data
 
   const filteredFeedback = transformed.filter((feedback) => {
@@ -205,7 +216,7 @@ export default function FeedbackPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -221,23 +232,28 @@ export default function FeedbackPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full md:w-48"
+                className="w-full"
               />
-              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                <SelectTrigger className="w-full md:w-48">
+              {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Branches" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Branches</SelectItem>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch}
+                  {allBranches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{branch.name}</span>-
+                        <Badge className="bg-[#F87D7D] text-white">
+                          {branch.company}
+                        </Badge>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select> */}
               <Select value={selectedMeal} onValueChange={setSelectedMeal}>
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Meals" />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,7 +266,7 @@ export default function FeedbackPage() {
                 </SelectContent>
               </Select>
               <Select value={selectedRating} onValueChange={setSelectedRating}>
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Ratings" />
                 </SelectTrigger>
                 <SelectContent>

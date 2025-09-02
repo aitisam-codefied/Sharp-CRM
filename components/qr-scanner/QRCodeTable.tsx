@@ -170,9 +170,9 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
               <TableHead className="text-white font-semibold">
                 Generated On
               </TableHead>
-              <TableHead className="text-white font-semibold">
+              {/* <TableHead className="text-white font-semibold">
                 Actions
-              </TableHead>
+              </TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -226,7 +226,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                     </div>
                   </TableCell>
                   <TableCell>{formatDate(qr.createdAt)}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -246,7 +246,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               );
             })}

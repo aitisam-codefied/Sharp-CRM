@@ -35,7 +35,7 @@ import { ClockRecord } from "@/lib/types";
 
 interface ClockRecordsTableProps {
   clockRecords: ClockRecord[];
-  branches: string[];
+  branches: any[];
 }
 
 export default function ClockRecordsTable({
@@ -59,7 +59,7 @@ export default function ClockRecordsTable({
       record.staff.username?.toLowerCase().includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
-      selectedBranch === "all" || record.branch.name === selectedBranch;
+      selectedBranch === "all" || record.branch._id === selectedBranch;
     const matchesDate = selectedDate === "" || record.date === selectedDate;
 
     return matchesSearch && matchesBranch && matchesDate;
@@ -101,7 +101,7 @@ export default function ClockRecordsTable({
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
+      <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -121,17 +121,22 @@ export default function ClockRecordsTable({
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setSelectedDate(e.target.value)
           }
-          className="w-full md:w-48"
+          className="w-full"
         />
         <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-          <SelectTrigger className="w-full md:w-48">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="All Branches" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Branches</SelectItem>
             {branches.map((branch) => (
-              <SelectItem key={branch} value={branch}>
-                {branch}
+              <SelectItem key={branch.id} value={branch.id}>
+                <div className="flex items-center gap-2">
+                  <span>{branch.name}</span>-
+                  <Badge className="bg-[#F87D7D] text-white">
+                    {branch.company}
+                  </Badge>
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -152,7 +157,7 @@ export default function ClockRecordsTable({
               <TableHead>On Break</TableHead>
               <TableHead>Disconnected</TableHead>
               {/* <TableHead>Early Departure</TableHead> */}
-              
+
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>

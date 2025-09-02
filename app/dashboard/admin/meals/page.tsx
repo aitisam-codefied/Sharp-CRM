@@ -191,10 +191,7 @@ export default function MealsPage() {
                   <SelectItem value="dinner">Dinner</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="sm">
-                <Filter className="h-4 w-4 mr-2" />
-                More Filters
-              </Button>
+            
             </div>
 
             <MealsTable

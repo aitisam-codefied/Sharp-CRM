@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "../ui/badge";
 
 interface AddMedicalStaffModalProps {
   isOpen: boolean;
@@ -63,6 +64,7 @@ export function AddMedicalStaffModal({
     branchData?.map((branch: any) => ({
       id: branch._id,
       name: branch.name,
+      company: branch.companyId.name,
     })) || [];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -207,7 +209,12 @@ export function AddMedicalStaffModal({
               <SelectContent>
                 {allBranches.map((branch: any) => (
                   <SelectItem key={branch.id} value={branch.id}>
-                    {branch.name}
+                    <div className="flex items-center gap-2">
+                      <span>{branch.name}</span>-
+                      <Badge className="bg-[#F87D7D] text-white">
+                        {branch.company}
+                      </Badge>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>

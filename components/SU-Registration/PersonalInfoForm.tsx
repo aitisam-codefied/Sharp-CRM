@@ -13,6 +13,7 @@ import {
 import DependantsModal from "./DependantsModal";
 import { useBranches } from "@/hooks/useGetBranches";
 import { Textarea } from "../ui/textarea";
+import { Badge } from "../ui/badge";
 
 const nationalities = [
   "Syrian",
@@ -33,6 +34,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
     branchData?.map((branch: any) => ({
       id: branch._id,
       name: branch.name,
+      company: branch.companyId.name,
     })) || [];
 
   // const branches = allBranches.map((b) => b.name);
@@ -193,13 +195,29 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>
-          <Input
-            id="language"
-            placeholder="Enter preferred language"
+          <Select
             value={formData.guests[0].language || ""}
-            onChange={(e) => handleInputChange(e, 0)}
-            className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-          />
+            onValueChange={(value) =>
+              setFormData((prev: any) => ({
+                ...prev,
+                guests: prev.guests.map((guest: any, index: number) =>
+                  index === 0 ? { ...guest, language: value } : guest
+                ),
+              }))
+            }
+          >
+            <SelectTrigger className="w-full border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors">
+              <SelectValue placeholder="Select preferred language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="English">English</SelectItem>
+              <SelectItem value="Spanish">Spanish</SelectItem>
+              <SelectItem value="French">French</SelectItem>
+              <SelectItem value="German">German</SelectItem>
+              <SelectItem value="Chinese">Chinese</SelectItem>
+              <SelectItem value="Urdu">Urdu</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -218,7 +236,12 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             <SelectContent>
               {allBranches?.map((branch: any) => (
                 <SelectItem key={branch.id} value={branch.id}>
-                  {branch.name}
+                  <div className="flex items-center gap-2">
+                    <span>{branch.name}</span>-
+                    <Badge className="bg-[#F87D7D] text-white">
+                      {branch.company}
+                    </Badge>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>

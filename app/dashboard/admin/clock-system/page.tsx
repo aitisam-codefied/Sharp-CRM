@@ -29,9 +29,10 @@ export default function ClockSystemPage() {
     branchData?.map((branch: any) => ({
       id: branch._id,
       name: branch.name,
+      company: branch.companyId.name,
     })) || [];
 
-  const branches = allBranches.map((b) => b.name);
+  // const branches = allBranches.map((b) => b.name);
 
   // Initialize Socket.IO and set up event listeners
   useEffect(() => {
@@ -172,7 +173,7 @@ export default function ClockSystemPage() {
           <CardContent>
             <ClockRecordsTable
               clockRecords={clockRecords}
-              branches={branches}
+              branches={allBranches}
             />
           </CardContent>
         </Card>

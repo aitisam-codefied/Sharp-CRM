@@ -181,6 +181,18 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                       <AlertDescription>{roomErrors[room.id]}</AlertDescription>
                     </Alert>
                   )}
+                  {totalAssigned !== totalPeople && (
+                    <Alert variant="destructive" className="mt-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        {totalAssigned < totalPeople
+                          ? `You need to assign ${
+                              totalPeople - totalAssigned
+                            } more people.`
+                          : "You have assigned more people than needed."}
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </div>
               </div>
             ))}
@@ -375,15 +387,27 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Label htmlFor={`language-${i}`} className="text-gray-600">
                     Language
                   </Label>
-                  <Input
-                    id={`language-${i}`}
-                    placeholder="Enter preferred language"
+                  <Select
                     value={formData.guests?.[i]?.language || ""}
-                    onChange={(e) =>
-                      handleDependantChange(i, "language", e.target.value)
+                    onValueChange={(value) =>
+                      handleDependantChange(i, "language", value)
                     }
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                  />
+                  >
+                    <SelectTrigger
+                      id={`language-${i}`}
+                      className="w-full border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                    >
+                      <SelectValue placeholder="Select preferred language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="English">English</SelectItem>
+                      <SelectItem value="Spanish">Spanish</SelectItem>
+                      <SelectItem value="French">French</SelectItem>
+                      <SelectItem value="German">German</SelectItem>
+                      <SelectItem value="Chinese">Chinese</SelectItem>
+                      <SelectItem value="Urdu">Urdu</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
