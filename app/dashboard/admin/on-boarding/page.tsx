@@ -56,7 +56,7 @@ interface Room {
   type: string;
   status: string;
   amenities: string[];
-  capacity: number;
+  capacity: any;
   price: number;
 }
 
@@ -93,6 +93,7 @@ export const OnBoardingFormValues = {
             {
               roomNumber: "",
               type: "",
+              capacity: 1,
               amenities: [""],
             },
           ],
@@ -421,7 +422,7 @@ export default function OnboardingPage() {
                   (room) =>
                     room.roomNumber.trim() !== "" &&
                     room.capacity > 0 &&
-                    room.price >= 0 &&
+                    // room.price >= 0 &&
                     room.type &&
                     room.status
                 ) && uniqueRooms
@@ -532,6 +533,7 @@ export default function OnboardingPage() {
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),

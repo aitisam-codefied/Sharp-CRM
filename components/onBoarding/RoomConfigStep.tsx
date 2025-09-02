@@ -238,6 +238,36 @@ export default function RoomConfigStep({
                                         </SelectContent>
                                       </Select>
                                     </div>
+                                    <div className="space-y-2">
+                                      <Label>Room Capacity *</Label>
+                                      <Select
+                                        value={room.capacity}
+                                        onValueChange={(value) =>
+                                          updateRoom(
+                                            companyIndex,
+                                            branchIndex,
+                                            locationIndex,
+                                            roomIndex,
+                                            "capacity",
+                                            value
+                                          )
+                                        }
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select Capacity" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {[1, 2, 3, 4, 5].map((num) => (
+                                            <SelectItem
+                                              key={num}
+                                              value={String(num)}
+                                            >
+                                              {num}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
                                   </div>
 
                                   <div>

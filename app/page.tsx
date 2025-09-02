@@ -10,21 +10,15 @@ export default function HomePage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     if (user) {
-  //       router.push(`/dashboard/${user.role}`);
-  //     } else {
-  //       router.push("/login");
-  //     }
-  //   }
-  // }, [user, isLoading, router]);
-
   useEffect(() => {
     if (!isLoading) {
-      router.push("/login");
+      if (!user) {
+        // ✅ agar user nahi hai to login pe bhejo
+        router.push("/login");
+      }
+      // ✅ agar user hai to kuch mat karo (usi page pr rehne do)
     }
-  }, [isLoading, router]);
+  }, [user, isLoading, router]);
 
   if (isLoading) {
     return (
