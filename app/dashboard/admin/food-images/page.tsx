@@ -274,7 +274,7 @@ export default function FoodImagesPage() {
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add New Food</DialogTitle>
                   <DialogDescription>
@@ -383,7 +383,7 @@ export default function FoodImagesPage() {
                             <Plus className="h-5 w-5 text-white font-bold" />
                           </Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Create New Category</DialogTitle>
                             <DialogDescription>
@@ -610,7 +610,7 @@ export default function FoodImagesPage() {
               </div>
 
               {/* Filters Row */}
-              <div className="grid grid-cols-4 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -665,7 +665,7 @@ export default function FoodImagesPage() {
               </div>
 
               {/* Filter Tabs with Icons */}
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button
                   variant={activeFilter === "All" ? "default" : "outline"}
                   size="lg"

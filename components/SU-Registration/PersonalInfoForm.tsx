@@ -75,7 +75,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="fullName">Full Name *</Label>
           <Input
@@ -97,7 +97,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Phone Number</Label>
           <Input
@@ -118,7 +118,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
           <Select
@@ -182,7 +182,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Additional Notes</Label>
           <Textarea
@@ -221,7 +221,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="branch">Branch *</Label>
           <Select

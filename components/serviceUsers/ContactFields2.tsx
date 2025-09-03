@@ -22,7 +22,10 @@ export function ContactFields2({ control, register }: ContactFieldsProps) {
           return (
             <div className="space-y-2">
               {contacts.map((_, contactIndex) => (
-                <div key={contactIndex} className="grid grid-cols-3 gap-4">
+                <div
+                  key={contactIndex}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                >
                   <Input
                     placeholder="Contact Name"
                     {...register(`emergencyContacts.${contactIndex}.fullName`)}

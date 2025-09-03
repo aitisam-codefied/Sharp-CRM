@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 import axios from "axios";
 import api from "@/lib/axios";
+import { CustomPagination } from "../CustomPagination";
 
 interface QRCode {
   _id: string;
@@ -255,59 +256,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
       </div>
 
       {totalPages > 1 && (
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(currentPage - 1);
-                }}
-                className={`${
-                  currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-                } border-[#F87D7D] hover:border-[#F87D7D]`}
-                aria-disabled={currentPage === 1}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(page);
-                  }}
-                  className={`${
-                    currentPage === page
-                      ? "bg-[#F87D7D] text-white"
-                      : "text-[#F87D7D] hover:bg-[#F87D7D] hover:text-white"
-                  } border-[#F87D7D]`}
-                  isActive={currentPage === page}
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(currentPage + 1);
-                }}
-                className={`${
-                  currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-                } border-[#F87D7D] hover:border-[#F87D7D]`}
-                aria-disabled={currentPage === totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
 
       <AlertDialog open={isModalOpen} onOpenChange={closeConfirmationModal}>

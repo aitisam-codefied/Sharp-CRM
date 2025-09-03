@@ -105,7 +105,7 @@ export function EditMedicalStaffModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">w
         <DialogHeader>
           <DialogTitle>Edit Staff Details</DialogTitle>
         </DialogHeader>

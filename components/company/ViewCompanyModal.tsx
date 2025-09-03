@@ -205,7 +205,7 @@ export default function ViewCompanyModal({
   if (!companyData) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="text-center py-8">
             <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
               <span className="text-2xl">⚠️</span>

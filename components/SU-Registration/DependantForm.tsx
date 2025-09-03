@@ -203,7 +203,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
           </div>
         )}
 
-        <div className="mt-4 flex items-center gap-4">
+        <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
           <p className="text-sm font-medium text-gray-800">
             Total assigned: {totalAssigned} / {totalPeople}
           </p>
@@ -234,7 +234,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
               <h3 className="font-semibold text-md mb-4 text-gray-800">
                 Dependant {i}
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-gray-600">Name *</Label>
                   <Input
@@ -265,7 +265,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`phone-${i}`} className="text-gray-600">
                     Phone Number
@@ -295,7 +295,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`gender-${i}`} className="text-gray-600">
                     Gender
@@ -344,7 +344,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
               </div>
 
               {/* New fields for each dependant: Address and Language */}
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`address-${i}`} className="text-gray-600">
                     Address

@@ -93,7 +93,7 @@ export const useClockRecords = () => {
         success: boolean;
         message: string;
         data: ApiClockRecord[];
-      }>("/clock-in-out/all-records");
+      }>("/clock-in-out/list");
       if (!response.data.success) {
         throw new Error(
           response.data.message || "Failed to fetch clock records"

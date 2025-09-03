@@ -279,7 +279,7 @@ export default function AddStaffDialog() {
           Add Staff
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogDescription>

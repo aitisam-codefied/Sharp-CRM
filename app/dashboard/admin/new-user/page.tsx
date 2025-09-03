@@ -20,6 +20,18 @@ import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm"
 import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 import { useCreateGuest } from "@/hooks/useCreateGuest";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
+
+const triggerHaptic = async (style: ImpactStyle) => {
+  // ✅ Only run on iOS/Android, not web
+  if (Capacitor.getPlatform() !== "web") {
+    try {
+      await Haptics.impact({ style });
+    } catch (err) {
+      console.warn("Haptics not available:", err);
+    }
+  }
+};
 
 // Guest Emergency Contact
 interface EmergencyContact {
@@ -329,226 +341,244 @@ export default function NewUserPage() {
   // Move this hook to the top-level of your component (not inside handleSubmit)
   const createGuestMutation = useCreateGuest();
 
-  const handleSubmit = () => {
-    // Deep clone and clean data
-    let cleanedData = structuredClone(formData);
+  const handleSubmit = async () => {
+    try {
+      await triggerHaptic(ImpactStyle.Medium);
 
-    // 1. assignedRooms ko object → array of keys
-    if (
-      cleanedData.assignedRooms &&
-      typeof cleanedData.assignedRooms === "object"
-    ) {
-      cleanedData.assignedRooms = Object.keys(cleanedData.assignedRooms);
-    }
+      // Deep clone and clean data
+      let cleanedData = structuredClone(formData);
 
-    // 2. Remove extra fields
-    delete cleanedData?.hasKids;
-    delete cleanedData?.numKids;
-    delete cleanedData?.occupancy;
-    delete cleanedData?.sameEmergencyContact;
-    delete cleanedData?.sameMedic;
-    delete cleanedData?.roomRequirement;
-
-    // 3. Remove empty objects (recursive)
-    const removeEmptyObjects = (obj: any): any => {
-      if (obj instanceof File || obj instanceof Blob) {
-        return obj; // Preserve File or Blob objects
+      // 1. assignedRooms ko object → array of keys
+      if (
+        cleanedData.assignedRooms &&
+        typeof cleanedData.assignedRooms === "object"
+      ) {
+        cleanedData.assignedRooms = Object.keys(cleanedData.assignedRooms);
       }
-      if (Array.isArray(obj)) {
-        return obj
-          .map(removeEmptyObjects)
-          .filter(
-            (item) =>
-              !(
-                typeof item === "object" &&
-                !(item instanceof File || item instanceof Blob) &&
-                !Array.isArray(item) &&
-                Object.keys(item).length === 0
-              )
-          );
-      } else if (typeof obj === "object" && obj !== null) {
-        const newObj: any = {};
-        Object.entries(obj).forEach(([key, value]) => {
-          if (value instanceof File || value instanceof Blob) {
-            newObj[key] = value; // Preserve File or Blob objects
-          } else if (typeof value === "object") {
-            const cleanedValue = removeEmptyObjects(value);
-            if (
-              !(
-                typeof cleanedValue === "object" &&
+
+      // 2. Remove extra fields
+      delete cleanedData?.hasKids;
+      delete cleanedData?.numKids;
+      delete cleanedData?.occupancy;
+      delete cleanedData?.sameEmergencyContact;
+      delete cleanedData?.sameMedic;
+      delete cleanedData?.roomRequirement;
+
+      // 3. Remove empty objects (recursive)
+      const removeEmptyObjects = (obj: any): any => {
+        if (obj instanceof File || obj instanceof Blob) {
+          return obj; // Preserve File or Blob objects
+        }
+        if (Array.isArray(obj)) {
+          return obj
+            .map(removeEmptyObjects)
+            .filter(
+              (item) =>
                 !(
-                  cleanedValue instanceof File || cleanedValue instanceof Blob
-                ) &&
-                Object.keys(cleanedValue).length === 0
-              )
-            ) {
-              newObj[key] = cleanedValue;
+                  typeof item === "object" &&
+                  !(item instanceof File || item instanceof Blob) &&
+                  !Array.isArray(item) &&
+                  Object.keys(item).length === 0
+                )
+            );
+        } else if (typeof obj === "object" && obj !== null) {
+          const newObj: any = {};
+          Object.entries(obj).forEach(([key, value]) => {
+            if (value instanceof File || value instanceof Blob) {
+              newObj[key] = value; // Preserve File or Blob objects
+            } else if (typeof value === "object") {
+              const cleanedValue = removeEmptyObjects(value);
+              if (
+                !(
+                  typeof cleanedValue === "object" &&
+                  !(
+                    cleanedValue instanceof File || cleanedValue instanceof Blob
+                  ) &&
+                  Object.keys(cleanedValue).length === 0
+                )
+              ) {
+                newObj[key] = cleanedValue;
+              }
+            } else if (value !== "" && value !== null && value !== undefined) {
+              newObj[key] = value;
             }
-          } else if (value !== "" && value !== null && value !== undefined) {
-            newObj[key] = value;
-          }
-        });
-        return newObj;
+          });
+          return newObj;
+        }
+        return obj;
+      };
+
+      cleanedData = removeEmptyObjects(cleanedData);
+
+      console.log("📤 Final cleaned data", cleanedData);
+
+      // Verify File objects
+      if (!(cleanedData.occupancyAgreement instanceof File)) {
+        console.error(
+          "occupancyAgreement is not a File:",
+          cleanedData.occupancyAgreement
+        );
       }
-      return obj;
-    };
-
-    cleanedData = removeEmptyObjects(cleanedData);
-
-    console.log("📤 Final cleaned data", cleanedData);
-
-    // Verify File objects
-    if (!(cleanedData.occupancyAgreement instanceof File)) {
-      console.error(
-        "occupancyAgreement is not a File:",
-        cleanedData.occupancyAgreement
-      );
-    }
-    if (!(cleanedData.signature instanceof File)) {
-      console.error("signature is not a File:", cleanedData.signature);
-    }
-
-    // Prepare FormData with flattened fields
-    const apiFormData = new FormData();
-
-    console.log("pdf", cleanedData.occupancyAgreement instanceof File);
-    // Append files
-    if (cleanedData.occupancyAgreement instanceof File) {
-      console.log("object", cleanedData.occupancyAgreement instanceof File);
-      apiFormData.append("occupancyAgreement", cleanedData.occupancyAgreement);
-    }
-    console.log("signature", cleanedData.signature instanceof File);
-    if (cleanedData.signature instanceof File) {
-      console.log("object", cleanedData.signature instanceof File);
-      apiFormData.append("signature", cleanedData.signature);
-    }
-
-    // Append simple fields
-    apiFormData.append("branchId", cleanedData.branchId || "");
-    if (cleanedData.medic) {
-      apiFormData.append("medic", cleanedData.medic || "");
-    }
-    apiFormData.append(
-      "consentAccuracy",
-      String(cleanedData.consentAccuracy || false)
-    );
-    apiFormData.append(
-      "consentDataProcessing",
-      String(cleanedData.consentDataProcessing || false)
-    );
-    apiFormData.append(
-      "areThereMultipleGuests",
-      String(cleanedData.areThereMultipleGuests || false)
-    );
-
-    // Append assignedRooms as an array
-    (cleanedData.assignedRooms || []).forEach(
-      (roomId: string, index: number) => {
-        apiFormData.append(`assignedRooms[${index}]`, roomId);
+      if (!(cleanedData.signature instanceof File)) {
+        console.error("signature is not a File:", cleanedData.signature);
       }
-    );
 
-    // ✅ Sirf assignedRooms ke locationIds lo
-    const selectedLocationIds = (rooms || [])
-      .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
-      .map((room: any) => room.locationId);
+      // Prepare FormData with flattened fields
+      const apiFormData = new FormData();
 
-    selectedLocationIds.forEach((locId: string, index: number) => {
-      apiFormData.append(`locations[${index}]`, locId);
-    });
+      console.log("pdf", cleanedData.occupancyAgreement instanceof File);
+      // Append files
+      if (cleanedData.occupancyAgreement instanceof File) {
+        console.log("object", cleanedData.occupancyAgreement instanceof File);
+        apiFormData.append(
+          "occupancyAgreement",
+          cleanedData.occupancyAgreement
+        );
+      }
+      console.log("signature", cleanedData.signature instanceof File);
+      if (cleanedData.signature instanceof File) {
+        console.log("object", cleanedData.signature instanceof File);
+        apiFormData.append("signature", cleanedData.signature);
+      }
 
-    // Append emergencyContact fields
-    if (cleanedData.emergencyContact) {
+      // Append simple fields
+      apiFormData.append("branchId", cleanedData.branchId || "");
+      if (cleanedData.medic) {
+        apiFormData.append("medic", cleanedData.medic || "");
+      }
       apiFormData.append(
-        "emergencyContact[fullName]",
-        cleanedData.emergencyContact.fullName || ""
+        "consentAccuracy",
+        String(cleanedData.consentAccuracy || false)
       );
       apiFormData.append(
-        "emergencyContact[phoneNumber]",
-        cleanedData.emergencyContact.phoneNumber || ""
+        "consentDataProcessing",
+        String(cleanedData.consentDataProcessing || false)
       );
       apiFormData.append(
-        "emergencyContact[relationship]",
-        cleanedData.emergencyContact.relationship || ""
-      );
-    }
-
-    // Append guests array with nested fields
-    (cleanedData.guests || []).forEach((guest: Guest, index: number) => {
-      apiFormData.append(`guests[${index}][fullName]`, guest.fullName || "");
-      apiFormData.append(
-        `guests[${index}][emailAddress]`,
-        guest.emailAddress || ""
-      );
-      apiFormData.append(
-        `guests[${index}][phoneNumber]`,
-        guest.phoneNumber || ""
-      );
-      apiFormData.append(
-        `guests[${index}][dateOfBirth]`,
-        guest.dateOfBirth || ""
-      );
-      apiFormData.append(`guests[${index}][gender]`, guest.gender || "");
-      apiFormData.append(
-        `guests[${index}][nationality]`,
-        guest.nationality || ""
-      );
-      apiFormData.append(`guests[${index}][language]`, guest.language || "");
-      apiFormData.append(
-        `guests[${index}][numberOfDependents]`,
-        String(guest.numberOfDependents || 0)
-      );
-      apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
-      apiFormData.append(`guests[${index}][address]`, guest.address || "");
-      apiFormData.append(
-        `guests[${index}][medicalCondition]`,
-        guest.medicalCondition || ""
-      );
-      apiFormData.append(`guests[${index}][allergies]`, guest.allergies || "");
-      apiFormData.append(
-        `guests[${index}][currentMedications]`,
-        guest.currentMedications || ""
-      );
-      apiFormData.append(
-        `guests[${index}][additionalNotes]`,
-        guest.additionalNotes || ""
+        "areThereMultipleGuests",
+        String(cleanedData.areThereMultipleGuests || false)
       );
 
-      // Append dietaryRequirements as an array
-      (guest.dietaryRequirements || []).forEach(
-        (req: string, reqIndex: number) => {
-          apiFormData.append(
-            `guests[${index}][dietaryRequirements][${reqIndex}]`,
-            req
-          );
+      // Append assignedRooms as an array
+      (cleanedData.assignedRooms || []).forEach(
+        (roomId: string, index: number) => {
+          apiFormData.append(`assignedRooms[${index}]`, roomId);
         }
       );
 
-      // Append emergencyContact for each guest
-      if (guest.emergencyContact) {
+      // ✅ Sirf assignedRooms ke locationIds lo
+      const selectedLocationIds = (rooms || [])
+        .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
+        .map((room: any) => room.locationId);
+
+      selectedLocationIds.forEach((locId: string, index: number) => {
+        apiFormData.append(`locations[${index}]`, locId);
+      });
+
+      // Append emergencyContact fields
+      if (cleanedData.emergencyContact) {
         apiFormData.append(
-          `guests[${index}][emergencyContact][fullName]`,
-          guest.emergencyContact.fullName || ""
+          "emergencyContact[fullName]",
+          cleanedData.emergencyContact.fullName || ""
         );
         apiFormData.append(
-          `guests[${index}][emergencyContact][phoneNumber]`,
-          guest.emergencyContact.phoneNumber || ""
+          "emergencyContact[phoneNumber]",
+          cleanedData.emergencyContact.phoneNumber || ""
         );
         apiFormData.append(
-          `guests[${index}][emergencyContact][relationship]`,
-          guest.emergencyContact.relationship || ""
+          "emergencyContact[relationship]",
+          cleanedData.emergencyContact.relationship || ""
         );
       }
-    });
 
-    const formDataObj: Record<string, any> = {};
-    apiFormData.forEach((value, key) => {
-      formDataObj[key] = value;
-    });
-    console.log("📦 FormData key-value pairs:", formDataObj);
+      // Append guests array with nested fields
+      (cleanedData.guests || []).forEach((guest: Guest, index: number) => {
+        apiFormData.append(`guests[${index}][fullName]`, guest.fullName || "");
+        apiFormData.append(
+          `guests[${index}][emailAddress]`,
+          guest.emailAddress || ""
+        );
+        apiFormData.append(
+          `guests[${index}][phoneNumber]`,
+          guest.phoneNumber || ""
+        );
+        apiFormData.append(
+          `guests[${index}][dateOfBirth]`,
+          guest.dateOfBirth || ""
+        );
+        apiFormData.append(`guests[${index}][gender]`, guest.gender || "");
+        apiFormData.append(
+          `guests[${index}][nationality]`,
+          guest.nationality || ""
+        );
+        apiFormData.append(`guests[${index}][language]`, guest.language || "");
+        apiFormData.append(
+          `guests[${index}][numberOfDependents]`,
+          String(guest.numberOfDependents || 0)
+        );
+        apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
+        apiFormData.append(`guests[${index}][address]`, guest.address || "");
+        apiFormData.append(
+          `guests[${index}][medicalCondition]`,
+          guest.medicalCondition || ""
+        );
+        apiFormData.append(
+          `guests[${index}][allergies]`,
+          guest.allergies || ""
+        );
+        apiFormData.append(
+          `guests[${index}][currentMedications]`,
+          guest.currentMedications || ""
+        );
+        apiFormData.append(
+          `guests[${index}][additionalNotes]`,
+          guest.additionalNotes || ""
+        );
 
-    // Call API via mutation
-    createGuestMutation.mutate(apiFormData);
+        // Append dietaryRequirements as an array
+        (guest.dietaryRequirements || []).forEach(
+          (req: string, reqIndex: number) => {
+            apiFormData.append(
+              `guests[${index}][dietaryRequirements][${reqIndex}]`,
+              req
+            );
+          }
+        );
+
+        // Append emergencyContact for each guest
+        if (guest.emergencyContact) {
+          apiFormData.append(
+            `guests[${index}][emergencyContact][fullName]`,
+            guest.emergencyContact.fullName || ""
+          );
+          apiFormData.append(
+            `guests[${index}][emergencyContact][phoneNumber]`,
+            guest.emergencyContact.phoneNumber || ""
+          );
+          apiFormData.append(
+            `guests[${index}][emergencyContact][relationship]`,
+            guest.emergencyContact.relationship || ""
+          );
+        }
+      });
+
+      const formDataObj: Record<string, any> = {};
+      apiFormData.forEach((value, key) => {
+        formDataObj[key] = value;
+      });
+      console.log("📦 FormData key-value pairs:", formDataObj);
+
+      // Call API via mutation
+      createGuestMutation.mutate(apiFormData);
+
+      // ✅ Success feedback
+      await triggerHaptic(ImpactStyle.Light);
+    } catch (err) {
+      console.error("Error in handleSubmit", err);
+
+      // Error feedback
+      await triggerHaptic(ImpactStyle.Heavy);
+    }
   };
 
   const renderStepContent = () => {
@@ -608,10 +638,13 @@ export default function NewUserPage() {
               {steps.map((step, index) => {
                 const isActive = currentStep === step.id;
                 return (
-                  <div key={step.id} className="flex items-center">
+                  <div
+                    key={step.id}
+                    className="flex items-center shrink-0 min-w-[80px] sm:min-w-[100px]"
+                  >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-8 h-8 flex items-center justify-center rounded-full border text-sm font-medium transition-all ${
+                        className={`w-8 h-8 flex items-center justify-center rounded-full border text-xs sm:text-sm font-medium transition-all ${
                           isActive
                             ? "bg-red-400 text-white"
                             : "bg-gray-100 text-gray-500"
@@ -620,7 +653,7 @@ export default function NewUserPage() {
                         {String(step.id).padStart(2, "0")}
                       </div>
                       <span
-                        className={`text-xs mt-2 text-center whitespace-nowrap ${
+                        className={`mt-2 text-center whitespace-nowrap text-[10px] sm:text-xs ${
                           isActive
                             ? "text-red-400 font-semibold"
                             : "text-gray-500"
@@ -630,7 +663,7 @@ export default function NewUserPage() {
                       </span>
                     </div>
                     {index < steps.length - 1 && (
-                      <div className="w-10 h-0.5 bg-gray-300 mx-2" />
+                      <div className="w-6 sm:w-10 h-0.5 bg-gray-300 mx-1 sm:mx-2" />
                     )}
                   </div>
                 );
@@ -638,6 +671,7 @@ export default function NewUserPage() {
             </div>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>{steps[currentStep - 1].title}</CardTitle>

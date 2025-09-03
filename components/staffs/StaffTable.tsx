@@ -354,7 +354,7 @@ export default function StaffTable() {
           )}
           {!isLoading && !isError && (
             <>
-              <div className="grid grid-cols-4 justify-between gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between gap-4 mb-6">
                 <div className="max-w-sm">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />

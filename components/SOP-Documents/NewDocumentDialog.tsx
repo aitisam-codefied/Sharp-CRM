@@ -128,11 +128,11 @@ export default function NewDocumentDialog({
     <Dialog open={isNewDocumentOpen} onOpenChange={setIsNewDocumentOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Upload Document
+          <Plus className="h-4 w-4" />
+          Upload
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload New Document</DialogTitle>
           <DialogDescription>
@@ -198,7 +198,7 @@ export default function NewDocumentDialog({
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select onValueChange={setCategory}>

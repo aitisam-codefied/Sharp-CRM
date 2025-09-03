@@ -121,7 +121,7 @@ export default function BranchPerformanceTable() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between gap-2 mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search" className="pl-10" />
@@ -156,10 +156,10 @@ export default function BranchPerformanceTable() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
+          {/* <Button variant="outline" size="sm">
             <Filter className="h-4 w-4 mr-2" />
             Filters
-          </Button>
+          </Button> */}
         </div>
         <div className="rounded-md border">
           <Table>

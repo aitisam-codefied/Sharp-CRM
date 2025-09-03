@@ -1,13 +1,13 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: 'com.smscrm.app',
-  appName: 'SMSCrm',
-  webDir: 'out',
+  appId: "com.smscrm.app",
+  appName: "SMSCrm",
+  webDir: ".next",
   server: {
-    androidScheme: "http",   // revert Capacitor 6 default to http
-    cleartext: true          // allow plain‑HTTP in Android WebView
-},
+    url: "https://beta.supasystem.co.uk", // 👈 put your deployed Next.js site here
+    cleartext: true,
+  },
 };
 
 export default config;

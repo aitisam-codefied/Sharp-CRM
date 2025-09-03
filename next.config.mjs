@@ -30,20 +30,20 @@
 // // export default pwaConfig(nextConfig);
 
 // next.config.js
-import withPWA from 'next-pwa';
+import withPWA from "next-pwa";
 
-const isNative = process.env.NEXT_PUBLIC_IS_NATIVE === 'true';
+const isNative = process.env.NEXT_PUBLIC_IS_NATIVE === "true";
 
 /** @type {import('next').NextConfig} */
 const baseConfig = {
-  output: 'standalone',
+  output: "standalone",
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
   images: { unoptimized: true },
 };
 
 const pwaConfig = withPWA({
-  dest: 'public',
+  dest: "public",
   register: true,
   skipWaiting: true,
   disable: isNative, // 🚀 disables PWA when building for native

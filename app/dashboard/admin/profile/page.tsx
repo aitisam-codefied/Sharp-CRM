@@ -426,7 +426,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-2 items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div>
                     <h3 className="font-semibold text-gray-900">Password</h3>
                     <p className="text-sm text-gray-600">
@@ -448,7 +448,7 @@ export default function ProfilePage() {
 
         {/* Email Change Modal */}
         <Dialog open={emailModalOpen} onOpenChange={setEmailModalOpen}>
-          <DialogContent className="bg-gradient-to-br from-white to-[#F87D7D]/5 border-[#F87D7D]/20 max-w-md">
+          <DialogContent className="bg-gradient-to-br from-white to-[#F87D7D]/5 border-[#F87D7D]/20 max-w-[95vw] sm:max-w-md">
             <DialogHeader>
               <div className="w-16 h-16 bg-gradient-to-br from-[#F87D7D] to-[#F87D7D]/80 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Mail className="h-8 w-8 text-white" />
@@ -511,7 +511,7 @@ export default function ProfilePage() {
 
         {/* Password Change Modal */}
         <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
-          <DialogContent className="bg-gradient-to-br from-white to-[#F87D7D]/5 border-[#F87D7D]/20 max-w-md">
+          <DialogContent className="bg-gradient-to-br from-white to-[#F87D7D]/5 border-[#F87D7D]/20 max-w-[95vw] sm:max-w-md">
             <DialogHeader>
               <div className="w-16 h-16 bg-gradient-to-br from-[#F87D7D] to-[#F87D7D]/80 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Lock className="h-8 w-8 text-white" />

@@ -23,7 +23,7 @@ export default function CompanyPage() {
       actions={
         showAddCompanyButton && (
           <Button size="sm" onClick={() => setAddCompanyModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4" />
             Add Company
           </Button>
         )

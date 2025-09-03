@@ -96,7 +96,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
             return (
               <div key={index} className="flex items-start space-x-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">
+                  <p className="text-xs sm:text-sm font-medium">
                     <Link
                       href={`/dashboard/admin/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
@@ -111,7 +111,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                         {time}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                       <Badge
                         variant="outline"
                         className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"

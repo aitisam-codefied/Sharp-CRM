@@ -95,7 +95,7 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
     <div className="border p-4 rounded-md">
       <h3 className="text-lg font-semibold mb-4">Basic Information</h3>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input

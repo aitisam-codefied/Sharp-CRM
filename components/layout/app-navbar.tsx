@@ -42,8 +42,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/providers/auth-provider";
 import Image from "next/image";
+import { Capacitor } from "@capacitor/core";
 
 export function AppNavbar() {
+  const platform = Capacitor.getPlatform();
+  if (platform === "ios" || platform === "android") return null; // ✅ hide on native
+
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();

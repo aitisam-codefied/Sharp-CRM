@@ -54,7 +54,7 @@ export default function ReviewConfirmationForm({
       // Save to formData
       setFormData((prev: any) => ({
         ...prev,
-        signature: file // UploadedFile format
+        signature: file, // UploadedFile format
       }));
     }
   };
@@ -134,7 +134,7 @@ export default function ReviewConfirmationForm({
   return (
     <div
       ref={formRef}
-      className="container mx-auto space-y-10 p-6 bg-gray-50 min-h-screen"
+      className="container mx-auto space-y-10 p-0 sm:p-6 min-h-screen"
     >
       <div className="flex justify-end">
         <Button
@@ -511,7 +511,7 @@ export default function ReviewConfirmationForm({
                 />
               </div>
             </div>
-            <div className="flex gap-4 mt-4">
+            <div className="flex flex-wrap gap-4 mt-4">
               <Button
                 onClick={saveSignature}
                 className="bg-[#F87D7D] hover:bg-[#E66B6B] text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"

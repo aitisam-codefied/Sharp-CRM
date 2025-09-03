@@ -25,6 +25,10 @@ export default function ClockSystemPage() {
   const { data: clockRecords = [] } = useClockRecords();
   const { data: branchData } = useBranches();
 
+  useEffect(() => {
+    console.log("clock", clockRecords);
+  });
+
   const allBranches =
     branchData?.map((branch: any) => ({
       id: branch._id,

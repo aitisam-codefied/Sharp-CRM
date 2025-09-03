@@ -101,7 +101,7 @@ export default function ClockRecordsTable({
 
   return (
     <div>
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -158,7 +158,7 @@ export default function ClockRecordsTable({
               <TableHead>Disconnected</TableHead>
               {/* <TableHead>Early Departure</TableHead> */}
 
-              <TableHead className="text-right">Actions</TableHead>
+              {/* <TableHead className="text-right">Actions</TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -300,7 +300,7 @@ export default function ClockRecordsTable({
                       )
                     )}
                   </TableCell> */}
-                  <TableCell className="text-right">
+                  {/* <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
                       {record.isClockedIn ||
                       record.isOnBreak ||
@@ -322,7 +322,7 @@ export default function ClockRecordsTable({
                         </Button>
                       )}
                     </div>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))
             ) : (

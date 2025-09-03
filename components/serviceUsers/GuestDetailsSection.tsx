@@ -339,7 +339,7 @@ export function GuestDetailsSection({
             </>
           )}
         </div> */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
             <Input
@@ -379,7 +379,7 @@ export function GuestDetailsSection({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="nationality">Nationality</Label>
             <Controller
@@ -437,7 +437,7 @@ export function GuestDetailsSection({
         </div>
 
         <ContactFields2 control={control} register={register} />
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="medicalCondition">Medical Conditions</Label>
             <Textarea
@@ -455,7 +455,7 @@ export function GuestDetailsSection({
             />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="currentMedications">Current Medications</Label>
             <Textarea
