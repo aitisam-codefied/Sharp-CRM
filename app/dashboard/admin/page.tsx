@@ -1,4 +1,6 @@
 "use client";
+
+
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { useAuth } from "@/components/providers/auth-provider";
 import AddBranchDialog from "@/components/AddBranchDialog";

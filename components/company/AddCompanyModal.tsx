@@ -412,14 +412,14 @@ export default function AddCompanyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
             Add New Company
           </DialogTitle>
         </DialogHeader>
-        <div className="bg-white rounded-lg p-8">
+        <div className="bg-white rounded-lg p-4 sm:p-6">
           <StepProgress currentStep={currentStep} totalSteps={totalSteps} />
           {currentStep === 1 && (
             <CompanyStep
@@ -454,12 +454,12 @@ export default function AddCompanyModal({
               toggleAmenity={toggleAmenity}
             />
           )}
-          <div className="flex justify-between mt-8">
+          <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className="flex items-center gap-2 bg-transparent"
+              className="flex items-center gap-2 bg-transparent text-sm sm:text-base h-10 sm:h-11"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
@@ -468,7 +468,7 @@ export default function AddCompanyModal({
               <Button
                 onClick={handleNext}
                 disabled={!validateStep(currentStep)}
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-sm sm:text-base h-10 sm:h-11"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -479,7 +479,7 @@ export default function AddCompanyModal({
                 disabled={
                   !validateStep(currentStep) || createCompanyMutation.isPending
                 }
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-sm sm:text-base h-10 sm:h-11"
               >
                 {createCompanyMutation.isPending ? (
                   <>

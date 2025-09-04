@@ -349,7 +349,7 @@ export default function AddBranchForCompanyDialog({
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -550,7 +550,7 @@ export default function AddBranchForCompanyDialog({
               className="w-full border-dashed border-2 h-10"
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add Location
             </Button>
           </div>

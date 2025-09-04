@@ -117,7 +117,7 @@ export default function EditRoomDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Room</DialogTitle>
           <DialogDescription>Modify the details of this room</DialogDescription>

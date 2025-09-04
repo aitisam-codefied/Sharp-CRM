@@ -28,22 +28,24 @@ export default function CompanyStep({
   removeCompany,
 }: CompanyStepProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Building2 className="h-8 w-8 text-red-500" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Company Information
         </h2>
-        <p className="text-gray-600">Add your company details</p>
+        <p className="text-gray-600 text-sm sm:text-base">
+          Add your company details
+        </p>
       </div>
 
       <div className="space-y-4">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-lg">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg">
                 Company {companyIndex + 1}
               </CardTitle>
               {newCompanies.length > 1 && (
@@ -57,7 +59,7 @@ export default function CompanyStep({
                 </Button>
               )}
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4">
               <div>
                 <Label htmlFor={`company-name-${companyIndex}`}>
                   Company Name *
@@ -69,7 +71,7 @@ export default function CompanyStep({
                     updateCompany(companyIndex, "name", e.target.value)
                   }
                   placeholder="Enter company name"
-                  className="mt-1"
+                  className="mt-1 text-sm sm:text-base"
                 />
               </div>
             </CardContent>
@@ -79,7 +81,7 @@ export default function CompanyStep({
         <Button
           variant="outline"
           onClick={addCompany}
-          className="w-full border-dashed border-2 h-12 bg-transparent"
+          className="w-full border-dashed border-2 h-10 sm:h-12 bg-transparent text-sm sm:text-base"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Another Company

@@ -121,33 +121,33 @@ export default function RoomStep({
   toggleAmenity,
 }: RoomStepProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Bed className="h-8 w-8 text-red-500" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <Bed className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Room Configuration
         </h2>
-        <p className="text-gray-600">
+        <p className="text-gray-600 text-sm sm:text-base">
           Set up rooms for each location with details and amenities
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6">
               {company.branches.map((branch, branchIndex) => (
                 <Card key={branch._id} className="border-l-4 border-l-red-500">
                   <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                    <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       {branch.name}
                     </CardTitle>
@@ -167,7 +167,7 @@ export default function RoomStep({
                         <CardContent className="space-y-4">
                           {location.rooms.map((room, roomIndex) => (
                             <Card key={room._id} className="bg-gray-50">
-                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
                                 <CardTitle className="text-sm">
                                   Room {roomIndex + 1}
                                 </CardTitle>
@@ -187,8 +187,8 @@ export default function RoomStep({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </CardHeader>
-                              <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <CardContent className="space-y-3 sm:space-y-4">
+                                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
                                   <div>
                                     <Label>Room Number *</Label>
                                     <Input
@@ -204,7 +204,7 @@ export default function RoomStep({
                                         )
                                       }
                                       placeholder="e.g., 101, A-1"
-                                      className="mt-1"
+                                      className="mt-1 text-sm sm:text-base"
                                     />
                                   </div>
                                   <div>
@@ -236,7 +236,7 @@ export default function RoomStep({
                                         }
                                       }}
                                     >
-                                      <SelectTrigger className="mt-1">
+                                      <SelectTrigger className="mt-1 text-sm sm:text-base">
                                         <SelectValue placeholder="Select type" />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -250,7 +250,7 @@ export default function RoomStep({
                                       </SelectContent>
                                     </Select>
                                   </div>
-                                  <div className="space-y-2">
+                                  <div>
                                     <Label>Room Capacity *</Label>
                                     <Select
                                       value={room.capacity}
@@ -265,7 +265,7 @@ export default function RoomStep({
                                         )
                                       }
                                     >
-                                      <SelectTrigger>
+                                      <SelectTrigger className="text-sm sm:text-base">
                                         <SelectValue placeholder="Select Capacity" />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -283,10 +283,10 @@ export default function RoomStep({
                                 </div>
 
                                 <div>
-                                  <Label className="text-sm font-medium mb-3 block">
+                                  <Label className="text-sm font-medium mb-2 sm:mb-3 block">
                                     Amenities
                                   </Label>
-                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
                                     {ROOM_AMENITIES.map((amenity) => (
                                       <div
                                         key={amenity}
@@ -325,7 +325,7 @@ export default function RoomStep({
                             onClick={() =>
                               addRoom(companyIndex, branchIndex, locationIndex)
                             }
-                            className="w-full border-dashed border-2 h-10"
+                            className="w-full border-dashed border-2 h-10 text-sm sm:text-base"
                             size="sm"
                           >
                             <Plus className="h-4 w-4 mr-2" />

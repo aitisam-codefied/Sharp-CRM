@@ -41,31 +41,33 @@ export default function BranchStep({
   removeBranch,
 }: BranchStepProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <MapPin className="h-8 w-8 text-red-500" />
+        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+          <MapPin className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
           Branch Information
         </h2>
-        <p className="text-gray-600">Add branches for your companies</p>
+        <p className="text-gray-600 text-sm sm:text-base">
+          Add branches for your companies
+        </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
                 {company.name}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {company.branches.map((branch, branchIndex) => (
                 <Card key={branch._id} className="border-l-4 border-l-red-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-base">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
+                    <CardTitle className="text-sm sm:text-base">
                       Branch {branchIndex + 1}
                     </CardTitle>
                     {company.branches.length > 1 && (
@@ -79,7 +81,7 @@ export default function BranchStep({
                       </Button>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 sm:space-y-4">
                     <div>
                       <Label
                         htmlFor={`branch-name-${companyIndex}-${branchIndex}`}
@@ -98,7 +100,7 @@ export default function BranchStep({
                           )
                         }
                         placeholder="Enter branch name"
-                        className="mt-1"
+                        className="mt-1 text-sm sm:text-base"
                       />
                     </div>
                     <div>
@@ -119,7 +121,7 @@ export default function BranchStep({
                           )
                         }
                         placeholder="Enter complete branch address"
-                        className="mt-1"
+                        className="mt-1 text-sm sm:text-base"
                         rows={3}
                       />
                     </div>
@@ -129,7 +131,7 @@ export default function BranchStep({
               <Button
                 variant="outline"
                 onClick={() => addBranch(companyIndex)}
-                className="w-full border-dashed border-2 h-12"
+                className="w-full border-dashed border-2 h-10 sm:h-12 text-sm sm:text-base"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Branch

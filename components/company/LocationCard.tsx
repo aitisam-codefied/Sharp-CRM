@@ -205,7 +205,7 @@ export default function LocationCard({
     <>
       <Card className="bg-white border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
         <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-6 py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <div>
                 {isEditable && editingLocationId === location._id ? (
@@ -213,7 +213,7 @@ export default function LocationCard({
                     <Input
                       value={editLocationName}
                       onChange={(e) => setEditLocationName(e.target.value)}
-                      className="bg-white/95 border-2 border-[#F87D7D]/50 text-gray-900 placeholder:text-gray-500 text-lg font-semibold focus:border-[#F87D7D] focus:ring-2 focus:ring-[#F87D7D]/30 rounded-lg w-[60%]"
+                      className="bg-white/95 border-2 border-[#F87D7D]/50 text-gray-900 placeholder:text-gray-500 text-lg font-semibold focus:border-[#F87D7D] focus:ring-2 focus:ring-[#F87D7D]/30 rounded-lg w-full sm:w-[60%]"
                       placeholder="Location name"
                     />
                     <Button
@@ -221,7 +221,7 @@ export default function LocationCard({
                       size="icon"
                       onClick={handleSaveEdit}
                       disabled={updateLocationMutation.isPending}
-                      className="h-10 w-10 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg"
+                      className="h-4 sm:h-10 w-4 sm:w-10 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg"
                     >
                       {updateLocationMutation.isPending ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -233,14 +233,14 @@ export default function LocationCard({
                       variant="ghost"
                       size="icon"
                       onClick={handleCancelEdit}
-                      className="h-10 w-10 bg-gray-500 hover:bg-gray-600 text-white rounded-xl shadow-lg"
+                      className="h-4 sm:h-10 w-4 sm:w-10 bg-gray-500 hover:bg-gray-600 text-white rounded-xl shadow-lg"
                     >
                       <X className="w-5 h-5" />
                     </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <h5 className="text-xl font-bold text-gray-900 mb-1">
+                    <h5 className="text-md sm:text-xl font-bold text-gray-900 mb-1">
                       {location.name}
                     </h5>
                     {isEditable && (
