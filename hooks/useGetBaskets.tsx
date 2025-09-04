@@ -44,7 +44,7 @@ export interface ApiResponse {
   success: boolean;
   message: string;
   data: {
-    results: Basket[];
+    data: Basket[];
     totalResults: number;
     page: number;
     limit: number;

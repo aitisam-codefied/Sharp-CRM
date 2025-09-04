@@ -78,7 +78,7 @@ interface UIIncident {
 
 const fetchIncidents = async (): Promise<UIIncident[]> => {
   const response = await api.get<ApiResponse>("/incident/list?limit=1000");
-  const apiIncidents = response.data.data.results;
+  const apiIncidents = response.data.data.data;
 
   return apiIncidents.map((api: ApiIncident) => ({
     id: api._id,

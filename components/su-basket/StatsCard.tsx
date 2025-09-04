@@ -8,12 +8,12 @@ interface StatsCardsProps {
 
 export const StatsCard = ({ baskets }: StatsCardsProps) => {
   const getStats = () => {
-    const totalBaskets = baskets.length;
-    const activeBaskets = baskets.filter((b) => b.isActive).length;
-    const completedBaskets = baskets.filter(
+    const totalBaskets = baskets?.length;
+    const activeBaskets = baskets?.filter((b) => b.isActive)?.length;
+    const completedBaskets = baskets?.filter(
       (b) => b.status === "Completed"
-    ).length;
-    const totalItems = baskets.reduce(
+    )?.length;
+    const totalItems = baskets?.reduce(
       (sum, basket) => sum + basket.totalItems,
       0
     );

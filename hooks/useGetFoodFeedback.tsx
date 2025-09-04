@@ -48,7 +48,7 @@ export interface ApiResponse {
   success: boolean;
   message: string;
   data: {
-    results: FoodFeedback[];
+    data: FoodFeedback[];
     page: number;
     limit: number;
     totalPages: number;
@@ -80,7 +80,7 @@ export interface DisplayFeedback {
 const fetchFoodFeedbacks = async (): Promise<FoodFeedback[]> => {
   const url = "/food-feedback/list?limit=50"; // Increased limit to fetch more/all results in one go
   const response = await api.get<ApiResponse>(url);
-  return response.data.data.results;
+  return response.data.data.data;
 };
 
 export const useFoodFeedbacks = () => {

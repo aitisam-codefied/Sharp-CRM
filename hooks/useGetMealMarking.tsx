@@ -3,13 +3,13 @@ import api from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-export const useGetMealMarkings = (date: any) => {
+export const useGetMealMarkings = () => {
   return useQuery({
-    queryKey: ["mealMarkings", date],
+    queryKey: ["mealMarkings"],
     queryFn: async () => {
-      const response = await api.get(`/meal-marking/list?date=${date}`);
-      return response.data.data.results;
+      const response = await api.get(`/meal-marking/list`);
+      return response.data.data.data;
     },
-    enabled: !!date, // Only fetch if date is set
+    // enabled: !!date, // Only fetch if date is set
   });
 };

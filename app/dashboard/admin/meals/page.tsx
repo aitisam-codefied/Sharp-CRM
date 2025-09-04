@@ -28,19 +28,21 @@ export default function MealsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedMeal, setSelectedMeal] = useState("all");
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [selectedDate, setSelectedDate] = useState("");
   const [residents, setResidents] = useState([]);
   const [branches, setBranches] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const { toast } = useToast();
 
-  const { data, isLoading } = useGetMealMarkings(selectedDate);
+  const { data, isLoading } = useGetMealMarkings();
+
+  useEffect(() => {
+    console.log("meal dataaaaa", data);
+  });
 
   useEffect(() => {
     if (data) {
-      const mappedResidents = data.map((item) => ({
+      const mappedResidents = data.map((item: any) => ({
         id: item.guestId.userId.portNumber,
         name: item.guestId.userId.fullName.trim(),
         room: item.guestId.familyId, // Using familyId as a proxy for room
@@ -70,7 +72,7 @@ export default function MealsPage() {
       setCurrentPage(1); // Reset to first page when data changes
 
       const uniqueBranches = [
-        ...new Set(mappedResidents.map((r) => r.branch)),
+        ...new Set(mappedResidents.map((r: any) => r.branch)),
       ].sort();
       setBranches(uniqueBranches);
     }
@@ -191,7 +193,6 @@ export default function MealsPage() {
                   <SelectItem value="dinner">Dinner</SelectItem>
                 </SelectContent>
               </Select>
-            
             </div>
 
             <MealsTable

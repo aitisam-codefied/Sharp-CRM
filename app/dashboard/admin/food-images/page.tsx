@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,14 @@ import {
 } from "@/hooks/useGetFoodCategories";
 import { useCreateFoodCategory } from "@/hooks/useCreateFoodCategory";
 import { useBranches } from "@/hooks/useGetBranches";
+
+const fallbackImages = [
+  "/food1.jpg",
+  "/food2.jpg",
+  "/food3.jpg",
+  "/food4.jpg",
+  "/food5.jpg",
+];
 
 export default function FoodImagesPage() {
   const { user } = useAuth();
@@ -250,6 +258,12 @@ export default function FoodImagesPage() {
 
       return matchesSearch && matchesMeal && matchesFilter;
     }) || [];
+
+  // random image ko memoized rakha taki har render pe change na ho
+  const randomFallback = useMemo(() => {
+    const idx = Math.floor(Math.random() * fallbackImages.length);
+    return fallbackImages[idx];
+  }, []);
 
   return (
     <DashboardLayout>
@@ -764,15 +778,21 @@ export default function FoodImagesPage() {
                     >
                       <div className="relative">
                         <img
-                          src={
-                            food.images?.[0]
-                              ? `http://localhost:5001${food.images[0]}`
-                              : "/placeholder.svg?height=200&width=300&text=Food+Image"
-                          }
+                          src={`http://localhost:5001${food.images?.[0] || ""}`}
                           alt={food.name}
-                          className="w-full h-48 object-cover"
+                          className="w-full h-48 object-cover rounded-lg"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.onerror = null; // infinite loop se bachaega
+                            const randomFallback =
+                              fallbackImages[
+                                Math.floor(
+                                  Math.random() * fallbackImages.length
+                                )
+                              ];
+                            target.src = randomFallback;
+                          }}
                         />
-
                         <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-sm">
                           <span className="font-medium">{food.mealType}</span>
                         </div>

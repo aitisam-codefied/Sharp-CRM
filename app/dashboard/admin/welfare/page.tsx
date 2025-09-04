@@ -50,9 +50,9 @@ export default function WelfarePage() {
   // Backend se saare data fetch (pagination remove kar diya)
   const { data: welfareData, isLoading, error } = useGetWelfareChecks({});
 
-  // console.log("allWelfareChecks ===>", welfareData);
+  console.log("allWelfareChecks ===>", welfareData);
 
-  const allWelfareChecks: WelfareCheck[] = welfareData?.data.results || [];
+  const allWelfareChecks: WelfareCheck[] = welfareData?.data.data || [];
 
   // Filtering logic
   const filteredWelfareChecks = useMemo(() => {

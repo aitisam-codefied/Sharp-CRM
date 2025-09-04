@@ -45,7 +45,9 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
 
   const branches = [
     "All Branches",
-    ...new Set(baskets.map((basket) => basket.branchId?.name).filter(Boolean)),
+    ...new Set(
+      baskets?.map((basket) => basket.branchId?.name)?.filter(Boolean)
+    ),
   ];
   const statuses = [
     "all",
@@ -59,7 +61,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
   // 🔹 Filtered + Sorted Data
   const filteredBaskets = useMemo(() => {
     return baskets
-      .filter((basket) => {
+      ?.filter((basket) => {
         const matchesSearch =
           basket.guestId.userId.fullName
             .toLowerCase()
@@ -79,9 +81,9 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
   }, [baskets, searchTerm, selectedBranch, selectedStatus]);
 
   // 🔹 Pagination
-  const totalPages = Math.ceil(filteredBaskets.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredBaskets?.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = filteredBaskets.slice(
+  const currentData = filteredBaskets?.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -132,9 +134,9 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
               <SelectValue placeholder="All Statuses" />
             </SelectTrigger>
             <SelectContent>
-              {statuses.map((status) => (
+              {statuses?.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status.charAt(0).toUpperCase() + status?.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -153,7 +155,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentData.map((basket) => (
+              {currentData?.map((basket) => (
                 <TableRow key={basket._id}>
                   <TableCell>
                     <div className="space-y-1">
@@ -201,7 +203,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                   <TableCell>
                     <Badge className={getStatusColor(basket.status)}>
                       {basket.status.charAt(0).toUpperCase() +
-                        basket.status.slice(1)}
+                        basket.status?.slice(1)}
                     </Badge>
                   </TableCell>
                 </TableRow>
@@ -217,7 +219,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
           onPageChange={(page: any) => setCurrentPage(page)}
         />
 
-        {filteredBaskets.length === 0 && (
+        {filteredBaskets?.length === 0 && (
           <div className="text-center py-8">
             <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">No baskets found</h3>
