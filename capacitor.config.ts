@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "SMSCrm",
   webDir: ".next",
   server: {
-    url: "https://beta.supasystem.co.uk", // 👈 put your deployed Next.js site here
+    url: "https://beta.supasystem.co.uk",
     cleartext: true,
   },
 };
