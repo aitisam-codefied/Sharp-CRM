@@ -15,7 +15,7 @@ export interface CreateFoodData {
     fat?: number;
     fiber?: number;
   };
-  preparationTime: number;
+  preparationTime: any;
   images?: File[];
 }
 

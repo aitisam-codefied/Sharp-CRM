@@ -188,12 +188,16 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                     {qr.type}
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{qr.branchId?.name}</span>
-                      <span className="text-xs text-gray-500">
-                        {qr.branchId?.address}
-                      </span>
-                    </div>
+                    {qr.branchId?.name || qr.branchId?.address ? (
+                      <div className="flex flex-col">
+                        <span className="font-medium">{qr.branchId?.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {qr.branchId?.address}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">Not Assigned</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

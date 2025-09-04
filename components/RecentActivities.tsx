@@ -106,7 +106,7 @@ export default function RecentActivities() {
                     </Link>
                   </p>
                   <div className="flex items-center justify-between gap-4 mt-1">
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-start sm:items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground">
                         {time}

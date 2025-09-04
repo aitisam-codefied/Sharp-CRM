@@ -354,7 +354,7 @@ export function AppNavbar() {
 
       {/* Mobile nav section */}
       {mobileMenuOpen && (
-        <div className="flex flex-col items-start gap-2 px-4 py-3 xl:hidden border-t">
+        <div className="flex flex-col items-start gap-2 px-4 py-3 xl:hidden border-t min-h-screen">
           {mainNavItems.map((item) => {
             const isOpen = openMobileSection === item.key;
             const toggleOpen = () =>

@@ -138,3 +138,12 @@
 .has-bottom-nav {
   padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

@@ -117,7 +117,7 @@ export default function NewDocumentDialog({
         toast({
           title: "Error",
           description:
-            error?.response?.data?.message || "Failed to upload document.",
+            error?.response?.data?.details || "Failed to upload document.",
           variant: "destructive",
         });
       },

@@ -186,8 +186,9 @@ export default function WelfarePage() {
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
               <Input
-                placeholder="Search by observations or assessment..."
+                placeholder="Search by Guest"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -195,6 +196,7 @@ export default function WelfarePage() {
             </div>
           </div>
           <Input
+            placeholder="MM/DD/YYYY"
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}

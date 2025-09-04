@@ -634,7 +634,7 @@ export default function NewUserPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-8 overflow-x-auto px-2">
+            <div className="flex items-center justify-between mb-8 overflow-x-auto px-2 scrollbar-hide">
               {steps.map((step, index) => {
                 const isActive = currentStep === step.id;
                 return (

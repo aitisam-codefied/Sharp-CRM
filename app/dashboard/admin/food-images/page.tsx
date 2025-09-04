@@ -83,7 +83,7 @@ export default function FoodImagesPage() {
     // dietaryTags: [],
     // allergens: [],
     nutritionalInfo: {},
-    preparationTime: 0,
+    preparationTime: "",
     images: [],
   });
 
@@ -460,7 +460,7 @@ export default function FoodImagesPage() {
                       onChange={(e) =>
                         handleFormChange(
                           "preparationTime",
-                          parseInt(e.target.value) || 0
+                          parseInt(e.target.value)
                         )
                       }
                       placeholder="Enter preparation time"
@@ -684,23 +684,24 @@ export default function FoodImagesPage() {
                   variant={activeFilter === "All" ? "default" : "outline"}
                   size="lg"
                   onClick={() => setActiveFilter("All")}
-                  className={
+                  className={`flex-1 min-w-[120px] ${
                     activeFilter === "All"
                       ? "bg-red-500 hover:bg-red-600 text-white"
                       : "hover:bg-gray-50 text-gray-600"
-                  }
+                  }`}
                 >
                   All
                 </Button>
+
                 <Button
                   variant={activeFilter === "Breakfast" ? "default" : "outline"}
                   size="lg"
                   onClick={() => setActiveFilter("Breakfast")}
-                  className={
+                  className={`flex-1 min-w-[120px] ${
                     activeFilter === "Breakfast"
                       ? "bg-red-500 hover:bg-red-600 text-white"
                       : "hover:bg-gray-50 text-gray-600"
-                  }
+                  }`}
                 >
                   <div className="flex items-center gap-1">
                     <div className="w-4 h-4 bg-orange-400 rounded-sm flex items-center justify-center">
@@ -709,15 +710,16 @@ export default function FoodImagesPage() {
                     Breakfast
                   </div>
                 </Button>
+
                 <Button
                   variant={activeFilter === "Lunch" ? "default" : "outline"}
                   size="lg"
                   onClick={() => setActiveFilter("Lunch")}
-                  className={
+                  className={`flex-1 min-w-[120px] ${
                     activeFilter === "Lunch"
                       ? "bg-red-500 hover:bg-red-600 text-white"
                       : "hover:bg-gray-50 text-gray-600"
-                  }
+                  }`}
                 >
                   <div className="flex items-center gap-1">
                     <div className="w-4 h-4 bg-yellow-400 rounded-sm flex items-center justify-center">
@@ -726,15 +728,16 @@ export default function FoodImagesPage() {
                     Lunch
                   </div>
                 </Button>
+
                 <Button
                   variant={activeFilter === "Dinner" ? "default" : "outline"}
                   size="lg"
                   onClick={() => setActiveFilter("Dinner")}
-                  className={
+                  className={`flex-1 min-w-[120px] ${
                     activeFilter === "Dinner"
                       ? "bg-red-500 hover:bg-red-600 text-white"
                       : "hover:bg-gray-50 text-gray-600"
-                  }
+                  }`}
                 >
                   <div className="flex items-center gap-1">
                     <div className="w-4 h-4 bg-blue-400 rounded-sm flex items-center justify-center">
@@ -743,23 +746,6 @@ export default function FoodImagesPage() {
                     Dinner
                   </div>
                 </Button>
-                {/* <Button
-                  variant={activeFilter === "Snack" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setActiveFilter("Snack")}
-                  className={
-                    activeFilter === "Snack"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-gray-50 text-gray-600"
-                  }
-                >
-                  <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-purple-400 rounded-sm flex items-center justify-center">
-                      <Clock className="w-2 h-2 text-white" />
-                    </div>
-                    Snack
-                  </div>
-                </Button> */}
               </div>
 
               {/* Loading State */}
