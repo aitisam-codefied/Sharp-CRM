@@ -75,6 +75,7 @@ export default function ClockRecordsTable({
   ) => {
     return (
       <Badge
+        variant="outline"
         className={`${
           value ? trueColor : falseColor
         } flex items-center gap-1 w-fit`}
@@ -133,7 +134,7 @@ export default function ClockRecordsTable({
               <SelectItem key={branch.id} value={branch.id}>
                 <div className="flex items-center gap-2">
                   <span>{branch.name}</span>-
-                  <Badge className="bg-[#F87D7D] text-white">
+                  <Badge variant="outline" className="bg-[#F87D7D] text-white">
                     {branch.company}
                   </Badge>
                 </div>
@@ -222,7 +223,7 @@ export default function ClockRecordsTable({
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{record.totalHours}</span>
                       {record.overtime && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="outline" className="text-xs">
                           OT
                         </Badge>
                       )}

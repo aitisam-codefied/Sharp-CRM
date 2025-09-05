@@ -296,20 +296,23 @@ export default function FoodImagesPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  {/* Images Upload */}
+                  {/* Image Upload */}
                   <div className="space-y-2">
-                    <Label htmlFor="images">Food Images</Label>
+                    <Label htmlFor="image">Food Image</Label>
                     <div className="border-2 border-dashed rounded-lg p-8 text-center">
                       <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground mb-4">
-                        Drag and drop images here, or click to select
+                        Drag and drop an image here, or click to select
                       </p>
                       <input
                         ref={fileInputRef}
                         type="file"
-                        multiple
                         accept="image/*"
-                        onChange={handleFileSelect}
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            handleFileSelect(e); // 👈 aapka existing handler
+                          }
+                        }}
                         className="hidden"
                       />
                       <Button
@@ -317,13 +320,27 @@ export default function FoodImagesPage() {
                         onClick={() => fileInputRef.current?.click()}
                       >
                         <Upload className="h-4 w-4 mr-2" />
-                        Choose Files
+                        Choose File
                       </Button>
+
+                      {/* ✅ Preview Section */}
                       {selectedFiles.length > 0 && (
                         <div className="mt-4">
-                          <p className="text-sm text-muted-foreground">
-                            Selected {selectedFiles.length} file(s)
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Selected file
                           </p>
+                          <div className="relative w-full max-w-xs h-40 rounded-lg overflow-hidden shadow mx-auto">
+                            <img
+                              src={URL.createObjectURL(selectedFiles[0])}
+                              alt="preview"
+                              className="w-full h-full object-cover"
+                            />
+                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                              {selectedFiles[0].name.length > 15
+                                ? selectedFiles[0].name.slice(0, 15) + "..."
+                                : selectedFiles[0].name}
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>

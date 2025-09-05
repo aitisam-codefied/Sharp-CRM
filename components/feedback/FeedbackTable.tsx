@@ -78,7 +78,10 @@ export const FeedbackTable = ({
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <Badge className={getMealTypeColor(feedback.mealType)}>
+                  <Badge
+                    variant="outline"
+                    className={getMealTypeColor(feedback.mealType)}
+                  >
                     {feedback.mealType}
                   </Badge>
                   <div className="text-xs text-muted-foreground">

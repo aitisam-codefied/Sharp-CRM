@@ -93,7 +93,10 @@ export default function DocumentTable({
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <Badge className={getCategoryColor(doc.category)}>
+                    <Badge
+                      variant="outline"
+                      className={getCategoryColor(doc.category)}
+                    >
                       {doc.category.charAt(0).toUpperCase() +
                         doc.category.slice(1)}
                     </Badge>
@@ -134,7 +137,10 @@ export default function DocumentTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={getStatusColor(doc.status)}>
+                  <Badge
+                    variant="outline"
+                    className={getStatusColor(doc.status)}
+                  >
                     {doc.status
                       .replace("_", " ")
                       .replace(/\b\w/g, (l: any) => l.toUpperCase())}

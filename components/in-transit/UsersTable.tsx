@@ -109,20 +109,29 @@ export default function UsersTable({
                   <div className="flex flex-col gap-2 mx-auto">
                     <div className="text-[11px] px-2 py-1">
                       Name:{" "}
-                      <Badge className="bg-orange-200 text-orange-900">
+                      <Badge
+                        variant="outline"
+                        className="bg-orange-200 text-orange-900"
+                      >
                         {" "}
                         {user.emergencyContact.name}
                       </Badge>
                     </div>
                     <div className="text-[11px] px-2 py-1">
                       Relation:{" "}
-                      <Badge className="bg-blue-200 text-blue-900">
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-200 text-blue-900"
+                      >
                         {user.emergencyContact.relation}
                       </Badge>
                     </div>
                     <div className="text-[11px] px-2 py-1">
                       Phone:{" "}
-                      <Badge className="bg-green-200 text-green-900">
+                      <Badge
+                        variant="outline"
+                        className="bg-green-200 text-green-900"
+                      >
                         {user.emergencyContact.phone}
                       </Badge>
                     </div>
@@ -211,7 +220,10 @@ export default function UsersTable({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge className={getStatusColor(user.status)}>
+                <Badge
+                  variant="outline"
+                  className={getStatusColor(user.status)}
+                >
                   <div className="flex items-center gap-1">
                     {getStatusIcon(user.status)}
                     {user.status

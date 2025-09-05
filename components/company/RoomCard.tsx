@@ -53,7 +53,7 @@ export default function RoomCard({
   const roomTypeColor = getRoomTypeColor(room.type);
 
   return (
-    <Card className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200 hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-300 overflow-hidden">
+    <Card className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200  overflow-hidden">
       <div className="p-5">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -105,8 +105,8 @@ export default function RoomCard({
                 return (
                   <Badge
                     key={amenity}
-                    variant="secondary"
-                    className="bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200 transition-all duration-200 text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
+                    variant="outline"
+                    className="bg-blue-100 text-blue-700 border-blue-200  text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
                   >
                     <IconComponent className="h-3 w-3" />
                     {amenity}

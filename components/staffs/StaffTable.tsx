@@ -182,7 +182,7 @@ export default function StaffTable() {
           ? staff.companies.map((b: any) => b.name).join(", ")
           : "Unknown",
       status: staff.status.toLowerCase(),
-      joinDate: new Date(staff.joinDate).toISOString().split("T")[0],
+      joinDate: formatDateWithSuffix(staff.joinDate),
       registration: staff.createdAt
         ? formatDateWithSuffix(staff.createdAt)
         : "N/A",
@@ -428,7 +428,7 @@ export default function StaffTable() {
                       <TableHead>Contact</TableHead>
                       <TableHead>Shift Timings</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Registration Date</TableHead>
+                      <TableHead>Joining Date</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -458,6 +458,7 @@ export default function StaffTable() {
                             <div className="flex flex-col gap-1">
                               {staff.roles.map((role: string, idx: number) => (
                                 <Badge
+                                  variant="outline"
                                   key={idx}
                                   className={`w-fit ${getRoleColor(role)}`}
                                 >
@@ -523,6 +524,7 @@ export default function StaffTable() {
                         </TableCell>
                         <TableCell>
                           <Badge
+                            variant="outline"
                             className={`capitalize ${getStatusColor(
                               staff.status
                             )}`}
@@ -532,7 +534,7 @@ export default function StaffTable() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm text-muted-foreground">
-                            {staff.registration}
+                            {staff.joinDate}
                           </div>
                         </TableCell>
                         <TableCell className="text-right">

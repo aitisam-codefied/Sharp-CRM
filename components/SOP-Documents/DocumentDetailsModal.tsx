@@ -44,7 +44,7 @@ export default function DocumentDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl bg-white rounded-lg shadow-xl">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto bg-white rounded-lg shadow-xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
             <FileText className="h-6 w-6 text-blue-600" />
@@ -66,14 +66,20 @@ export default function DocumentDetailsModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-medium text-gray-500">Category</h3>
-              <Badge className={`mt-1 ${getCategoryColor(document.category)}`}>
+              <Badge
+                variant="outline"
+                className={`mt-1 ${getCategoryColor(document.category)}`}
+              >
                 {document.category.charAt(0).toUpperCase() +
                   document.category.slice(1)}
               </Badge>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">Status</h3>
-              <Badge className={`mt-1 ${getStatusColor(document.status)}`}>
+              <Badge
+                variant="outline"
+                className={`mt-1 ${getStatusColor(document.status)}`}
+              >
                 {document.status
                   .replace("_", " ")
                   .replace(/\b\w/g, (l) => l.toUpperCase())}

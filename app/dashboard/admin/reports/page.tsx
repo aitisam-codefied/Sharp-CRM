@@ -709,7 +709,7 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
-                          <Badge className={getCategoryColor(report.category)}>
+                          <Badge variant="outline" className={getCategoryColor(report.category)}>
                             {report.category.charAt(0).toUpperCase() +
                               report.category.slice(1)}
                           </Badge>
@@ -820,7 +820,7 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-2">
-                          <Badge className={getStatusColor(report.status)}>
+                          <Badge variant="outline" className={getStatusColor(report.status)}>
                             {report.status.charAt(0).toUpperCase() +
                               report.status.slice(1)}
                           </Badge>

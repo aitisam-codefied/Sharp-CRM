@@ -392,6 +392,7 @@ export default function AddStaffDialog() {
                 step="60"
                 value={formData.shiftEnd || ""}
                 onChange={handleInputChange}
+                readOnly
                 disabled={createMutation.isPending}
               />
             </div>

@@ -365,6 +365,11 @@ export default function AddBranchForCompanyDialog({
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
             />
+            {branch.name.length > 23 && (
+              <p className="text-red-500 text-sm">
+                Branch name cannot exceed 23 characters.
+              </p>
+            )}
             {branchNameError && (
               <p className="text-red-600 text-sm">{branchNameError}</p>
             )}

@@ -100,8 +100,13 @@ export default function BranchStep({
                           )
                         }
                         placeholder="Enter branch name"
-                        className="mt-1 text-sm sm:text-base"
+                        className="mt-1 mb-1 text-sm sm:text-base"
                       />
+                      {branch.name.length > 23 && (
+                        <p className="text-red-500 text-sm">
+                          Branch name cannot exceed 23 characters.
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label

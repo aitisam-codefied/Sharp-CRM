@@ -85,17 +85,26 @@ export default function IncidentsTable({
                 </div>
               </TableCell>
               <TableCell>
-                <div className="space-y-2">
-                  <Badge className={getSeverityColor(incident.severity)}>
+                <div className="flex items-center justify-start gap-2">
+                  <Badge
+                    variant="outline"
+                    className={getSeverityColor(incident.severity)}
+                  >
                     {incident.severity}
                   </Badge>
-                  <Badge className={getCategoryColor(incident.category)}>
+                  <Badge
+                    variant="outline"
+                    className={getCategoryColor(incident.category)}
+                  >
                     {incident.category}
                   </Badge>
                 </div>
               </TableCell>
               <TableCell>
-                <Badge className={getStatusColor(incident.status)}>
+                <Badge
+                  variant="outline"
+                  className={getStatusColor(incident.status)}
+                >
                   {incident.status}
                 </Badge>
               </TableCell>

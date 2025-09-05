@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -67,6 +67,10 @@ export function MedicalStaffTable({
     setDeleteModalOpen(true);
   };
 
+  useEffect(() => {
+    console.log("doctorssssss", staff);
+  });
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -107,7 +111,10 @@ export function MedicalStaffTable({
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1">
-                  <Badge className={getStatusColor(staffItem.status)}>
+                  <Badge
+                    variant="outline"
+                    className={getStatusColor(staffItem.status)}
+                  >
                     {staffItem.status}
                   </Badge>
                   {(staffItem.status === "active" ||

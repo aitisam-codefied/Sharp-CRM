@@ -299,7 +299,7 @@ export default function WelfarePage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge className={getStatusColor(check.status)}>
+                        <Badge variant="outline" className={getStatusColor(check.status)}>
                           {check.status}
                         </Badge>
                       </TableCell>

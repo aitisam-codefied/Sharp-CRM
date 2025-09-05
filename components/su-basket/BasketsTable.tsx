@@ -201,7 +201,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge className={getStatusColor(basket.status)}>
+                    <Badge
+                      variant="outline"
+                      className={getStatusColor(basket.status)}
+                    >
                       {basket.status.charAt(0).toUpperCase() +
                         basket.status?.slice(1)}
                     </Badge>

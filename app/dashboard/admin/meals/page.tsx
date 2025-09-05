@@ -163,12 +163,12 @@ export default function MealsPage() {
                   />
                 </div>
               </div>
-              <Input
+              {/* <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 className="w-full md:w-48"
-              />
+              /> */}
               <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Branches" />

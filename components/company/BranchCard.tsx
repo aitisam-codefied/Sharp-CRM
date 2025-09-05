@@ -210,7 +210,7 @@ export default function BranchCard({
 
   return (
     <>
-      <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-[#F87D7D]/5 hover:shadow-2xl transition-all duration-300 overflow-hidden">
+      <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-[#F87D7D]/5 hover:shadow-2xl overflow-hidden">
         <CardHeader className="bg-[#f87d7d] text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-[#F87D7D]/20 to-[#F87D7D]/10"></div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-16 translate-x-16"></div>
@@ -321,13 +321,13 @@ export default function BranchCard({
             {editingBranchId !== branch._id && (
               <div className="flex gap-4 mt-6 pt-4 border-t border-white/20">
                 <Badge
-                  variant="secondary"
+                  variant="outline"
                   className="border-white/50 text-white bg-white/10 font-semibold"
                 >
                   {branch.locations?.length} Locations
                 </Badge>
                 <Badge
-                  variant="secondary"
+                  variant="outline"
                   className="border-white/50 text-white bg-white/10 font-semibold"
                 >
                   {totalRooms} Rooms

@@ -72,6 +72,10 @@ export function EditMedicalStaffModal({
     } = {};
     if (fullName !== staff.fullName) updatedData.fullName = fullName;
     if (type !== staff.type) updatedData.type = type;
+    if (emailAddress !== staff.emailAddress)
+      updatedData.emailAddress = emailAddress;
+    if (phoneNumber !== staff.phoneNumber)
+      updatedData.phoneNumber = phoneNumber;
 
     if (Object.keys(updatedData).length === 0) {
       toast({
@@ -105,7 +109,7 @@ export function EditMedicalStaffModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">w
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Staff Details</DialogTitle>
         </DialogHeader>

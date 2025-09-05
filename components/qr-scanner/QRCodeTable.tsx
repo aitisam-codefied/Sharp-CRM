@@ -160,15 +160,15 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#F87D7D] text-white rounded-md">
-              <TableHead className="text-white font-semibold">
+            <TableRow className="bg-muted text-black rounded-md">
+              <TableHead className="text-black font-semibold">
                 Modules
               </TableHead>
-              <TableHead className="text-white font-semibold">
+              <TableHead className="text-black font-semibold">
                 Associated With
               </TableHead>
-              <TableHead className="text-white font-semibold">Code</TableHead>
-              <TableHead className="text-white font-semibold">
+              <TableHead className="text-black font-semibold">Code</TableHead>
+              <TableHead className="text-black font-semibold">
                 Generated On
               </TableHead>
               {/* <TableHead className="text-white font-semibold">
@@ -180,10 +180,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
             {paginatedQRCodes.map((qr, index) => {
               const isActive = activeStates[qr._id] ?? true;
               return (
-                <TableRow
-                  key={qr._id}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                >
+                <TableRow key={qr._id} className="bg-white">
                   <TableCell className="font-medium text-black">
                     {qr.type}
                   </TableCell>
@@ -202,6 +199,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {visibleCodes[qr._id] ? (
+                        // ✅ Reveal state - show full code
                         <>
                           <span className="font-mono">{qr.code}</span>
                           <Button
@@ -214,9 +212,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                           </Button>
                         </>
                       ) : (
+                        // ✅ Hidden state - show only 20 characters worth of dots
                         <>
                           <span className="font-mono text-gray-400">
-                            {"•".repeat(qr.code.length)}
+                            {"•".repeat(Math.min(20, qr.code.length))}
+                            {qr.code.length > 20 && "…"}
                           </span>
                           <Button
                             variant="ghost"
@@ -230,6 +230,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                       )}
                     </div>
                   </TableCell>
+
                   <TableCell>{formatDate(qr.createdAt)}</TableCell>
                   {/* <TableCell>
                     <TooltipProvider>

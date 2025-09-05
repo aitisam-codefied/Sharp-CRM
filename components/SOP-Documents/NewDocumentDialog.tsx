@@ -158,14 +158,27 @@ export default function NewDocumentDialog({
               id="file"
               type="file"
               className="hidden"
-              accept=".pdf,.doc,.docx,.png"
+              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
 
             {file && (
-              <p className="text-sm text-gray-600 mt-2">
-                <span className="font-medium">Selected:</span> {file.name}
-              </p>
+              <div className="mt-3">
+                {file.type.startsWith("image/") ? (
+                  <div className="border rounded-lg p-2 bg-gray-50 flex flex-col items-center">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt="Preview"
+                      className="max-h-40 object-contain rounded-md shadow-md"
+                    />
+                    <p className="text-xs text-gray-500 mt-2">{file.name}</p>
+                  </div>
+                ) : (
+                  <p className="px-3 py-2 bg-blue-100 text-blue-800 rounded-md font-medium inline-block">
+                    {file.name}
+                  </p>
+                )}
+              </div>
             )}
           </div>
 

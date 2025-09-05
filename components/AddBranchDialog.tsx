@@ -35,6 +35,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -288,7 +297,7 @@ export default function AddBranchDialog() {
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[700px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -321,8 +330,15 @@ export default function AddBranchDialog() {
               value={branch.name}
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
+              maxLength={50} // extra safeguard, user can’t type beyond 50 chars
             />
+            {branch.name.length > 23 && (
+              <p className="text-red-500 text-sm">
+                Branch name cannot exceed 23 characters.
+              </p>
+            )}
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
             <Textarea
@@ -390,20 +406,31 @@ export default function AddBranchDialog() {
                             placeholder="e.g., 101, A-1"
                           />
                         </div>
-                        <div className="space-y-2">
+                        <div>
                           <Label>Room Type *</Label>
                           <Select
                             value={room.type}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => {
                               updateRoom(
                                 locationIndex,
                                 roomIndex,
                                 "type",
                                 value
-                              )
-                            }
+                              );
+
+                              // Auto-update capacity if mapping exists
+                              const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                              if (autoCapacity) {
+                                updateRoom(
+                                  locationIndex,
+                                  roomIndex,
+                                  "capacity",
+                                  String(autoCapacity)
+                                );
+                              }
+                            }}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
