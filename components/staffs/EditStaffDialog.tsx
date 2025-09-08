@@ -182,7 +182,29 @@ export default function EditStaffDialog({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    setFormData((prev) => {
+      let updatedForm = { ...prev, [id]: value };
+
+      if (id === "shiftStart" && value) {
+        const [hours, minutes] = value.split(":").map(Number);
+        const newEnd = new Date();
+        newEnd.setHours(hours + 12, minutes);
+        const formattedEnd = newEnd
+          .toTimeString()
+          .split(":")
+          .slice(0, 2)
+          .join(":");
+
+        updatedForm.shiftEnd = formattedEnd;
+        setChangedFields((prev) =>
+          prev.includes("shiftEnd") ? prev : [...prev, "shiftEnd"]
+        );
+      }
+
+      return updatedForm;
+    });
+
     setChangedFields((prev) => (prev.includes(id) ? prev : [...prev, id]));
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
@@ -402,6 +424,7 @@ export default function EditStaffDialog({
                 type="time"
                 value={formData.shiftEnd}
                 onChange={handleInputChange}
+                readOnly
               />
               {errors.shiftEnd && (
                 <p className="text-sm text-red-600">{errors.shiftEnd}</p>
@@ -522,6 +545,7 @@ export default function EditStaffDialog({
           <Button
             onClick={handleUpdateStaff}
             disabled={
+              changedFields.length === 0 || // until something is modified
               !formData.name ||
               !formData.email ||
               !formData.phone ||

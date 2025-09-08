@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -55,22 +55,35 @@ export default function WelfarePage() {
   const allWelfareChecks: WelfareCheck[] = welfareData?.data.data || [];
 
   // Filtering logic
+  // Filtering logic
   const filteredWelfareChecks = useMemo(() => {
     return allWelfareChecks.filter((check: WelfareCheck) => {
-      const matchesSearch =
-        check.observations?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        check.overallAssessment
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase());
+      // Search match (guest name + observations + assessment)
+      const fullName = check.guestId?.userId?.fullName || "";
+      const matchesSearch = fullName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
+      // Status match
       const matchesStatus =
         selectedStatus === "all" ||
         check.status.toLowerCase() === selectedStatus.toLowerCase();
 
+      // Date filter (within weekStartDate - weekEndDate)
       const matchesDate =
         !selectedDate ||
-        new Date(check.createdAt).toISOString().split("T")[0] === selectedDate;
+        (() => {
+          const selected = new Date(selectedDate);
+          const start = new Date(check.weekStartDate);
+          const end = new Date(check.weekEndDate);
 
+          // Clear time part for accurate comparison
+          selected.setHours(0, 0, 0, 0);
+          start.setHours(0, 0, 0, 0);
+          end.setHours(23, 59, 59, 999);
+
+          return selected >= start && selected <= end;
+        })();
       return matchesSearch && matchesStatus && matchesDate;
     });
   }, [allWelfareChecks, searchTerm, selectedStatus, selectedDate]);
@@ -89,6 +102,10 @@ export default function WelfarePage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredWelfareChecks]);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -149,17 +166,10 @@ export default function WelfarePage() {
 
   // Loading & error states
   if (isLoading) {
-    return (
-      <DashboardLayout
-        title="Welfare Check Management"
-        description="Loading..."
-      >
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading welfare checks...</span>
-        </div>
-      </DashboardLayout>
-    );
+    <div className="text-center py-8">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+      <p className="mt-2"> Loading welfare data...</p>
+    </div>;
   }
 
   if (error) {
@@ -299,7 +309,10 @@ export default function WelfarePage() {
                         </span>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={getStatusColor(check.status)}>
+                        <Badge
+                          variant="outline"
+                          className={getStatusColor(check.status)}
+                        >
                           {check.status}
                         </Badge>
                       </TableCell>
@@ -319,13 +332,12 @@ export default function WelfarePage() {
             )}
 
             {/* Pagination */}
-            <div className="flex justify-center mt-6 pt-4 border-t">
-              <CustomPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            </div>
+
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </CardContent>
         </Card>
       </div>

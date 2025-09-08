@@ -204,6 +204,10 @@ export default function IncidentsPage() {
 
   const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredIncidents]);
+
   return (
     <DashboardLayout
       title="Incident Management System"
@@ -341,7 +345,10 @@ export default function IncidentsPage() {
             </div>
 
             {isLoading ? (
-              <div className="text-center py-4">Loading incidents...</div>
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading incidents...</p>
+              </div>
             ) : error ? (
               <div className="text-center py-4 text-red-600">
                 Error loading incidents: {error.message}

@@ -13,18 +13,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Users,
-  Eye,
-  Edit,
-  FileText,
-  MapPin,
-  Phone,
-  Mail,
-  Trash2,
-} from "lucide-react";
+import { Users, Eye, Edit, MapPin, Phone, Mail, Trash2 } from "lucide-react";
 import { Branch, Room, Guest, Location } from "@/lib/types";
 import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
@@ -33,11 +23,7 @@ import { UserDetailsModal } from "./UserDetailsModal";
 import { EditUserModal } from "./EditUserModal";
 
 interface UserTableProps {
-  users: Guest[];
-  searchTerm: string;
-  selectedBranch: string;
-  selectedStatus: string;
-  selectedNationality: string;
+  users: Guest[]; // 🚨 Already filtered + paginated
   branches: Branch[];
   allLocations: Location[];
   allRooms: Room[];
@@ -46,10 +32,6 @@ interface UserTableProps {
 
 export function UserTable({
   users,
-  searchTerm,
-  selectedBranch,
-  selectedStatus,
-  selectedNationality,
   branches,
   allLocations,
   allRooms,
@@ -67,19 +49,7 @@ export function UserTable({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedEditUser, setSelectedEditUser] = useState<Guest | null>(null);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "High":
-        return "bg-red-100 text-red-800";
-      case "Medium":
-        return "bg-yellow-100 text-yellow-800";
-      case "Low":
-        return "bg-green-100 text-green-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
+  // Flatten data for display only
   const flattenedUsers = users.map((guest, index) => ({
     id: guest._id || `${index}`,
     fullName: guest.userId?.fullName || "",
@@ -97,29 +67,11 @@ export function UserTable({
     gender: guest.gender || "",
     nationality: guest.nationality || "",
     languages: guest.language ? [guest.language] : [],
-    arrivalDate: "", // Not present in new structure, keeping for compatibility
+    arrivalDate: "", // not in structure, keeping for compatibility
     caseWorker: guest.caseWorker?.fullName || "",
-    status: guest.priorityLevel || "Unknown",
+
     room: guest.familyRooms[0]?.roomId?.roomNumber || "",
   }));
-
-  const filteredUsers = flattenedUsers.filter((user) => {
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.room.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesBranch =
-      selectedBranch === "all" || user.branch === selectedBranch;
-    const matchesStatus =
-      selectedStatus === "all" || user.status === selectedStatus;
-    const matchesNationality =
-      selectedNationality === "all" || user.nationality === selectedNationality;
-
-    return (
-      matchesSearch && matchesBranch && matchesStatus && matchesNationality
-    );
-  });
 
   return (
     <>
@@ -142,12 +94,11 @@ export function UserTable({
                   <TableHead>Personal Details</TableHead>
                   <TableHead>Location</TableHead>
                   <TableHead>Contact Info</TableHead>
-                  {/* <TableHead>Status</TableHead> */}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.map((user, idx) => (
+                {flattenedUsers.map((user, idx) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div className="flex items-center space-x-3">
@@ -157,18 +108,18 @@ export function UserTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className="text-xs">
+                      <div className="space-y-1 text-xs">
+                        <div>
                           <strong>DOB:</strong> {user.dateOfBirth || "N/A"}
                         </div>
-                        <div className="text-xs">
+                        <div>
                           <strong>Nationality:</strong>{" "}
                           {user.nationality || "N/A"}
                         </div>
-                        <div className="text-xs">
+                        <div>
                           <strong>Gender:</strong> {user.gender || "N/A"}
                         </div>
-                        <div className="text-xs">
+                        <div>
                           <strong>Languages:</strong>{" "}
                           {user.languages.length > 0
                             ? user.languages.join(", ")
@@ -177,43 +128,38 @@ export function UserTable({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center text-xs">
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center">
                           <MapPin className="h-3 w-3 mr-1" />
                           {user.branch || "N/A"}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground">
                           Room {user.room || "N/A"}
                         </div>
                         {user.arrivalDate && (
-                          <div className="text-xs">
+                          <div>
                             <strong>Arrived:</strong> {user.arrivalDate}
                           </div>
                         )}
                         {user.caseWorker && (
-                          <div className="text-xs">
+                          <div>
                             <strong>Case Worker:</strong> {user.caseWorker}
                           </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center text-xs">
+                      <div className="space-y-1 text-xs">
+                        <div className="flex items-center">
                           <Phone className="h-3 w-3 mr-1" />
                           {user.phone || "N/A"}
                         </div>
-                        <div className="flex items-center text-xs">
+                        <div className="flex items-center">
                           <Mail className="h-3 w-3 mr-1" />
                           {user.email || "N/A"}
                         </div>
                       </div>
                     </TableCell>
-                    {/* <TableCell>
-                      <Badge className={getStatusColor(user.status)}>
-                        {user.status}
-                      </Badge>
-                    </TableCell> */}
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end space-x-2">
                         <Button
@@ -257,7 +203,8 @@ export function UserTable({
               </TableBody>
             </Table>
           </div>
-          {filteredUsers.length === 0 && (
+
+          {flattenedUsers.length === 0 && (
             <div className="text-center py-8">
               <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-medium mb-2">
@@ -271,6 +218,7 @@ export function UserTable({
         </CardContent>
       </Card>
 
+      {/* Modals */}
       <UserDetailsModal
         user={selectedViewUser}
         isOpen={viewModalOpen}

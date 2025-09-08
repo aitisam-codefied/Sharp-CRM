@@ -39,11 +39,12 @@ export default function AddStaffDialog() {
   const { data: locations } = useLocations();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(
     user?.companies?.[0]?._id || ""
   );
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>(""); // 🔹 Only one role
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
@@ -55,53 +56,50 @@ export default function AddStaffDialog() {
     shiftStart: "",
     shiftEnd: "",
   });
+
   const [errors, setErrors] = useState({
     name: "",
     email: "",
     phone: "",
     joinDate: "",
-    shiftStart: "",
-    shiftEnd: "",
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
-  const isGeneralManager = selectedRoles.includes("Manager");
-  const isAssistantManagerOrStaff = selectedRoles.some(
-    (role) => role === "AssistantManager" || role === "Staff"
-  );
+  const isManager = selectedRole === "Manager";
+  const isAssistantManager = selectedRole === "AssistantManager";
+  const isStaff = selectedRole === "Staff";
 
   const filteredBranches =
     branches?.filter(
       (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
     ) || [];
 
+  // useEffect(() => {
+  //   console.log("filteredBranches", filteredBranches);
+  // });
+
+  const allLocations =
+    branches?.flatMap((branch) =>
+      branch.locations.map((loc) => ({
+        ...loc,
+        branchId: branch._id, // attach branchId manually
+      }))
+    ) || [];
+
+  // console.log("allLocations", allLocations);
+  // console.log("selectedBranches", selectedBranches);
+
   const filteredLocations =
-    locations?.filter((location) => {
-      if (selectedBranches.length === 0) {
-        return true; // Show all locations if no branches selected
-      }
-      const selectedBranchIds = filteredBranches
-        .filter((b) => selectedBranches.includes(b.name))
-        .map((b) => b._id);
-      // console.log("selectedBranchIds:", selectedBranchIds);
-      // console.log("location.branchId:", location.branchId);
-      return selectedBranchIds.includes(location.branchId);
+    allLocations.filter((location) => {
+      if (selectedBranches.length === 0) return true;
+      return selectedBranches.includes(
+        branches?.find((b) => b._id === location.branchId)?.name || ""
+      );
     }) || [];
 
   // useEffect(() => {
-  //   console.log("selectedBranches:", selectedBranches);
-  //   console.log("filteredBranches:", filteredBranches);
-  //   console.log("locations:", locations);
-  //   console.log("filteredLocations:", filteredLocations);
-  // }, [selectedBranches, filteredBranches, locations, filteredLocations]);
-
-  // useEffect(() => {
-  //   console.log("locationssss", filteredLocations);
+  //   console.log("filteredlocations", filteredLocations);
   // });
-
-  // useEffect(() => {
-  //   console.log("Raw locations data:", JSON.stringify(locations, null, 2));
-  // }, [locations]);
 
   const createMutation = useMutation({
     mutationFn: createStaff,
@@ -110,7 +108,7 @@ export default function AddStaffDialog() {
         title: "Staff Member Added",
         description: `Staff member ${
           data.data?.fullName || "new staff"
-        } has been successfully added.`,
+        } added.`,
       });
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
       setIsAddDialogOpen(false);
@@ -122,104 +120,109 @@ export default function AddStaffDialog() {
         description:
           error.response?.data?.error ||
           error.message ||
-          "Failed to add staff member. Please try again.",
+          "Failed to add staff member.",
         variant: "destructive",
       });
     },
   });
 
+  const validateEmail = (email: string) => /^\S+@\S+\.\S+$/.test(email.trim());
+
   const validateForm = () => {
+    let valid = true;
     const newErrors = { name: "", email: "", phone: "", joinDate: "" };
-    let isValid = true;
 
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
-      isValid = false;
+      valid = false;
     }
-    if (!formData.email.trim() || !/^\S+@\S+\.\S+$/.test(formData.email)) {
+    if (!validateEmail(formData.email)) {
       newErrors.email = "Valid email is required";
-      isValid = false;
+      valid = false;
     }
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required";
-      isValid = false;
+      valid = false;
     }
     if (!formData.joinDate) {
       newErrors.joinDate = "Join date is required";
-      isValid = false;
+      valid = false;
     }
 
     setErrors(newErrors);
-    return isValid;
+    return valid;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
 
     setFormData((prev) => {
-      let updatedForm = { ...prev, [id]: value };
+      let updated = { ...prev, [id]: value };
 
-      // 🔹 If shiftStart is updated, auto-set shiftEnd = shiftStart + 12 hours
       if (id === "shiftStart" && value) {
-        const [hours, minutes] = value.split(":").map(Number);
-        const newDate = new Date();
-        newDate.setHours(hours, minutes, 0, 0);
-        newDate.setHours(newDate.getHours() + 12);
+        const [h, m] = value.split(":").map(Number);
+        const d = new Date();
+        d.setHours(h, m, 0, 0);
+        d.setHours(d.getHours() + 12);
 
-        // Format back to HH:mm
-        const newHours = String(newDate.getHours()).padStart(2, "0");
-        const newMinutes = String(newDate.getMinutes()).padStart(2, "0");
-
-        updatedForm.shiftEnd = `${newHours}:${newMinutes}`;
+        updated.shiftEnd = `${String(d.getHours()).padStart(2, "0")}:${String(
+          d.getMinutes()
+        ).padStart(2, "0")}`;
       }
-
-      return updatedForm;
+      return updated;
     });
 
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
   const handleRoleChange = (value: string) => {
-    setSelectedRoles((prev) =>
-      prev.includes(value)
-        ? prev.filter((role) => role !== value)
-        : [...prev, value]
-    );
+    setSelectedRole(value);
     setSelectedBranches([]);
     setSelectedLocations([]);
   };
 
   const handleBranchChange = (value: string) => {
-    if (isGeneralManager) {
+    if (isManager) {
+      // Manager → multi-select branches
       setSelectedBranches((prev) =>
         prev.includes(value)
-          ? prev.filter((branch) => branch !== value)
+          ? prev.filter((b) => b !== value)
           : [...prev, value]
       );
     } else {
+      // Assistant Manager or Staff → only one branch
       setSelectedBranches([value]);
     }
     setSelectedLocations([]);
   };
 
   const handleLocationChange = (value: string) => {
-    if (isAssistantManagerOrStaff) {
+    if (isStaff || isAssistantManager) {
+      // ✅ Staff & Assistant Manager → multi-select
       setSelectedLocations((prev) =>
         prev.includes(value)
           ? prev.filter((loc) => loc !== value)
           : [...prev, value]
       );
     } else {
+      // ✅ Manager → single location (if needed later)
       setSelectedLocations([value]);
     }
   };
 
   const resetForm = () => {
-    setSelectedRoles([]);
+    setSelectedRole("");
     setSelectedBranches([]);
     setSelectedLocations([]);
     setSelectedCompany(user?.companies?.[0]?._id || "");
-    setFormData({ name: "", email: "", phone: "", joinDate: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      joinDate: "",
+      shiftStart: "",
+      shiftEnd: "",
+    });
     setErrors({ name: "", email: "", phone: "", joinDate: "" });
   };
 
@@ -231,16 +234,14 @@ export default function AddStaffDialog() {
         const branch = filteredBranches.find((b) => b.name === branchName);
         return branch ? branch._id : null;
       })
-      .filter((id) => id !== null);
+      .filter(Boolean);
 
     const locationIds = selectedLocations
-      .map((locationName) => {
-        const location = filteredLocations.find(
-          (loc) => loc.name === locationName
-        );
-        return location ? location._id : null;
+      .map((locName) => {
+        const loc = filteredLocations.find((l) => l.name === locName);
+        return loc ? loc._id : null;
       })
-      .filter((id) => id !== null);
+      .filter(Boolean);
 
     const backendData = {
       companyId: selectedCompany,
@@ -250,49 +251,49 @@ export default function AddStaffDialog() {
       joinDate: formData.joinDate,
       start: formData.shiftStart,
       end: formData.shiftEnd,
-      roles: selectedRoles,
+      roles: [selectedRole],
       branches: branchIds,
       locations: locationIds,
     };
-    console.log("backendData", backendData);
 
     createMutation.mutate(backendData);
   };
 
   const getOneMonthAgoDate = () => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - 1);
-    return now.toISOString().split("T")[0];
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split("T")[0];
   };
 
   return (
     <Dialog
       open={isAddDialogOpen}
-      onOpenChange={(open) => {
-        setIsAddDialogOpen(open);
-        if (!open) resetForm();
+      onOpenChange={(o) => {
+        setIsAddDialogOpen(o);
+        if (!o) resetForm();
       }}
     >
       <DialogTrigger asChild>
         <Button size="sm" disabled={createMutation.isPending}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Staff
+          <Plus className="h-4 w-4 mr-2" /> Add Staff
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogDescription>
-            Enter the details for the new staff member
+            Enter details for the new staff member
           </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
+          {/* Company dropdown */}
           {companies?.length > 1 && (
             <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
+              <Label>Company</Label>
               <Select
-                onValueChange={(value) => {
-                  setSelectedCompany(value);
+                onValueChange={(val) => {
+                  setSelectedCompany(val);
                   setSelectedBranches([]);
                   setSelectedLocations([]);
                 }}
@@ -303,38 +304,38 @@ export default function AddStaffDialog() {
                   <SelectValue placeholder="Select company" />
                 </SelectTrigger>
                 <SelectContent>
-                  {companies?.map((company) => (
-                    <SelectItem key={company._id} value={company._id}>
-                      {company.name}
+                  {companies?.map((c) => (
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
           )}
+
+          {/* Name & Email */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+            <div>
+              <Label>Full Name</Label>
               <Input
                 id="name"
-                placeholder="Enter full name"
                 value={formData.name}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                placeholder="Enter full name"
               />
               {errors.name && (
                 <p className="text-sm text-red-600">{errors.name}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+            <div>
+              <Label>Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter email address"
                 value={formData.email}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                placeholder="Enter email"
               />
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email}</p>
@@ -342,28 +343,27 @@ export default function AddStaffDialog() {
             </div>
           </div>
 
+          {/* Phone & Join Date */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
+            <div>
+              <Label>Phone Number</Label>
               <Input
                 id="phone"
-                placeholder="Enter phone number"
                 value={formData.phone}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                placeholder="Enter phone number"
               />
               {errors.phone && (
                 <p className="text-sm text-red-600">{errors.phone}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="joinDate">Join Date</Label>
+            <div>
+              <Label>Join Date</Label>
               <Input
                 id="joinDate"
                 type="date"
                 value={formData.joinDate}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
                 min={getOneMonthAgoDate()}
               />
               {errors.joinDate && (
@@ -372,115 +372,87 @@ export default function AddStaffDialog() {
             </div>
           </div>
 
+          {/* Shift Times */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="shiftStart">Shift Start Time</Label>{" "}
+            <div>
+              <Label>Shift Start</Label>
               <Input
                 id="shiftStart"
                 type="time"
                 step="60"
-                value={formData.shiftStart || ""}
+                value={formData.shiftStart}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="shiftEnd">Shift End Time</Label>
+            <div>
+              <Label>Shift End</Label>
               <Input
                 id="shiftEnd"
                 type="time"
                 step="60"
-                value={formData.shiftEnd || ""}
-                onChange={handleInputChange}
+                value={formData.shiftEnd}
                 readOnly
-                disabled={createMutation.isPending}
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="role">Role(s)</Label>
-              <Select
-                onValueChange={handleRoleChange}
-                value=""
-                disabled={createMutation.isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedRoles.length > 0
-                        ? selectedRoles.join(", ")
-                        : "Select role(s)"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedRoles.includes(role)}
-                          readOnly
-                          className="mr-2"
-                        />
-                        {role}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch(es)</Label>
-              <Select
-                onValueChange={handleBranchChange}
-                value=""
-                disabled={
-                  selectedRoles.length === 0 ||
-                  (companies?.length > 1 && !selectedCompany) ||
-                  createMutation.isPending
-                }
-              >
+          {/* Role */}
+          <div>
+            <Label>Role</Label>
+            <Select value={selectedRole} onValueChange={handleRoleChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Branch selection */}
+          {selectedRole && (
+            <div>
+              <Label>Branch{isManager ? "(es)" : ""}</Label>
+              <Select onValueChange={handleBranchChange} value="">
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
                       selectedBranches.length > 0
                         ? selectedBranches.join(", ")
-                        : "Select branch(es)"
+                        : "Select branch"
                     }
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredBranches.map((branch) => (
-                    <SelectItem key={branch._id} value={branch.name}>
+                  {filteredBranches.map((b) => (
+                    <SelectItem key={b._id} value={b.name}>
                       <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedBranches.includes(branch.name)}
-                          readOnly
-                          className="mr-2"
-                          disabled={!isGeneralManager}
-                        />
-                        {branch.name}
+                        {isManager && (
+                          <input
+                            type="checkbox"
+                            readOnly
+                            checked={selectedBranches.includes(b.name)}
+                            className="mr-2"
+                          />
+                        )}
+                        {b.name}
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          {isAssistantManagerOrStaff && (
-            <div className="space-y-2">
-              <Label htmlFor="location">Location(s)</Label>
-              <Select
-                onValueChange={handleLocationChange}
-                value=""
-                disabled={
-                  selectedBranches.length === 0 || createMutation.isPending
-                }
-              >
+          )}
+
+          {/* Location selection (only Staff) */}
+          {(isStaff || isAssistantManager) && selectedBranches.length > 0 && (
+            <div>
+              <Label>Location(s)</Label>
+              <Select onValueChange={handleLocationChange} value="">
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
@@ -491,16 +463,16 @@ export default function AddStaffDialog() {
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredLocations.map((location) => (
-                    <SelectItem key={location._id} value={location.name}>
+                  {filteredLocations.map((loc) => (
+                    <SelectItem key={loc._id} value={loc.name}>
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={selectedLocations.includes(location.name)}
                           readOnly
+                          checked={selectedLocations.includes(loc.name)}
                           className="mr-2"
                         />
-                        {location.name}
+                        {loc.name}
                       </div>
                     </SelectItem>
                   ))}
@@ -509,27 +481,21 @@ export default function AddStaffDialog() {
             </div>
           )}
         </div>
+
+        {/* Footer */}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsAddDialogOpen(false);
-              resetForm();
-            }}
-            disabled={createMutation.isPending}
-          >
+          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
             Cancel
           </Button>
           <Button
             onClick={handleAddStaff}
             disabled={
               !formData.name ||
-              !formData.email ||
+              !validateEmail(formData.email) ||
               !formData.phone ||
               !formData.joinDate ||
-              selectedRoles.length === 0 ||
+              !selectedRole ||
               selectedBranches.length === 0 ||
-              (companies?.length > 1 && !selectedCompany) ||
               createMutation.isPending
             }
           >

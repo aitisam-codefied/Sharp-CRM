@@ -30,7 +30,7 @@ import {
   User,
   ShoppingBasket,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -263,6 +263,19 @@ export function AppNavbar() {
   const getSubNavItemsForSection = (sectionKey: string) =>
     subNavItemsMap[sectionKey] || [];
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden"; // 🚫 disable scroll
+    } else {
+      document.body.style.overflow = "auto"; // ✅ enable scroll back
+    }
+
+    // cleanup just in case
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <div className="border-b bg-white">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
@@ -354,7 +367,7 @@ export function AppNavbar() {
 
       {/* Mobile nav section */}
       {mobileMenuOpen && (
-        <div className="flex flex-col items-start gap-2 px-4 py-3 xl:hidden border-t min-h-screen">
+        <div className="fixed inset-0 z-50 flex flex-col items-start gap-2 px-4 py-3 xl:hidden bg-white overflow-y-auto">
           {mainNavItems.map((item) => {
             const isOpen = openMobileSection === item.key;
             const toggleOpen = () =>

@@ -52,6 +52,10 @@ export const FeedbackTable = ({
     startIndex + itemsPerPage
   );
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredFeedback]);
+
   return (
     <div className="rounded-md border">
       <Table>

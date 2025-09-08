@@ -76,8 +76,9 @@ export default function InTransitPage() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        Loading in-transit data...
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+        <p className="mt-2"> Loading Intransit data...</p>
       </div>
     );
   }

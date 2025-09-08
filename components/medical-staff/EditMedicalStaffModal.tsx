@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -63,9 +63,19 @@ export function EditMedicalStaffModal({
   const { mutate: updateStaff, isPending } = useUpdateMedicalStaff();
   const { toast } = useToast();
 
+  // check agar koi field change hui ha
+  const isChanged = useMemo(() => {
+    return (
+      fullName !== staff.fullName ||
+      emailAddress !== staff.emailAddress ||
+      phoneNumber !== staff.phoneNumber ||
+      type !== staff.type
+    );
+  }, [fullName, emailAddress, phoneNumber, type, staff]);
+
   const handleSubmit = () => {
     const updatedData: {
-      fullName?: any;
+      fullName?: string;
       type?: string;
       emailAddress?: string;
       phoneNumber?: string;
@@ -161,7 +171,7 @@ export function EditMedicalStaffModal({
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={!isChanged || isPending}>
             {isPending ? "Updating..." : "Update"}
           </Button>
         </div>

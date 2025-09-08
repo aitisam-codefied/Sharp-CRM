@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -147,13 +147,17 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
     }
   };
 
-  if (isLoading || qrcodes.length === 0) {
-    return (
-      <div className="flex justify-center items-center py-10">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F87D7D]"></div>
-      </div>
-    );
-  }
+  // if (isLoading || qrcodes.length === 0) {
+  //   return (
+  //     <div className="flex justify-center items-center py-10">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F87D7D]"></div>
+  //     </div>
+  //   );
+  // }
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [qrcodes]);
 
   return (
     <>

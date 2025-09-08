@@ -86,20 +86,6 @@ export default function ClockRecordsTable({
     );
   };
 
-  const handleManualClockIn = () => {
-    toast({
-      title: "Manual Clock In",
-      description: "Staff member has been manually clocked in.",
-    });
-  };
-
-  const handleManualClockOut = () => {
-    toast({
-      title: "Manual Clock Out",
-      description: "Staff member has been manually clocked out.",
-    });
-  };
-
   return (
     <div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

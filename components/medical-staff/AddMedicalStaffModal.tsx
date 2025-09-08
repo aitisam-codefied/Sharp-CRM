@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -55,10 +55,12 @@ export function AddMedicalStaffModal({
   const [emailAddress, setEmailAddress] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("active");
-  const [branches, setBranches] = useState(""); // Single branch ID as string
+  const [branches, setBranches] = useState("");
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
   const createMutation = useCreateMedicalStaff();
-  const { data: branchData, isPending } = useBranches();
+  const { data: branchData } = useBranches();
 
   const allBranches =
     branchData?.map((branch: any) => ({
@@ -67,20 +69,42 @@ export function AddMedicalStaffModal({
       company: branch.companyId.name,
     })) || [];
 
+  // check agar sab fields filled hain
+  const isFormValid =
+    fullName.trim() &&
+    phoneNumber.trim() &&
+    emailAddress.trim() &&
+    type.trim() &&
+    branches.trim();
+
+  const validateFields = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!fullName.trim()) newErrors.fullName = "Name is required.";
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = "Email is required.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) {
+      newErrors.emailAddress = "Enter a valid email address.";
+    }
+    if (!phoneNumber.trim()) {
+      newErrors.phoneNumber = "Phone is required.";
+    } else if (!/^\+?\d{7,15}$/.test(phoneNumber)) {
+      newErrors.phoneNumber = "Enter a valid phone number.";
+    }
+    if (!type.trim()) newErrors.type = "Type is required.";
+    if (!branches.trim()) newErrors.branches = "Branch is required.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !type || !branches || !phoneNumber || !emailAddress) {
-      toast({
-        title: "Error",
-        description: "Please fill all required fields.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateFields()) return;
 
     createMutation.mutate(
       {
-        branches: [branches], // Wrap the single branch ID in an array
+        branches: [branches],
         fullName,
         phoneNumber,
         emailAddress,
@@ -101,8 +125,9 @@ export function AddMedicalStaffModal({
           setType("");
           setStatus("active");
           setBranches("");
+          setErrors({});
         },
-        onError: (error) => {
+        onError: () => {
           toast({
             title: "Error",
             description: "Failed to add staff. Please try again.",
@@ -120,6 +145,7 @@ export function AddMedicalStaffModal({
           <DialogTitle>Add New Medical Staff</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div>
             <label
               htmlFor="fullName"
@@ -131,10 +157,13 @@ export function AddMedicalStaffModal({
               id="fullName"
               value={fullName}
               onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md"
             />
+            {errors.fullName && (
+              <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+            )}
           </div>
+
+          {/* Email */}
           <div>
             <label
               htmlFor="emailAddress"
@@ -147,10 +176,13 @@ export function AddMedicalStaffModal({
               type="email"
               value={emailAddress}
               onChange={(e) => setEmailAddress(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md"
             />
+            {errors.emailAddress && (
+              <p className="text-red-500 text-sm mt-1">{errors.emailAddress}</p>
+            )}
           </div>
+
+          {/* Phone */}
           <div>
             <label
               htmlFor="phoneNumber"
@@ -162,11 +194,14 @@ export function AddMedicalStaffModal({
               id="phoneNumber"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md"
               type="tel"
             />
+            {errors.phoneNumber && (
+              <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
+            )}
           </div>
+
+          {/* Type */}
           <div>
             <label htmlFor="type" className="block text-sm font-medium mb-1">
               Type
@@ -183,7 +218,12 @@ export function AddMedicalStaffModal({
                 ))}
               </SelectContent>
             </Select>
+            {errors.type && (
+              <p className="text-red-500 text-sm mt-1">{errors.type}</p>
+            )}
           </div>
+
+          {/* Status */}
           <div>
             <label htmlFor="status" className="block text-sm font-medium mb-1">
               Status
@@ -198,6 +238,8 @@ export function AddMedicalStaffModal({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Branch */}
           <div>
             <label htmlFor="branch" className="block text-sm font-medium mb-1">
               Branch
@@ -219,12 +261,20 @@ export function AddMedicalStaffModal({
                 ))}
               </SelectContent>
             </Select>
+            {errors.branches && (
+              <p className="text-red-500 text-sm mt-1">{errors.branches}</p>
+            )}
           </div>
+
+          {/* Buttons */}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending}>
+            <Button
+              type="submit"
+              disabled={!isFormValid || createMutation.isPending}
+            >
               {createMutation.isPending ? "Adding..." : "Add Staff"}
             </Button>
           </div>

@@ -1,26 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { UserStats } from "@/components/serviceUsers/UserStats";
 import { UserFilters } from "@/components/serviceUsers/UserFilters";
 import { UserTable } from "@/components/serviceUsers/UserTable";
-import { NewUserDialog } from "@/components/serviceUsers/NewUserDialog";
-import {
-  ServiceUser,
-  Branch,
-  Location,
-  GuestFormData,
-  Room,
-} from "@/lib/types";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import { CustomPagination } from "@/components/CustomPagination";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
 import { useGetGuests } from "@/hooks/useGetGuests";
 import { useRooms } from "@/hooks/useGetRooms";
-import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 
 export default function ServiceUsersPage() {
   const router = useRouter();
@@ -28,23 +20,23 @@ export default function ServiceUsersPage() {
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedNationality, setSelectedNationality] = useState("all");
-  const [isNewUserOpen, setIsNewUserOpen] = useState(false);
-  const { toast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: branchesData } = useBranches();
   const { data: locationsData } = useLocations();
   const { data: roomsData } = useRooms();
-  const { data: guestsData, isPending } = useGetGuests();
+  const { data: guestsData, isPending } = useGetGuests(); // 🚨 fetch ALL guests
+
+  const branches = branchesData || [];
+  const locations = locationsData || [];
+  const rooms = roomsData || [];
+  const guests = guestsData || [];
 
   useEffect(() => {
-    console.log("guestsssss", guestsData);
+    console.log("guestsss", guests);
   });
 
-  const branches: Branch[] = branchesData || [];
-  const locations: Location[] = locationsData || [];
-  const rooms: Room[] = roomsData || [];
-  const guests: GuestFormData[] = guestsData || [];
-
+  const branchNames = Array.from(new Set(branches.map((b) => b.name)));
   const nationalities = [
     "Syrian",
     "Afghan",
@@ -56,13 +48,48 @@ export default function ServiceUsersPage() {
   ];
   const statusOptions = ["active", "transitioning", "departed", "suspended"];
 
-  const handleNewUser = () => {
-    toast({
-      title: "Service User Added",
-      description: "New service user has been successfully registered.",
+  // 🚨 Filter first
+  const filteredUsers = useMemo(() => {
+    return guests.filter((guest: any) => {
+      const fullName = guest.userId?.fullName?.toLowerCase() || "";
+      const branchName =
+        branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.name ||
+        "";
+      const nationality = guest.nationality || "";
+      const status = guest.priorityLevel || "";
+
+      const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+      const matchesBranch =
+        selectedBranch === "all" || branchName === selectedBranch;
+      const matchesStatus =
+        selectedStatus === "all" || status === selectedStatus;
+      const matchesNationality =
+        selectedNationality === "all" || nationality === selectedNationality;
+
+      return (
+        matchesSearch && matchesBranch && matchesStatus && matchesNationality
+      );
     });
-    setIsNewUserOpen(false);
-  };
+  }, [
+    guests,
+    searchTerm,
+    selectedBranch,
+    selectedStatus,
+    selectedNationality,
+    branches,
+  ]);
+
+  // 🚨 Then paginate
+  const itemsPerPage = 10;
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedBranch, selectedStatus, selectedNationality]);
 
   if (isPending) {
     return (
@@ -70,8 +97,9 @@ export default function ServiceUsersPage() {
         title="Service User Management"
         description="Manage resident profiles and information across all branches"
       >
-        <div className="flex justify-center items-center h-64">
-          Loading service users...
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+          <p className="mt-2"> Loading Guests...</p>
         </div>
       </DashboardLayout>
     );
@@ -82,14 +110,6 @@ export default function ServiceUsersPage() {
       title="Service User Management"
       description="Manage resident profiles and information across all branches"
       actions={
-        // <NewUserDialog
-        //   isOpen={isNewUserOpen}
-        //   setIsOpen={setIsNewUserOpen}
-        //   branches={branches}
-        //   locations={locations}
-        //   nationalities={nationalities}
-        //   onSubmit={handleNewUser}
-        // />
         <Button
           onClick={() => router.push("/dashboard/admin/new-user")}
           size="sm"
@@ -100,7 +120,7 @@ export default function ServiceUsersPage() {
       }
     >
       <div className="space-y-6">
-        <UserStats users={guests} />
+        <UserStats users={filteredUsers} /> {/* Stats use filtered data */}
         <UserFilters
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -110,19 +130,25 @@ export default function ServiceUsersPage() {
           setSelectedStatus={setSelectedStatus}
           selectedNationality={selectedNationality}
           setSelectedNationality={setSelectedNationality}
-          branches={branches.map((b) => b.name)} // Pass names for filters
+          branches={branchNames}
           statusOptions={statusOptions}
           nationalities={nationalities}
         />
         <UserTable
-          users={guests}
+          users={paginatedUsers} // 🚨 only send paginated slice
           searchTerm={searchTerm}
           selectedBranch={selectedBranch}
           selectedStatus={selectedStatus}
           selectedNationality={selectedNationality}
           branches={branches}
+          allLocations={locations}
           allRooms={rooms}
           nationalities={nationalities}
+        />
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
         />
       </div>
     </DashboardLayout>

@@ -52,9 +52,10 @@ export default function QRScannerPage() {
 
   // Filter QR codes based on search term, type, and branch
   const filteredQRCodes = qrcodes.filter((qr: QRCode) => {
-    const matchesSearch =
-      qr.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      qr._id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = qr.type
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+
     const matchesType = selectedType === "all" || qr.type === selectedType;
     const matchesBranch =
       selectedBranch === "all" || qr.branchId?._id === selectedBranch;
@@ -79,7 +80,10 @@ export default function QRScannerPage() {
           </CardHeader>
           <CardContent>
             {isQRCodesPending ? (
-              <div className="text-center py-8">Loading QR codes...</div>
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading qr codes...</p>
+              </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -87,7 +91,7 @@ export default function QRScannerPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Search by code or ID..."
+                        placeholder="Search by Module"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"

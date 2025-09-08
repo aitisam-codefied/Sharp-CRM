@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -104,6 +104,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
         return "bg-gray-100 text-gray-800";
     }
   };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus]);
 
   return (
     <Card>

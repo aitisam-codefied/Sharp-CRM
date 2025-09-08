@@ -117,9 +117,9 @@ export default function StaffTable() {
     isError: isBranchError,
   } = useBranches();
 
-  useEffect(() => {
-    console.log("branch data", branchData);
-  });
+  // useEffect(() => {
+  //   console.log("branch data", branchData);
+  // });
 
   const allBranches =
     branchData?.map((branch: any) => ({
@@ -328,6 +328,10 @@ export default function StaffTable() {
     setCurrentPage(page);
   };
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus, selectedRoles, selectedBranches]);
+
   return (
     <>
       <Card>
@@ -348,7 +352,7 @@ export default function StaffTable() {
           )}
           {isLoading && (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
               <p className="mt-2">Loading staff members...</p>
             </div>
           )}
@@ -576,11 +580,13 @@ export default function StaffTable() {
                   </p>
                 </div>
               )}
-              <CustomPagination
-                currentPage={currentPage}
-                totalPages={data?.totalPages || 1}
-                onPageChange={handlePageChange}
-              />
+              {filteredStaff.length > 0 && data?.totalCount > limit && (
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={data?.totalPages || 1}
+                  onPageChange={handlePageChange}
+                />
+              )}
             </>
           )}
         </CardContent>

@@ -114,23 +114,21 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                     <div className="flex flex-wrap items-center gap-4">
                       <Badge
                         variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
+                        className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
                       >
-                        {log.actionType}
+                        {log.moduleType}
                       </Badge>
-
                       <Badge
                         variant="outline"
                         className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
                       >
                         {log.severity}
                       </Badge>
-
                       <Badge
                         variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
+                        className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
                       >
-                        {log.moduleType}
+                        {log.actionType}
                       </Badge>
                     </div>
                   </div>

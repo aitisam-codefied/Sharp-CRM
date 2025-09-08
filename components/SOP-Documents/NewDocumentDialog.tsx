@@ -50,6 +50,7 @@ export default function NewDocumentDialog({
   accessLevels,
 }: NewDocumentDialogProps) {
   const [title, setTitle] = useState("");
+  const [titleError, setTitleError] = useState(""); // ✅ new state
   const [version, setVersion] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -92,11 +93,13 @@ export default function NewDocumentDialog({
       return;
     }
 
+    const normalizedVersion = version.replace(/^V/, "v");
+
     const formData = new FormData();
     formData.append("document", file);
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("version", version);
+    formData.append("version", normalizedVersion);
     formData.append("category", category);
     formData.append("tags", tags);
     formData.append("accessLevel", accessLevel);
@@ -189,8 +192,19 @@ export default function NewDocumentDialog({
                 id="title"
                 placeholder="Enter document title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setTitle(value);
+                  if (value.length > 50) {
+                    setTitleError("Title cannot exceed 50 characters."); // ✅ set error
+                  } else {
+                    setTitleError(""); // ✅ clear error
+                  }
+                }}
               />
+              {titleError && (
+                <p className="text-sm text-red-500">{titleError}</p> // ✅ error message
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="version">Version</Label>
@@ -338,7 +352,10 @@ export default function NewDocumentDialog({
           <Button variant="outline" onClick={() => setIsNewDocumentOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleUpload} disabled={isPending}>
+          <Button
+            onClick={handleUpload}
+            disabled={isPending || !!titleError} // ✅ disable if error
+          >
             {isPending ? "Uploading..." : "Upload Document"}
           </Button>
         </div>

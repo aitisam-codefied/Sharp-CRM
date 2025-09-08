@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useState } from "react";
 import axios from "axios";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -522,40 +521,43 @@ export default function ProfilePage() {
                 Change Password
               </DialogTitle>
             </DialogHeader>
+
             <div className="space-y-4 py-4">
-              {/* Current Password */}
-              <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">
-                  Current Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    type={showPasswords.current ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30 pr-10"
-                    placeholder="Enter current password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                    onClick={() =>
-                      setShowPasswords((prev) => ({
-                        ...prev,
-                        current: !prev.current,
-                      }))
-                    }
-                  >
-                    {showPasswords.current ? (
-                      <EyeOff className="h-4 w-4 text-gray-400" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-gray-400" />
-                    )}
-                  </Button>
+              {/* Step 1: Verify Current Password */}
+              {!passwordVerified && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-700">
+                    Current Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type={showPasswords.current ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30 pr-10"
+                      placeholder="Enter current password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          current: !prev.current,
+                        }))
+                      }
+                    >
+                      {showPasswords.current ? (
+                        <EyeOff className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-400" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {!passwordVerified ? (
                 <Button
@@ -574,7 +576,7 @@ export default function ProfilePage() {
                 </Button>
               ) : (
                 <>
-                  {/* New Password */}
+                  {/* Step 2: New Password */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-gray-700">
                       New Password
@@ -608,7 +610,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Confirm Password */}
+                  {/* Step 3: Confirm Password */}
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-gray-700">
                       Confirm New Password
@@ -644,6 +646,7 @@ export default function ProfilePage() {
                 </>
               )}
             </div>
+
             <DialogFooter className="flex gap-3">
               <Button
                 variant="outline"

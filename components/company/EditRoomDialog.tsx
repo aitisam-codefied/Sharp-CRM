@@ -58,10 +58,12 @@ export default function EditRoomDialog({
   const [form, setForm] = useState(room);
   const { toast } = useToast();
   const { mutate, isPending } = useUpdateRoom();
+  const [initialRoom, setInitialRoom] = useState(room);
 
   // Populate form when dialog opens
   useEffect(() => {
     setForm(room);
+    setInitialRoom(room);
   }, [room]);
 
   const updateField = (field: keyof typeof form, value: any) => {
@@ -114,6 +116,8 @@ export default function EditRoomDialog({
       }
     );
   };
+
+  const hasChanges = JSON.stringify(form) !== JSON.stringify(initialRoom);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,7 +177,7 @@ export default function EditRoomDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={!hasChanges || isPending}>
             {isPending ? "Updating..." : "Update Room"}
           </Button>
         </div>

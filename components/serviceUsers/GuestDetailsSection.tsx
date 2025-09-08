@@ -48,7 +48,7 @@ export function GuestDetailsSection({
     reset,
     watch,
     setValue,
-    formState: { errors, dirtyFields },
+    formState: { errors, dirtyFields, isDirty },
   } = useForm<ServiceUser & { location: { _id: string } }>({
     defaultValues: {
       _id: "",
@@ -535,7 +535,7 @@ export function GuestDetailsSection({
         <ConsentFields2 register={register} />
 
         <div className="mt-4 flex justify-end">
-          <Button type="submit" disabled={updateGuest.isPending}>
+          <Button type="submit" disabled={updateGuest.isPending || !isDirty}>
             {updateGuest.isPending ? "Updating..." : "Update Details"}
           </Button>
         </div>

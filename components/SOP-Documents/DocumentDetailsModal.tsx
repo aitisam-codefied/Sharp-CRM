@@ -116,11 +116,11 @@ export default function DocumentDetailsModal({
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Last Updated
+                Effective Date
               </h3>
               <div className="flex items-center mt-1 text-gray-800">
                 <Calendar className="h-4 w-4 mr-2" />
-                {document.updatedAt}
+                {document.effectiveDate}
               </div>
             </div>
           </div>

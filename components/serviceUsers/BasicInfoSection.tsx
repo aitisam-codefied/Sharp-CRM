@@ -22,7 +22,7 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
     register,
     handleSubmit,
     reset,
-    formState: { errors, dirtyFields },
+    formState: { errors, dirtyFields, isDirty },
   } = useForm<{
     fullName: string;
     emailAddress: string;
@@ -138,7 +138,7 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
           </div>
         </div>
         <div className="mt-4 flex justify-end">
-          <Button type="submit" disabled={updateStaff.isPending}>
+          <Button type="submit" disabled={updateStaff.isPending || !isDirty}>
             {updateStaff.isPending ? "Updating..." : "Update Basic Info"}
           </Button>
         </div>

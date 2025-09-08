@@ -22,7 +22,7 @@ const SOCKET_URL = "http://localhost:5001";
 
 export default function ClockSystemPage() {
   const queryClient = useQueryClient();
-  const { data: clockRecords = [] } = useClockRecords();
+  const { data: clockRecords = [], isPending } = useClockRecords();
   const { data: branchData } = useBranches();
 
   useEffect(() => {
@@ -157,6 +157,15 @@ export default function ClockSystemPage() {
       socket.disconnect();
     };
   }, [queryClient]);
+
+  if (isPending) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+        <p className="mt-2"> Loading ClockIn/ClockOut...</p>
+      </div>
+    );
+  }
 
   return (
     <DashboardLayout

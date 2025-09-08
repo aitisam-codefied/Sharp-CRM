@@ -52,6 +52,8 @@ export default function DocumentTable({
     setIsModalOpen(true);
   };
 
+ 
+
   return (
     <>
       <div className="rounded-md border">

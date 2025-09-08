@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -37,6 +37,7 @@ import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
 import { MedicalStaffTable } from "@/components/medical-staff/MedicalStaffTable";
 import { MedicalStaffStats } from "@/components/medical-staff/MedicalStaffStats";
 import { AddMedicalStaffModal } from "@/components/medical-staff/AddMedicalStaffModal";
+import { CustomPagination } from "@/components/CustomPagination";
 
 export default function MedicalStaffPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,6 +68,10 @@ export default function MedicalStaffPage() {
     return matchesSearch && matchesType && matchesStatus;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedType, selectedStatus]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
@@ -90,6 +95,16 @@ export default function MedicalStaffPage() {
   const handleNewStaff = () => {
     setIsModalOpen(true); // Open modal instead of toast
   };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStaff = filteredStaff.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   return (
     <DashboardLayout
@@ -117,7 +132,10 @@ export default function MedicalStaffPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="text-center py-8">Loading medical staff...</div>
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading Medical Staffs...</p>
+              </div>
             ) : (
               <>
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -155,16 +173,22 @@ export default function MedicalStaffPage() {
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
                       <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="on-leave">On Leave</SelectItem>
+                      {/* <SelectItem value="on-leave">On Leave</SelectItem> */}
                       <SelectItem value="inactive">Inactive</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <MedicalStaffTable
-                  staff={filteredStaff}
+                  staff={paginatedStaff}
                   getStatusColor={getStatusColor}
                   handleViewDetails={handleViewDetails}
+                />
+
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={(page) => setCurrentPage(page)}
                 />
 
                 {filteredStaff.length === 0 && (

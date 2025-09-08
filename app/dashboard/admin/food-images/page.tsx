@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ export default function FoodImagesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedMeal, setSelectedMeal] = useState("all-meals");
-  const [selectedDate, setSelectedDate] = useState("07/11/2026");
+  const [selectedDate, setSelectedDate] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
 
   // State for upload dialog
@@ -87,6 +87,8 @@ export default function FoodImagesPage() {
     images: [],
   });
 
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
   // API hooks
   const { data: foods, isLoading: foodsLoading } = useGetFoods();
   const { data: categories, isLoading: categoriesLoading } =
@@ -96,9 +98,9 @@ export default function FoodImagesPage() {
 
   const { data: branchData } = useBranches();
 
-  // useEffect(() => {
-  //   console.log("branch data", branchData);
-  // });
+  useEffect(() => {
+    console.log("foooooooodss", foods);
+  });
 
   const allBranches =
     branchData?.map((branch: any) => ({
@@ -143,35 +145,42 @@ export default function FoodImagesPage() {
 
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
-  // const handleDietaryTagChange = (tag: string, checked: boolean) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     dietaryTags: checked
-  //       ? [...prev.dietaryTags, tag]
-  //       : prev.dietaryTags.filter((t) => t !== tag),
-  //   }));
-  // };
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
 
-  // const handleAllergenChange = (allergen: string, checked: boolean) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     allergens: checked
-  //       ? [...prev.allergens, allergen]
-  //       : prev.allergens.filter((a) => a !== allergen),
-  //   }));
-  // };
+    if (!formData.name.trim()) newErrors.name = "Food name is required";
+    if (!formData.categoryId) newErrors.categoryId = "Category is required";
+    if (!formData.mealType) newErrors.mealType = "Meal type is required";
+    if (!formData.images || formData.images.length === 0)
+      newErrors.images = "At least one image is required";
+
+    if (formData.preparationTime && Number(formData.preparationTime) < 0) {
+      newErrors.preparationTime = "Preparation time cannot be negative";
+    }
+
+    if (
+      formData.nutritionalInfo.calories &&
+      formData.nutritionalInfo.calories < 0
+    ) {
+      newErrors.calories = "Calories cannot be negative";
+    }
+
+    if (
+      formData.nutritionalInfo.protein &&
+      formData.nutritionalInfo.protein < 0
+    ) {
+      newErrors.protein = "Protein cannot be negative";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleUpload = () => {
-    if (!formData.categoryId || !formData.name) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateForm()) return;
 
     createFoodMutation.mutate(formData, {
       onSuccess: () => {
@@ -196,7 +205,7 @@ export default function FoodImagesPage() {
       onError: (error: any) => {
         toast({
           title: "Error",
-          description: error.response?.data?.message || "Failed to create food",
+          description: error.response?.data?.details || "Failed to create food",
           variant: "destructive",
         });
       },
@@ -236,34 +245,60 @@ export default function FoodImagesPage() {
     );
   };
 
-  // const handleDelete = (foodId: string) => {
-  //   toast({
-  //     title: "Food Deleted",
-  //     description: "Food has been removed from the system.",
-  //     variant: "destructive",
-  //   });
-  // };
-
   // Filter foods based on search and filters
   const filteredFoods =
     foods?.filter((food) => {
       const matchesSearch =
         food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.description.toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchesMeal =
         selectedMeal === "all-meals" ||
-        food.mealType.toLowerCase() === selectedMeal;
+        food.mealType.toLowerCase() === selectedMeal.toLowerCase();
+
       const matchesFilter =
         activeFilter === "All" || food.mealType === activeFilter;
 
-      return matchesSearch && matchesMeal && matchesFilter;
+      // ✅ Date filter
+      const matchesDate =
+        !selectedDate ||
+        (() => {
+          const selected = new Date(selectedDate).toISOString().split("T")[0]; // "YYYY-MM-DD"
+          const created = new Date(food.createdAt).toISOString().split("T")[0]; // "YYYY-MM-DD"
+          return created === selected;
+        })();
+
+      return matchesSearch && matchesMeal && matchesFilter && matchesDate;
     }) || [];
 
-  // random image ko memoized rakha taki har render pe change na ho
-  const randomFallback = useMemo(() => {
-    const idx = Math.floor(Math.random() * fallbackImages.length);
-    return fallbackImages[idx];
-  }, []);
+  function formatDateWithSuffix(dateString: string) {
+    const date = new Date(dateString);
+    const day = date.getDate();
+
+    // suffix calculate
+    const suffix =
+      day % 10 === 1 && day !== 11
+        ? "st"
+        : day % 10 === 2 && day !== 12
+        ? "nd"
+        : day % 10 === 3 && day !== 13
+        ? "rd"
+        : "th";
+
+    const month = date.toLocaleString("en-US", { month: "long" });
+    const year = date.getFullYear();
+
+    return `${day}${suffix} ${month} ${year}`;
+  }
+
+  const isFormValid = useMemo(() => {
+    return (
+      formData.name.trim() &&
+      formData.categoryId &&
+      formData.mealType &&
+      formData?.images?.length > 0
+    );
+  }, [formData]);
 
   return (
     <DashboardLayout>
@@ -322,6 +357,11 @@ export default function FoodImagesPage() {
                         <Upload className="h-4 w-4 mr-2" />
                         Choose File
                       </Button>
+                      {errors.images && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.images}
+                        </p>
+                      )}
 
                       {/* ✅ Preview Section */}
                       {selectedFiles.length > 0 && (
@@ -358,7 +398,13 @@ export default function FoodImagesPage() {
                         }
                         placeholder="Enter food name"
                       />
+                      {errors.name && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.name}
+                        </p>
+                      )}
                     </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="mealType">Meal Type *</Label>
                       <Select
@@ -377,6 +423,11 @@ export default function FoodImagesPage() {
                           {/* <SelectItem value="Snack">Snack</SelectItem> */}
                         </SelectContent>
                       </Select>
+                      {errors.mealType && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.mealType}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -401,6 +452,11 @@ export default function FoodImagesPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                      {errors.categoryId && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.categoryId}
+                        </p>
+                      )}
                       <Dialog
                         open={isCategoryDialogOpen}
                         onOpenChange={setIsCategoryDialogOpen}
@@ -458,11 +514,33 @@ export default function FoodImagesPage() {
                     <Textarea
                       id="description"
                       value={formData.description}
-                      onChange={(e) =>
-                        handleFormChange("description", e.target.value)
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.length <= 500) {
+                          handleFormChange("description", value);
+                          setErrors((prev) => ({ ...prev, description: "" }));
+                        } else {
+                          setErrors((prev) => ({
+                            ...prev,
+                            description:
+                              "Description cannot exceed 500 characters",
+                          }));
+                        }
+                      }}
                       placeholder="Describe the food item..."
                     />
+
+                    {/* Character count */}
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>{formData.description.length} / 500</span>
+                    </div>
+
+                    {/* Error message */}
+                    {errors.description && (
+                      <p className="text-red-500 text-xs">
+                        {errors.description}
+                      </p>
+                    )}
                   </div>
 
                   {/* Preparation Time */}
@@ -473,15 +551,22 @@ export default function FoodImagesPage() {
                     <Input
                       id="preparationTime"
                       type="number"
+                      min={0} // ✅ prevents typing negatives
                       value={formData.preparationTime}
-                      onChange={(e) =>
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
                         handleFormChange(
                           "preparationTime",
-                          parseInt(e.target.value)
-                        )
-                      }
+                          isNaN(val) || val < 0 ? 0 : val
+                        );
+                      }}
                       placeholder="Enter preparation time"
                     />
+                    {errors.preparationTime && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.preparationTime}
+                      </p>
+                    )}
                   </div>
 
                   {/* Dietary Tags */}
@@ -554,30 +639,44 @@ export default function FoodImagesPage() {
                         <Input
                           id="calories"
                           type="number"
+                          min={0} // ✅ no negative calories
                           value={formData.nutritionalInfo.calories || ""}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             handleFormChange("nutritionalInfo", {
                               ...formData.nutritionalInfo,
-                              calories: parseInt(e.target.value) || undefined,
-                            })
-                          }
+                              calories: isNaN(val) || val < 0 ? 0 : val,
+                            });
+                          }}
                           placeholder="Calories"
                         />
+                        {errors.calories && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.calories}
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="protein">Protein (g)</Label>
                         <Input
                           id="protein"
                           type="number"
+                          min={0} // ✅ no negative protein
                           value={formData.nutritionalInfo.protein || ""}
-                          onChange={(e) =>
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
                             handleFormChange("nutritionalInfo", {
                               ...formData.nutritionalInfo,
-                              protein: parseInt(e.target.value) || undefined,
-                            })
-                          }
+                              protein: isNaN(val) || val < 0 ? 0 : val,
+                            });
+                          }}
                           placeholder="Protein"
                         />
+                        {errors.protein && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {errors.protein}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -591,7 +690,7 @@ export default function FoodImagesPage() {
                   </Button>
                   <Button
                     onClick={handleUpload}
-                    disabled={createFoodMutation.isPending}
+                    disabled={createFoodMutation.isPending || !isFormValid}
                   >
                     {createFoodMutation.isPending
                       ? "Creating..."
@@ -641,7 +740,7 @@ export default function FoodImagesPage() {
               </div>
 
               {/* Filters Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -652,12 +751,12 @@ export default function FoodImagesPage() {
                   />
                 </div>
                 <Input
-                  type="text"
+                  type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
                 />
-                <Select
+                {/* <Select
                   value={selectedBranch}
                   onValueChange={setSelectedBranch}
                 >
@@ -677,7 +776,7 @@ export default function FoodImagesPage() {
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select>
+                </Select> */}
                 <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
@@ -768,8 +867,8 @@ export default function FoodImagesPage() {
               {/* Loading State */}
               {foodsLoading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto"></div>
-                  <p className="mt-2 text-muted-foreground">Loading foods...</p>
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                  <p className="mt-2"> Loading Food data...</p>
                 </div>
               ) : (
                 /* Food Grid */
@@ -830,6 +929,7 @@ export default function FoodImagesPage() {
                               <Clock className="h-3 w-3" />
                               <span>{food.preparationTime} min</span>
                             </div>
+                            <p>{formatDateWithSuffix(food.createdAt)}</p>
                           </div>
                         </div>
                       </CardContent>

@@ -1,7 +1,7 @@
 // pages/DocumentsPage.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Unlock, Lock, Folder, Edit } from "lucide-react";
@@ -58,10 +58,11 @@ export default function DocumentsPage() {
   const totalDocuments = data?.total || 0;
   const totalPages = Math.ceil(totalDocuments / limit);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        Loading Document data...
+  {
+    isLoading && (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+        <p className="mt-2"> Loading Document data...</p>
       </div>
     );
   }
@@ -81,7 +82,8 @@ export default function DocumentsPage() {
     "other",
   ];
 
-  const branches = allBranches.map((b) => b.name);
+  // const branches = allBranches.map((b) => b.name);
+  const branches = Array.from(new Set(allBranches.map((b) => b.name)));
 
   const statusOptions: string[] = [
     "active",
@@ -205,6 +207,10 @@ export default function DocumentsPage() {
   };
 
   const stats: Stats = getStats();
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedBranch, selectedStatus]);
 
   return (
     <DashboardLayout
