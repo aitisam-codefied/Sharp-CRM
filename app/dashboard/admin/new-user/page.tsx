@@ -57,6 +57,7 @@ interface Guest {
   fullName: string;
   emailAddress: string;
   phoneNumber: string;
+  isKid: boolean;
   dateOfBirth?: Date | string;
   gender?: "Male" | "Female" | "Other" | string;
   nationality?: string;
@@ -118,6 +119,7 @@ export default function NewUserPage() {
         emailAddress: "",
         phoneNumber: "",
         dateOfBirth: "",
+        isKid: false,
         gender: "",
         nationality: "",
         language: "",
@@ -176,6 +178,8 @@ export default function NewUserPage() {
   const isStep1Valid = () => {
     return (
       formData.guests[0].fullName?.trim() &&
+      formData.guests[0].emailAddress?.trim() &&
+      formData.guests[0].phoneNumber?.trim() &&
       formData.guests[0].dateOfBirth &&
       formData.guests[0].nationality?.trim() &&
       formData.guests[0].numberOfDependents !== undefined &&
@@ -187,19 +191,21 @@ export default function NewUserPage() {
     const dependants = formData.guests[0].numberOfDependents || 0;
     const totalPeople = Number(dependants) + 1;
 
-    // if (
-    //   dependants > 0 &&
-    //   (!Array.isArray(formData.guests[0].numberOfDependents) ||
-    //     !formData.guests[0].numberOfDependents.every(
-    //       (dep: any) =>
-    //         dep?.fullName?.trim() &&
-    //         dep?.dateOfBirth?.trim() &&
-    //         dep?.nationality?.trim()
-    //     ))
-    // ) {
-    //   console.log("Dependants validation failed");
-    //   return false;
-    // }
+    if (dependants > 0) {
+      for (let i = 1; i <= dependants; i++) {
+        const dep = formData.guests[i];
+        if (
+          !dep?.fullName?.trim() ||
+          !dep?.phoneNumber?.trim() ||
+          !dep?.emailAddress?.trim() ||
+          !dep?.dateOfBirth ||
+          !dep?.nationality?.trim()
+        ) {
+          console.log("Dependants validation failed at index", i);
+          return false;
+        }
+      }
+    }
 
     if (!formData.assignedRooms) {
       console.log("Room assignments missing");
@@ -220,42 +226,49 @@ export default function NewUserPage() {
     return totalAssigned === totalPeople;
   };
 
-  // const isStep3Valid = () => {
-  //   const numDep = formData.guests[0].numberOfDependents || 0;
-  //   const total = numDep + 1;
-  //   if (numDep === 0 || formData.sameEmergencyContact) {
-  //     const ec = formData.emergencyContact;
-  //     return (
-  //       ec?.fullName?.trim() &&
-  //       ec.phoneNumber?.trim() &&
-  //       ec.relationship?.trim()
-  //     );
-  //   } else {
-  //     const ecs = formData.guests || [];
-  //     if (ecs.length !== total) return false;
-  //     return ecs.every(
-  //       (ec: any) =>
-  //         ec.emergencyContact.fullName?.trim() &&
-  //         ec.emergencyContact.phoneNumber?.trim() &&
-  //         ec.emergencyContact.relationship?.trim()
-  //     );
-  //   }
-  // };
+  const isStep3Valid = () => {
+    const numDep = Number(formData.guests?.[0]?.numberOfDependents || 0);
+    const total = numDep + 1;
 
-  // const isStep5Valid = () => {
-  //   const numDep = parseInt(formData.numDependants || 0);
-  //   const total = numDep + 1;
-  //   if (numDep === 0 || formData.sameDentalClinic) {
-  //     const dc = formData.dentalClinic || {};
-  //     return dc.name?.trim() && dc.phone?.trim() && dc.email?.trim();
-  //   } else {
-  //     const dcs = formData.dentalClinics || [];
-  //     if (dcs.length !== total) return false;
-  //     return dcs.every(
-  //       (dc: any) => dc.name?.trim() && dc.phone?.trim() && dc.email?.trim()
-  //     );
-  //   }
-  // };
+    if (numDep === 0 || formData.sameEmergencyContact) {
+      const ec: EmergencyContact = formData.emergencyContact || {
+        fullName: "",
+        relationship: "",
+        phoneNumber: "",
+      };
+      return (
+        !!ec.fullName?.trim() &&
+        !!ec.phoneNumber?.trim() &&
+        !!ec.relationship?.trim()
+      );
+    } else {
+      const ecs = formData.guests || [];
+      if (ecs.length !== total) return false;
+      return ecs.every(
+        (g: any) =>
+          !!g.emergencyContact?.fullName?.trim() &&
+          !!g.emergencyContact?.phoneNumber?.trim() &&
+          !!g.emergencyContact?.relationship?.trim()
+      );
+    }
+  };
+
+  const isStep5Valid = () => {
+    const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
+    const totalPeople = numDependants + 1;
+    const hasDependants = numDependants > 0;
+    // Case 1: same medic for all OR only primary user
+    if (!hasDependants || formData.sameMedic) {
+      return !!formData.medic?.trim();
+    }
+
+    // Case 2: separate medic for each guest (including primary)
+    if (Array.isArray(formData.guests) && formData.guests.length > 0) {
+      return formData.guests.every((guest: any) => guest.medic?.trim());
+    }
+
+    return false;
+  };
 
   const isStep6Valid = () => {
     return (
@@ -272,11 +285,11 @@ export default function NewUserPage() {
       case 2:
         return isStep2Valid();
       case 3:
-        return true;
+        return isStep3Valid();
       case 4:
         return true;
       case 5:
-        return true;
+        return isStep5Valid();
       case 6:
         return isStep6Valid();
       default:
@@ -340,6 +353,7 @@ export default function NewUserPage() {
 
   // Move this hook to the top-level of your component (not inside handleSubmit)
   const createGuestMutation = useCreateGuest();
+  const isLoading = createGuestMutation.isPending;
 
   const handleSubmit = async () => {
     try {
@@ -443,9 +457,11 @@ export default function NewUserPage() {
 
       // Append simple fields
       apiFormData.append("branchId", cleanedData.branchId || "");
+
       if (cleanedData.medic) {
         apiFormData.append("medic", cleanedData.medic || "");
       }
+
       apiFormData.append(
         "consentAccuracy",
         String(cleanedData.consentAccuracy || false)
@@ -459,21 +475,38 @@ export default function NewUserPage() {
         String(cleanedData.areThereMultipleGuests || false)
       );
 
-      // Append assignedRooms as an array
-      (cleanedData.assignedRooms || []).forEach(
-        (roomId: string, index: number) => {
-          apiFormData.append(`assignedRooms[${index}]`, roomId);
-        }
-      );
+      // // Append assignedRooms as an array
+      // (cleanedData.assignedRooms || []).forEach(
+      //   (roomId: string, index: number) => {
+      //     apiFormData.append(`assignedRooms[${index}]`, roomId);
+      //   }
+      // );
 
-      // ✅ Sirf assignedRooms ke locationIds lo
+      // apiFormData.append(
+      //   "assignedRooms",
+      //   JSON.stringify(cleanedData.assignedRooms)
+      // );
+
+      // // ✅ Sirf assignedRooms ke locationIds lo
+      // const selectedLocationIds = (rooms || [])
+      //   .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
+      //   .map((room: any) => room.locationId);
+
+      // // selectedLocationIds.forEach((locId: string, index: number) => {
+      // //   apiFormData.append(`locations[${index}]`, locId);
+      // // });
+
+      // apiFormData.append("locations", JSON.stringify(selectedLocationIds));
+
+      // assignedRooms ko comma-separated string me convert karke bhejo
+      apiFormData.append("assignedRooms", cleanedData.assignedRooms.join(","));
+
+      // rooms se locationIds nikal kar comma-separated string bhejo
       const selectedLocationIds = (rooms || [])
         .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
         .map((room: any) => room.locationId);
 
-      selectedLocationIds.forEach((locId: string, index: number) => {
-        apiFormData.append(`locations[${index}]`, locId);
-      });
+      apiFormData.append("locations", selectedLocationIds.join(","));
 
       // Append emergencyContact fields
       if (cleanedData.emergencyContact) {
@@ -502,6 +535,10 @@ export default function NewUserPage() {
           `guests[${index}][phoneNumber]`,
           guest.phoneNumber || ""
         );
+        if (guest.isKid) {
+          apiFormData.append(`guests[${index}][isKid]`, String(guest.isKid));
+        }
+
         apiFormData.append(
           `guests[${index}][dateOfBirth]`,
           guest.dateOfBirth || ""
@@ -516,7 +553,11 @@ export default function NewUserPage() {
           `guests[${index}][numberOfDependents]`,
           String(guest.numberOfDependents || 0)
         );
-        apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
+
+        if (guest.medic) {
+          apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
+        }
+
         apiFormData.append(`guests[${index}][address]`, guest.address || "");
         apiFormData.append(
           `guests[${index}][medicalCondition]`,
@@ -691,9 +732,18 @@ export default function NewUserPage() {
           </Button>
           <div className="flex gap-2">
             {currentStep === steps.length ? (
-              <Button onClick={handleSubmit} disabled={!isCurrentStepValid()}>
-                <Send className="h-4 w-4 mr-2" />
-                Complete Registration
+              <Button
+                onClick={handleSubmit}
+                disabled={!isCurrentStepValid() || isLoading}
+              >
+                {isLoading ? (
+                  "Registering..."
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Send className="h-4 w-4" />
+                    Complete Registration
+                  </div>
+                )}
               </Button>
             ) : (
               <Button onClick={handleNext} disabled={!isCurrentStepValid()}>

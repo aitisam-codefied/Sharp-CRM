@@ -349,8 +349,16 @@ export default function AddStaffDialog() {
               <Label>Phone Number</Label>
               <Input
                 id="phone"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.phone}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  // sirf digits allow karne ke liye
+                  const onlyNums = e.target.value.replace(/\D/g, "");
+                  setFormData((prev) => ({ ...prev, phone: onlyNums }));
+                  setErrors((prev) => ({ ...prev, phone: "" }));
+                }}
                 placeholder="Enter phone number"
               />
               {errors.phone && (

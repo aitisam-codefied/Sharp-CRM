@@ -72,7 +72,13 @@ export default function CompanyStep({
                   }
                   placeholder="Enter company name"
                   className="mt-1 text-sm sm:text-base"
+                  maxLength={51}
                 />
+                {company.name.length > 50 && (
+                  <p className="text-red-500 text-xs mt-1">
+                    Company name cannot exceed 50 characters.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

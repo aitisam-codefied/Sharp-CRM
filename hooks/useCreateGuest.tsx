@@ -2,10 +2,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { GuestFormData } from "@/lib/types";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export const useCreateGuest = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: (data: FormData) =>
@@ -18,6 +20,14 @@ export const useCreateGuest = () => {
       // ✅ Auto refresh the service users table
       queryClient.invalidateQueries({ queryKey: ["guests"] });
       router.push("/dashboard/admin/service-users");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.details || "Failed to update staff.",
+        variant: "destructive",
+      });
     },
   });
 };

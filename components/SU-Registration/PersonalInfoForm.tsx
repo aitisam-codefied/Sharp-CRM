@@ -30,6 +30,13 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
   const [showModal, setShowModal] = useState(false);
   const { data: branchData } = useBranches();
 
+  const [errors, setErrors] = useState({
+    phoneNumber: "",
+    emailAddress: "",
+    dateOfBirth: "",
+    additionalNotes: "",
+  });
+
   const allBranches =
     branchData?.map((branch: any) => ({
       id: branch._id,
@@ -39,10 +46,65 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
   // const branches = allBranches.map((b) => b.name);
 
+  const today = new Date();
+  const eighteenYearsAgo = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  );
+  const maxDate = eighteenYearsAgo.toISOString().split("T")[0]; // yyyy-mm-dd
+
   const handleInputChange = (e: any, guestIndex?: number) => {
     const { id, value } = e.target;
     // console.log("Updating field:", id, "with value:", value);
     // console.log("guestIndex:", guestIndex);
+
+    // Run validations
+    if (id === "emailAddress") {
+      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        setErrors((prev) => ({
+          ...prev,
+          emailAddress: "Invalid email format",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, emailAddress: "" }));
+      }
+    }
+
+    if (id === "additionalNotes") {
+      if (value.length > 200) {
+        setErrors((prev) => ({
+          ...prev,
+          additionalNotes: "Additional notes cannot exceed 200 characters",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, additionalNotes: "" }));
+      }
+    }
+
+    if (id === "dateOfBirth") {
+      if (value) {
+        const dob = new Date(value);
+        const today = new Date();
+
+        const age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const dayDiff = today.getDate() - dob.getDate();
+
+        if (
+          age < 18 ||
+          (age === 18 && (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)))
+        ) {
+          setErrors((prev) => ({
+            ...prev,
+            dateOfBirth: "Primary user should be older than 18 years",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+        }
+      }
+    }
+
     setFormData((prev: any) => {
       let newData = { ...prev };
 
@@ -86,7 +148,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="emailAddress">Email Address</Label>
+          <Label htmlFor="emailAddress">Email Address *</Label>
           <Input
             id="emailAddress"
             type="email"
@@ -94,17 +156,34 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             value={formData.guests[0].emailAddress || ""}
             onChange={(e) => handleInputChange(e, 0)}
           />
+          {errors.emailAddress && (
+            <p className="text-red-500 text-sm">{errors.emailAddress}</p>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Label htmlFor="phoneNumber">Phone Number *</Label>
           <Input
             id="phoneNumber"
-            placeholder="+44 7700 900000"
+            placeholder="+447700900000"
             value={formData.guests[0].phoneNumber || ""}
             onChange={(e) => handleInputChange(e, 0)}
+            // 🔹 Allow digits, + (only at start), backspace, delete, arrows, tab
+            onKeyDown={(e) => {
+              if (
+                !/[0-9]/.test(e.key) &&
+                !(e.key === "+" && e.currentTarget.selectionStart === 0) &&
+                e.key !== "Backspace" &&
+                e.key !== "Delete" &&
+                e.key !== "ArrowLeft" &&
+                e.key !== "ArrowRight" &&
+                e.key !== "Tab"
+              ) {
+                e.preventDefault();
+              }
+            }}
           />
         </div>
         <div className="space-y-2">
@@ -112,9 +191,13 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           <Input
             id="dateOfBirth"
             type="date"
+            max={maxDate} // 🔹 disables today & future & under-18
             value={formData.guests[0].dateOfBirth || ""}
             onChange={(e) => handleInputChange(e, 0)}
           />
+          {errors.dateOfBirth && (
+            <p className="text-red-500 text-sm">{errors.dateOfBirth}</p>
+          )}
         </div>
       </div>
 
@@ -192,6 +275,12 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             onChange={(e) => handleInputChange(e, 0)}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
+          {errors.additionalNotes && (
+            <p className="text-red-500 text-sm">{errors.additionalNotes}</p>
+          )}
+          <p className="text-xs text-gray-500">
+            {formData.guests[0].additionalNotes?.length || 0}/200 characters
+          </p>
         </div>
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>
@@ -264,7 +353,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
                   ...prev,
                   areThereMultipleGuests: false,
                 }));
-              } else if (val >= 5) {
+              } else if (val >= 1) {
                 setShowModal(true);
                 setFormData((prev: any) => ({
                   ...prev,

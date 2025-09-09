@@ -241,7 +241,11 @@ export default function ViewCompanyModal({
                     variant="ghost"
                     size="icon"
                     onClick={handleSaveCompanyName}
-                    disabled={updateCompanyMutation.isPending}
+                    disabled={
+                      updateCompanyMutation.isPending ||
+                      companyName.trim() === "" || // 🚫 Empty input disable
+                      companyName.trim() === companyData.name.trim() // 🚫 No change disable
+                    }
                     className="h-10 w-10 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-lg"
                   >
                     {updateCompanyMutation.isPending ? (

@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Activity, Clock } from "lucide-react";
 import Link from "next/link";
 import { useActivityLogsByModule } from "@/hooks/useGetActivityLogsByModule";
+import { Button } from "@/components/ui/button";
 
 interface ModuleLogsProps {
   moduleType: string;
@@ -41,6 +43,7 @@ function timeAgo(timestamp: string): string {
 
 export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
   const { data, isLoading, error } = useActivityLogsByModule(moduleType);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   if (isLoading) {
     return (
@@ -74,12 +77,14 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
     );
   }
 
-  // New API: `data` is already the logs array
+  // Sorted activities
   const activities =
     data?.sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ) ?? [];
+
+  const visibleActivities = activities.slice(0, visibleCount);
 
   return (
     <Card>
@@ -91,7 +96,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activities.map((log, index) => {
+          {visibleActivities.map((log, index) => {
             const time = timeAgo(log.timestamp);
             return (
               <div key={index} className="flex items-start space-x-3">
@@ -136,7 +141,20 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
               </div>
             );
           })}
+
           {activities.length === 0 && <p>No recent activities found.</p>}
+
+          {/* Load More Button */}
+          {visibleCount < activities.length && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((prev) => prev + 10)}
+              >
+                Load More
+              </Button>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

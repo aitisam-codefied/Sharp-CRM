@@ -193,6 +193,7 @@ export default function RoomStep({
                                     <Label>Room Number *</Label>
                                     <Input
                                       value={room.roomNumber}
+                                      maxLength={10} // Prevent typing beyond 10 characters
                                       onChange={(e) =>
                                         updateRoom(
                                           companyIndex,
@@ -206,6 +207,11 @@ export default function RoomStep({
                                       placeholder="e.g., 101, A-1"
                                       className="mt-1 text-sm sm:text-base"
                                     />
+                                    {room.roomNumber.length > 10 && (
+                                      <p className="text-xs text-red-500 mt-1">
+                                        Room number cannot exceed 10 characters.
+                                      </p>
+                                    )}
                                   </div>
                                   <div>
                                     <Label>Room Type *</Label>
@@ -252,21 +258,9 @@ export default function RoomStep({
                                   </div>
                                   <div>
                                     <Label>Room Capacity *</Label>
-                                    <Select
-                                      value={room.capacity}
-                                      onValueChange={(value) =>
-                                        updateRoom(
-                                          companyIndex,
-                                          branchIndex,
-                                          locationIndex,
-                                          roomIndex,
-                                          "capacity",
-                                          value
-                                        )
-                                      }
-                                    >
+                                    <Select value={room.capacity} disabled>
                                       <SelectTrigger className="text-sm sm:text-base">
-                                        <SelectValue placeholder="Select Capacity" />
+                                        <SelectValue placeholder="Auto-selected" />
                                       </SelectTrigger>
                                       <SelectContent>
                                         {[1, 2, 3, 4, 5].map((num) => (

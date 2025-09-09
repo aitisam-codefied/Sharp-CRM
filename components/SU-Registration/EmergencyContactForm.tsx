@@ -142,6 +142,19 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 onChange={(e) =>
                   handleContactChange("phoneNumber", e.target.value)
                 }
+                onKeyDown={(e) => {
+                  if (
+                    !/[0-9]/.test(e.key) &&
+                    !(e.key === "+" && e.currentTarget.selectionStart === 0) &&
+                    e.key !== "Backspace" &&
+                    e.key !== "Delete" &&
+                    e.key !== "ArrowLeft" &&
+                    e.key !== "ArrowRight" &&
+                    e.key !== "Tab"
+                  ) {
+                    e.preventDefault();
+                  }
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -177,7 +190,9 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                   <Input
                     id={`ec-name-${i}`}
                     placeholder="Enter name"
-                    value={formData?.guests[i]?.emergencyContact?.fullName || ""}
+                    value={
+                      formData?.guests[i]?.emergencyContact?.fullName || ""
+                    }
                     onChange={(e) =>
                       handleContactChangeGuest(i, "fullName", e.target.value)
                     }

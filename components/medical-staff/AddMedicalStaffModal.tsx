@@ -193,8 +193,13 @@ export function AddMedicalStaffModal({
             <Input
               id="phoneNumber"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              type="tel"
+              onChange={(e) => {
+                const onlyNums = e.target.value.replace(/\D/g, ""); // sirf digits allow
+                setPhoneNumber(onlyNums);
+              }}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter phone number"
             />
             {errors.phoneNumber && (
               <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>

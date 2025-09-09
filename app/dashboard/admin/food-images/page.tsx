@@ -36,11 +36,13 @@ import {
   User,
   Clock,
   Plus,
+  Pencil, // Added for edit icon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useGetFoods, Food } from "@/hooks/useGetFoods";
 import { useCreateFood, CreateFoodData } from "@/hooks/useCreateFood";
+import { useUpdateFood } from "@/hooks/useUpdateFood"; // New import
 import {
   useGetFoodCategories,
   FoodCategory,
@@ -60,20 +62,18 @@ export default function FoodImagesPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   // State for search and filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedMeal, setSelectedMeal] = useState("all-meals");
   const [selectedDate, setSelectedDate] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
-
   // State for upload dialog
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
-
+  const [categoryError, setCategoryError] = useState("");
   // Form state for food creation
   const [formData, setFormData] = useState<CreateFoodData>({
     categoryId: "",
@@ -83,31 +83,35 @@ export default function FoodImagesPage() {
     // dietaryTags: [],
     // allergens: [],
     nutritionalInfo: {},
-    preparationTime: "",
+    preparationTime: 0,
     images: [],
   });
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
+  // State for edit
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [editFormData, setEditFormData] = useState<CreateFoodData>({
+    categoryId: "",
+    name: "",
+    description: "",
+    mealType: "Breakfast",
+    nutritionalInfo: {},
+    preparationTime: 0,
+    images: [],
+  });
+  const [editSelectedFiles, setEditSelectedFiles] = useState<File[]>([]);
+  const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
   // API hooks
   const { data: foods, isLoading: foodsLoading } = useGetFoods();
   const { data: categories, isLoading: categoriesLoading } =
     useGetFoodCategories();
   const createFoodMutation = useCreateFood();
+  const updateFoodMutation = useUpdateFood(); // New
   const createCategoryMutation = useCreateFoodCategory();
-
   const { data: branchData } = useBranches();
-
   useEffect(() => {
     console.log("foooooooodss", foods);
   });
-
-  const allBranches =
-    branchData?.map((branch: any) => ({
-      id: branch._id,
-      name: branch.name,
-      company: branch.companyId.name,
-    })) || [];
 
   const stats = [
     {
@@ -136,52 +140,77 @@ export default function FoodImagesPage() {
       color: "text-purple-600",
     },
   ];
-
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setSelectedFiles(files);
     setFormData((prev) => ({ ...prev, images: files }));
   };
-
+  const handleEditFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setEditSelectedFiles(files);
+    setEditFormData((prev) => ({ ...prev, images: files }));
+  };
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
-
+  const handleEditFormChange = (field: keyof CreateFoodData, value: any) => {
+    setEditFormData((prev) => ({ ...prev, [field]: value }));
+    setEditErrors((prev) => ({ ...prev, [field]: "" }));
+  };
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-
     if (!formData.name.trim()) newErrors.name = "Food name is required";
     if (!formData.categoryId) newErrors.categoryId = "Category is required";
     if (!formData.mealType) newErrors.mealType = "Meal type is required";
     if (!formData.images || formData.images.length === 0)
       newErrors.images = "At least one image is required";
-
     if (formData.preparationTime && Number(formData.preparationTime) < 0) {
       newErrors.preparationTime = "Preparation time cannot be negative";
     }
-
     if (
       formData.nutritionalInfo.calories &&
       formData.nutritionalInfo.calories < 0
     ) {
       newErrors.calories = "Calories cannot be negative";
     }
-
     if (
       formData.nutritionalInfo.protein &&
       formData.nutritionalInfo.protein < 0
     ) {
       newErrors.protein = "Protein cannot be negative";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  const validateEditForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!editFormData.name.trim()) newErrors.name = "Food name is required";
+    if (!editFormData.categoryId) newErrors.categoryId = "Category is required";
+    if (!editFormData.mealType) newErrors.mealType = "Meal type is required";
+    if (
+      editFormData.preparationTime &&
+      Number(editFormData.preparationTime) < 0
+    ) {
+      newErrors.preparationTime = "Preparation time cannot be negative";
+    }
+    if (
+      editFormData.nutritionalInfo.calories &&
+      editFormData.nutritionalInfo.calories < 0
+    ) {
+      newErrors.calories = "Calories cannot be negative";
+    }
+    if (
+      editFormData.nutritionalInfo.protein &&
+      editFormData.nutritionalInfo.protein < 0
+    ) {
+      newErrors.protein = "Protein cannot be negative";
+    }
+    setEditErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
   const handleUpload = () => {
     if (!validateForm()) return;
-
     createFoodMutation.mutate(formData, {
       onSuccess: () => {
         toast({
@@ -211,6 +240,59 @@ export default function FoodImagesPage() {
       },
     });
   };
+  const handleEdit = (food: Food) => {
+    setSelectedFood(food);
+    setEditFormData({
+      categoryId: food.categoryId?._id || "",
+      name: food.name,
+      description: food.description || "",
+      mealType: food.mealType,
+      // dietaryTags: food.dietaryTags || [],
+      // allergens: food.allergens || [],
+      nutritionalInfo: food.nutritionalInfo || {},
+      preparationTime: food.preparationTime || 0,
+      images: [],
+    });
+    setEditSelectedFiles([]);
+    setIsEditOpen(true);
+  };
+
+  const handleUpdate = () => {
+    if (!validateEditForm()) return;
+    if (selectedFood) {
+      updateFoodMutation.mutate(
+        { id: selectedFood._id, data: editFormData },
+        {
+          onSuccess: () => {
+            toast({
+              title: "Food Updated",
+              description: "Food has been successfully updated.",
+            });
+            setIsEditOpen(false);
+            setSelectedFood(null);
+            setEditFormData({
+              categoryId: "",
+              name: "",
+              description: "",
+              mealType: "Breakfast",
+              nutritionalInfo: {},
+              preparationTime: 0,
+              images: [],
+            });
+            setEditSelectedFiles([]);
+          },
+          onError: (error: any) => {
+            toast({
+              title: "Error",
+              description:
+                error.response?.data?.details || "Failed to update food",
+              variant: "destructive",
+            });
+          },
+        }
+      );
+    }
+  };
 
   const handleCreateCategory = () => {
     if (!newCategoryName.trim()) {
@@ -221,7 +303,6 @@ export default function FoodImagesPage() {
       });
       return;
     }
-
     createCategoryMutation.mutate(
       { name: newCategoryName },
       {
@@ -251,14 +332,11 @@ export default function FoodImagesPage() {
       const matchesSearch =
         food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         food.description.toLowerCase().includes(searchTerm.toLowerCase());
-
       const matchesMeal =
         selectedMeal === "all-meals" ||
         food.mealType.toLowerCase() === selectedMeal.toLowerCase();
-
       const matchesFilter =
         activeFilter === "All" || food.mealType === activeFilter;
-
       // ✅ Date filter
       const matchesDate =
         !selectedDate ||
@@ -267,14 +345,11 @@ export default function FoodImagesPage() {
           const created = new Date(food.createdAt).toISOString().split("T")[0]; // "YYYY-MM-DD"
           return created === selected;
         })();
-
       return matchesSearch && matchesMeal && matchesFilter && matchesDate;
     }) || [];
-
   function formatDateWithSuffix(dateString: string) {
     const date = new Date(dateString);
     const day = date.getDate();
-
     // suffix calculate
     const suffix =
       day % 10 === 1 && day !== 11
@@ -284,13 +359,10 @@ export default function FoodImagesPage() {
         : day % 10 === 3 && day !== 13
         ? "rd"
         : "th";
-
     const month = date.toLocaleString("en-US", { month: "long" });
     const year = date.getFullYear();
-
     return `${day}${suffix} ${month} ${year}`;
   }
-
   const isFormValid = useMemo(() => {
     return (
       formData.name.trim() &&
@@ -299,7 +371,38 @@ export default function FoodImagesPage() {
       formData?.images?.length > 0
     );
   }, [formData]);
+  const hasChanges = useMemo(() => {
+    if (!selectedFood) return false;
+    const initial = {
+      categoryId: selectedFood.categoryId?._id || "",
+      name: selectedFood.name,
+      description: selectedFood.description || "",
+      mealType: selectedFood.mealType,
+      nutritionalInfo: selectedFood.nutritionalInfo || {},
+      preparationTime: selectedFood.preparationTime || 0,
+    };
+    // Compare without images (since edit images are new files)
+    return (
+      JSON.stringify(editFormData) !==
+        JSON.stringify({ ...initial, images: [] }) ||
+      editSelectedFiles.length > 0
+    );
+  }, [editFormData, editSelectedFiles, selectedFood]);
 
+  const handleNewCategoryChange = (value: string) => {
+    setNewCategoryName(value);
+    if (
+      categories?.some(
+        (cat) => cat.name.toLowerCase() === value.toLowerCase().trim()
+      )
+    ) {
+      setCategoryError("This category already exists.");
+    } else {
+      setCategoryError("");
+    }
+  };
+
+  const isCategoryValid = newCategoryName.trim().length > 0 && !categoryError;
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -309,18 +412,13 @@ export default function FoodImagesPage() {
             <h1 className="text-2xl font-bold">Food Management</h1>
           </div>
           <div className="flex gap-2">
-            {/* <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export Gallery
-            </Button> */}
             <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
               <DialogTrigger asChild>
                 <Button
                   size="sm"
                   className="bg-red-500 hover:bg-red-600 text-white"
                 >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Add Food
+                  <Upload className="h-4 w-4 mr-2" /> Add Food
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -343,26 +441,21 @@ export default function FoodImagesPage() {
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        onChange={(e) => {
-                          if (e.target.files?.[0]) {
-                            handleFileSelect(e); // 👈 aapka existing handler
-                          }
-                        }}
+                        multiple // Added for multiple images
+                        onChange={handleFileSelect}
                         className="hidden"
                       />
                       <Button
                         variant="outline"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Upload className="h-4 w-4 mr-2" />
-                        Choose File
+                        <Upload className="h-4 w-4 mr-2" /> Choose File
                       </Button>
                       {errors.images && (
                         <p className="text-red-500 text-xs mt-1">
                           {errors.images}
                         </p>
                       )}
-
                       {/* ✅ Preview Section */}
                       {selectedFiles.length > 0 && (
                         <div className="mt-4">
@@ -385,7 +478,6 @@ export default function FoodImagesPage() {
                       )}
                     </div>
                   </div>
-
                   {/* Basic Information */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -404,7 +496,6 @@ export default function FoodImagesPage() {
                         </p>
                       )}
                     </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="mealType">Meal Type *</Label>
                       <Select
@@ -430,7 +521,6 @@ export default function FoodImagesPage() {
                       )}
                     </div>
                   </div>
-
                   {/* Category Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="category">Food Category *</Label>
@@ -486,7 +576,7 @@ export default function FoodImagesPage() {
                                 id="categoryName"
                                 value={newCategoryName}
                                 onChange={(e) =>
-                                  setNewCategoryName(e.target.value)
+                                  handleNewCategoryChange(e.target.value)
                                 }
                                 placeholder="Enter category name"
                               />
@@ -498,16 +588,23 @@ export default function FoodImagesPage() {
                               >
                                 Cancel
                               </Button>
-                              <Button onClick={handleCreateCategory}>
+                              <Button
+                                onClick={handleCreateCategory}
+                                disabled={!isCategoryValid}
+                              >
                                 Create Category
                               </Button>
                             </div>
+                            {categoryError && (
+                              <p className="text-red-500 text-xs">
+                                {categoryError}
+                              </p>
+                            )}
                           </div>
                         </DialogContent>
                       </Dialog>
                     </div>
                   </div>
-
                   {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
@@ -529,12 +626,10 @@ export default function FoodImagesPage() {
                       }}
                       placeholder="Describe the food item..."
                     />
-
                     {/* Character count */}
                     <div className="flex justify-between text-xs text-gray-500">
                       <span>{formData.description.length} / 500</span>
                     </div>
-
                     {/* Error message */}
                     {errors.description && (
                       <p className="text-red-500 text-xs">
@@ -542,7 +637,6 @@ export default function FoodImagesPage() {
                       </p>
                     )}
                   </div>
-
                   {/* Preparation Time */}
                   <div className="space-y-2">
                     <Label htmlFor="preparationTime">
@@ -568,7 +662,6 @@ export default function FoodImagesPage() {
                       </p>
                     )}
                   </div>
-
                   {/* Dietary Tags */}
                   {/* <div className="space-y-2">
                     <Label>Dietary Tags</Label>
@@ -581,16 +674,11 @@ export default function FoodImagesPage() {
                         "Halal",
                         "Kosher",
                       ].map((tag) => (
-                        <label
-                          key={tag}
-                          className="flex items-center space-x-2"
-                        >
+                        <label key={tag} className="flex items-center space-x-2">
                           <input
                             type="checkbox"
                             checked={formData.dietaryTags.includes(tag)}
-                            onChange={(e) =>
-                              handleDietaryTagChange(tag, e.target.checked)
-                            }
+                            onChange={(e) => handleDietaryTagChange(tag, e.target.checked)}
                             className="rounded"
                           />
                           <span className="text-sm">{tag}</span>
@@ -598,7 +686,6 @@ export default function FoodImagesPage() {
                       ))}
                     </div>
                   </div> */}
-
                   {/* Allergens */}
                   {/* <div className="space-y-2">
                     <Label>Allergens</Label>
@@ -629,7 +716,6 @@ export default function FoodImagesPage() {
                       ))}
                     </div>
                   </div> */}
-
                   {/* Nutritional Information */}
                   <div className="space-y-2">
                     <Label>Nutritional Information</Label>
@@ -701,7 +787,6 @@ export default function FoodImagesPage() {
             </Dialog>
           </div>
         </div>
-
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           {stats.map((stat, index) => (
@@ -728,7 +813,6 @@ export default function FoodImagesPage() {
             </Card>
           ))}
         </div>
-
         {/* Food Gallery */}
         <Card>
           <CardContent className="p-6">
@@ -738,7 +822,6 @@ export default function FoodImagesPage() {
                 <Camera className="h-5 w-5" />
                 <h2 className="text-lg font-semibold">Food Gallery</h2>
               </div>
-
               {/* Filters Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
                 <div className="relative flex-1">
@@ -756,10 +839,7 @@ export default function FoodImagesPage() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
                 />
-                {/* <Select
-                  value={selectedBranch}
-                  onValueChange={setSelectedBranch}
-                >
+                {/* <Select value={selectedBranch} onValueChange={setSelectedBranch} >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
@@ -768,8 +848,7 @@ export default function FoodImagesPage() {
                     {allBranches.map((branch) => (
                       <SelectItem key={branch.id} value={branch.id}>
                         <div className="flex items-center gap-2">
-                          <span>{branch.name}</span>-
-                          <Badge className="bg-[#F87D7D] text-white">
+                          <span>{branch.name}</span>- <Badge className="bg-[#F87D7D] text-white">
                             {branch.company}
                           </Badge>
                         </div>
@@ -789,11 +868,9 @@ export default function FoodImagesPage() {
                   </SelectContent>
                 </Select>
                 {/* <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
+                  <Filter className="h-4 w-4 mr-2" /> Filters
                 </Button> */}
               </div>
-
               {/* Filter Tabs with Icons */}
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button
@@ -808,7 +885,6 @@ export default function FoodImagesPage() {
                 >
                   All
                 </Button>
-
                 <Button
                   variant={activeFilter === "Breakfast" ? "default" : "outline"}
                   size="lg"
@@ -826,7 +902,6 @@ export default function FoodImagesPage() {
                     Breakfast
                   </div>
                 </Button>
-
                 <Button
                   variant={activeFilter === "Lunch" ? "default" : "outline"}
                   size="lg"
@@ -844,7 +919,6 @@ export default function FoodImagesPage() {
                     Lunch
                   </div>
                 </Button>
-
                 <Button
                   variant={activeFilter === "Dinner" ? "default" : "outline"}
                   size="lg"
@@ -863,7 +937,6 @@ export default function FoodImagesPage() {
                   </div>
                 </Button>
               </div>
-
               {/* Loading State */}
               {foodsLoading ? (
                 <div className="text-center py-8">
@@ -898,6 +971,17 @@ export default function FoodImagesPage() {
                         <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-sm">
                           <span className="font-medium">{food.mealType}</span>
                         </div>
+                        {/* Edit Icon */}
+                        {/* <div className="absolute top-2 right-2 bg-white">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(food)}
+                            className=""
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        </div> */}
                       </div>
                       <CardContent className="p-4">
                         <div className="space-y-3">
@@ -905,7 +989,6 @@ export default function FoodImagesPage() {
                             {food.name}
                           </h3>
                           <p className="text-xs">{food.description}</p>
-
                           {/* <div className="flex flex-wrap gap-1">
                             {food.dietaryTags.map((tag) => (
                               <Badge
@@ -917,7 +1000,6 @@ export default function FoodImagesPage() {
                               </Badge>
                             ))}
                           </div> */}
-
                           <div className="space-y-1 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
@@ -937,7 +1019,6 @@ export default function FoodImagesPage() {
                   ))}
                 </div>
               )}
-
               {/* Empty State */}
               {!foodsLoading && filteredFoods.length === 0 && (
                 <div className="text-center py-8">
@@ -953,8 +1034,7 @@ export default function FoodImagesPage() {
                       onClick={() => setIsUploadOpen(true)}
                       className="bg-red-500 hover:bg-red-600 text-white"
                     >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Add First Food
+                      <Upload className="h-4 w-4 mr-2" /> Add First Food
                     </Button>
                   )}
                 </div>
@@ -962,6 +1042,336 @@ export default function FoodImagesPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Edit Modal (Separate Component Logic) */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Food</DialogTitle>
+              <DialogDescription>
+                Update the food item with new details
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">Food Image (optional)</Label>
+                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Drag and drop new images here, or click to select (replaces
+                    existing if selected)
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple // Added for multiple images
+                    onChange={handleEditFileSelect}
+                    className="hidden"
+                    id="edit-file-input"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() =>
+                      document.getElementById("edit-file-input")?.click()
+                    }
+                  >
+                    <Upload className="h-4 w-4 mr-2" /> Choose File
+                  </Button>
+                  {/* Preview Section */}
+                  {(editSelectedFiles.length > 0 ||
+                    selectedFood?.images?.[0]) && (
+                    <div className="mt-4">
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Preview
+                      </p>
+                      <div className="relative w-full max-w-xs h-40 rounded-lg overflow-hidden shadow mx-auto">
+                        {editSelectedFiles.length > 0 ? (
+                          <img
+                            src={URL.createObjectURL(editSelectedFiles[0])}
+                            alt="new preview"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <img
+                            src={`http://localhost:5001${
+                              selectedFood?.images?.[0] || ""
+                            }`}
+                            alt="current"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target =
+                                e.currentTarget as HTMLImageElement;
+                              target.onerror = null;
+                              const randomFallback =
+                                fallbackImages[
+                                  Math.floor(
+                                    Math.random() * fallbackImages.length
+                                  )
+                                ];
+                              target.src = randomFallback;
+                            }}
+                          />
+                        )}
+                        {editSelectedFiles.length > 0 && (
+                          <span className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
+                            {editSelectedFiles[0].name.length > 15
+                              ? editSelectedFiles[0].name.slice(0, 15) + "..."
+                              : editSelectedFiles[0].name}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Basic Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Food Name *</Label>
+                  <Input
+                    id="edit-name"
+                    value={editFormData.name}
+                    onChange={(e) =>
+                      handleEditFormChange("name", e.target.value)
+                    }
+                    placeholder="Enter food name"
+                  />
+                  {editErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {editErrors.name}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-mealType">Meal Type *</Label>
+                  <Select
+                    value={editFormData.mealType}
+                    onValueChange={(value) =>
+                      handleEditFormChange("mealType", value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select meal type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Breakfast">Breakfast</SelectItem>
+                      <SelectItem value="Lunch">Lunch</SelectItem>
+                      <SelectItem value="Dinner">Dinner</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {editErrors.mealType && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {editErrors.mealType}
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* Category Selection */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-category">Food Category *</Label>
+                <div className="flex gap-2">
+                  <Select
+                    value={editFormData.categoryId}
+                    onValueChange={(value) =>
+                      handleEditFormChange("categoryId", value)
+                    }
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {editErrors.categoryId && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {editErrors.categoryId}
+                    </p>
+                  )}
+                  {/* <Dialog
+                    open={isCategoryDialogOpen}
+                    onOpenChange={setIsCategoryDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-[#F87D7D]"
+                      >
+                        <Plus className="h-5 w-5 text-white font-bold" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Create New Category</DialogTitle>
+                        <DialogDescription>
+                          Add a new food category
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="categoryName">Category Name</Label>
+                          <Input
+                            id="categoryName"
+                            value={newCategoryName}
+                            onChange={(e) =>
+                              handleNewCategoryChange(e.target.value)
+                            }
+                            placeholder="Enter category name"
+                          />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsCategoryDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={handleCreateCategory}
+                            disabled={!isCategoryValid}
+                          >
+                            Create Category
+                          </Button>
+                        </div>
+                        {categoryError && (
+                          <p className="text-red-500 text-xs">
+                            {categoryError}
+                          </p>
+                        )}
+                      </div>
+                    </DialogContent>
+                  </Dialog> */}
+                </div>
+              </div>
+              {/* Description */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editFormData.description}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 500) {
+                      handleEditFormChange("description", value);
+                      setEditErrors((prev) => ({
+                        ...prev,
+                        description: "",
+                      }));
+                    } else {
+                      setEditErrors((prev) => ({
+                        ...prev,
+                        description: "Description cannot exceed 500 characters",
+                      }));
+                    }
+                  }}
+                  placeholder="Describe the food item..."
+                />
+                {/* Character count */}
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>{editFormData.description.length} / 500</span>
+                </div>
+                {/* Error message */}
+                {editErrors.description && (
+                  <p className="text-red-500 text-xs">
+                    {editErrors.description}
+                  </p>
+                )}
+              </div>
+              {/* Preparation Time */}
+              <div className="space-y-2">
+                <Label htmlFor="edit-preparationTime">
+                  Preparation Time (minutes)
+                </Label>
+                <Input
+                  id="edit-preparationTime"
+                  type="number"
+                  min={0}
+                  value={editFormData.preparationTime}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    handleEditFormChange(
+                      "preparationTime",
+                      isNaN(val) || val < 0 ? 0 : val
+                    );
+                  }}
+                  placeholder="Enter preparation time"
+                />
+                {editErrors.preparationTime && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {editErrors.preparationTime}
+                  </p>
+                )}
+              </div>
+              {/* Nutritional Information */}
+              <div className="space-y-2">
+                <Label>Nutritional Information</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-calories">Calories</Label>
+                    <Input
+                      id="edit-calories"
+                      type="number"
+                      min={0}
+                      value={editFormData.nutritionalInfo.calories || ""}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        handleEditFormChange("nutritionalInfo", {
+                          ...editFormData.nutritionalInfo,
+                          calories: isNaN(val) || val < 0 ? 0 : val,
+                        });
+                      }}
+                      placeholder="Calories"
+                    />
+                    {editErrors.calories && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {editErrors.calories}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-protein">Protein (g)</Label>
+                    <Input
+                      id="edit-protein"
+                      type="number"
+                      min={0}
+                      value={editFormData.nutritionalInfo.protein || ""}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        handleEditFormChange("nutritionalInfo", {
+                          ...editFormData.nutritionalInfo,
+                          protein: isNaN(val) || val < 0 ? 0 : val,
+                        });
+                      }}
+                      placeholder="Protein"
+                    />
+                    {editErrors.protein && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {editErrors.protein}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdate}
+                disabled={updateFoodMutation.isPending || !hasChanges}
+              >
+                {updateFoodMutation.isPending ? "Updating..." : "Update Food"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );

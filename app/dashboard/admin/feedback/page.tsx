@@ -51,15 +51,6 @@ export default function FeedbackPage() {
   const { data, isLoading, error } = useFoodFeedbacks();
   const { data: branchData } = useBranches();
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-        <p className="mt-2"> Loading feedbacks...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return <div>Error loading feedback: {error.message}</div>;
   }
@@ -276,6 +267,13 @@ export default function FeedbackPage() {
                 </SelectContent>
               </Select>
             </div>
+
+            {isLoading && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading feedbacks...</p>
+              </div>
+            )}
 
             <FeedbackTable
               filteredFeedback={filteredFeedback}

@@ -101,10 +101,11 @@ export default function BranchStep({
                         }
                         placeholder="Enter branch name"
                         className="mt-1 mb-1 text-sm sm:text-base"
+                        maxLength={51} // stop typing beyond 50
                       />
-                      {branch.name.length > 23 && (
-                        <p className="text-red-500 text-sm">
-                          Branch name cannot exceed 23 characters.
+                      {branch.name.length > 50 && (
+                        <p className="text-red-500 text-xs mt-1">
+                          Branch name cannot exceed 50 characters.
                         </p>
                       )}
                     </div>
@@ -128,7 +129,13 @@ export default function BranchStep({
                         placeholder="Enter complete branch address"
                         className="mt-1 text-sm sm:text-base"
                         rows={3}
+                        maxLength={101} // stop typing beyond 100
                       />
+                      {branch.address.length > 100 && (
+                        <p className="text-red-500 text-xs mt-1">
+                          Branch address cannot exceed 100 characters.
+                        </p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

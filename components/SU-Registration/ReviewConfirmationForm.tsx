@@ -280,7 +280,7 @@ export default function ReviewConfirmationForm({
                         {formData.guests[i]?.language || "N/A"}
                       </dd>
                     </div>
-                    {i === 0 && (
+                    {/* {i === 0 && (
                       <div className="flex">
                         <dt className="font-medium text-gray-600 w-1/3">
                           Branch:
@@ -289,7 +289,7 @@ export default function ReviewConfirmationForm({
                           {formData?.branchId || "N/A"}
                         </dd>
                       </div>
-                    )}
+                    )} */}
                   </dl>
                 </div>
                 {formData.sameEmergencyContact ? (

@@ -74,15 +74,6 @@ export default function InTransitPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-        <p className="mt-2"> Loading Intransit data...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return <div>Error loading data: {error.message}</div>;
   }
@@ -118,6 +109,13 @@ export default function InTransitPage() {
               branches={branches}
               statusOptions={statusOptions}
             />
+
+            {isLoading && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading Intransit data...</p>
+              </div>
+            )}
 
             <UsersTable
               filteredUsers={filteredUsers}

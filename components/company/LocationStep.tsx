@@ -86,19 +86,27 @@ export default function LocationStep({
                         key={location._id}
                         className="flex gap-2 items-center"
                       >
-                        <Input
-                          value={location.name}
-                          onChange={(e) =>
-                            updateLocation(
-                              companyIndex,
-                              branchIndex,
-                              locationIndex,
-                              e.target.value
-                            )
-                          }
-                          placeholder="e.g., Floor 1, East Wing, Reception"
-                          className="flex-1 text-sm sm:text-base"
-                        />
+                        <div className="w-full">
+                          <Input
+                            value={location.name}
+                            maxLength={51}
+                            onChange={(e) =>
+                              updateLocation(
+                                companyIndex,
+                                branchIndex,
+                                locationIndex,
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g., Floor 1, East Wing, Reception"
+                            className="flex-1 text-sm sm:text-base"
+                          />
+                          {location.name.length > 50 && (
+                            <p className="text-red-500 text-xs mt-1">
+                              Location name cannot exceed 50 characters.
+                            </p>
+                          )}
+                        </div>
                         <Button
                           variant="ghost"
                           size="sm"

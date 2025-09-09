@@ -55,7 +55,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
     "Completed",
     "Active",
     "Draft",
-    "On Hold",
+    "In Progress",
   ];
 
   // 🔹 Filtered + Sorted Data

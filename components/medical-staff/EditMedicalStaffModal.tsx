@@ -106,10 +106,11 @@ export function EditMedicalStaffModal({
           });
           onClose();
         },
-        onError: () => {
+        onError: (error: any) => {
           toast({
             title: "Error",
-            description: "Failed to update staff details.",
+            description:
+              error?.response?.data?.details || "Failed to update staff.",
             variant: "destructive",
           });
         },
@@ -151,7 +152,13 @@ export function EditMedicalStaffModal({
             <Input
               id="phoneNumber"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => {
+                const onlyNums = e.target.value.replace(/\D/g, ""); // sirf digits
+                setPhoneNumber(onlyNums);
+              }}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter phone number"
             />
           </div>
           <div>

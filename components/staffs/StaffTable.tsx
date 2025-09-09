@@ -580,7 +580,7 @@ export default function StaffTable() {
                   </p>
                 </div>
               )}
-              {filteredStaff.length > 0 && data?.totalCount > limit && (
+              {filteredStaff.length >= 10 && data?.totalCount > limit && (
                 <CustomPagination
                   currentPage={currentPage}
                   totalPages={data?.totalPages || 1}

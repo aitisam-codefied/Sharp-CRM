@@ -226,12 +226,18 @@ export default function WelfarePage() {
         </div>
 
         {/* Table */}
+        {isLoading && (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+            <p className="mt-2"> Loading welfare data...</p>
+          </div>
+        )}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            {/* <CardTitle className="flex items-center gap-2">
               <Heart className="h-5 w-5" />
               Welfare Check Records
-            </CardTitle>
+            </CardTitle> */}
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">

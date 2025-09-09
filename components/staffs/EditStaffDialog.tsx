@@ -184,7 +184,15 @@ export default function EditStaffDialog({
     const { id, value } = e.target;
 
     setFormData((prev) => {
-      let updatedForm = { ...prev, [id]: value };
+      let updatedForm = { ...prev };
+
+      if (id === "phone") {
+        // sirf digits allow karna
+        const onlyNums = value.replace(/\D/g, "");
+        updatedForm.phone = onlyNums;
+      } else {
+        updatedForm[id] = value;
+      }
 
       if (id === "shiftStart" && value) {
         const [hours, minutes] = value.split(":").map(Number);
@@ -382,6 +390,9 @@ export default function EditStaffDialog({
               <Label htmlFor="phone">Phone Number</Label>
               <Input
                 id="phone"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.phone}
                 onChange={handleInputChange}
               />

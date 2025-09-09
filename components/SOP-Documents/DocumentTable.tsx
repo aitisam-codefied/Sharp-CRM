@@ -52,8 +52,6 @@ export default function DocumentTable({
     setIsModalOpen(true);
   };
 
- 
-
   return (
     <>
       <div className="rounded-md border">
@@ -171,11 +169,15 @@ export default function DocumentTable({
           </TableBody>
         </Table>
       </div>
-      <CustomPagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
+
+      {filteredDocuments.length >= 10 && (
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      )}
+
       <DocumentDetailsModal
         document={selectedDocument}
         isOpen={isModalOpen}

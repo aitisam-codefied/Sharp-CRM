@@ -324,19 +324,32 @@ export default function AddCompanyModal({
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return newCompanies.every((company) => company.name.trim() !== "");
+        return newCompanies.every(
+          (company) => company.name.trim() !== "" && company.name.length <= 50
+        );
+
       case 2:
         return newCompanies.every(
           (company) =>
             company.branches.length > 0 &&
             company.branches.every(
               (branch) =>
-                branch.name.trim() !== "" && branch.address.trim() !== ""
+                branch.name.trim() !== "" &&
+                branch.name.length <= 50 &&
+                branch.address.trim() !== "" &&
+                branch.address.length <= 100
             )
         );
       case 3:
-        return newCompanies.every((company) =>
-          company.branches.every((branch) => branch.locations.length > 0)
+        return newCompanies.every(
+          (company) =>
+            company.branches.every((branch) => branch.locations.length > 0) &&
+            company.branches.every((branch) =>
+              branch.locations.every(
+                (location) =>
+                  location.name.trim() !== "" && location.name.length <= 50
+              )
+            )
         );
       case 4:
         return newCompanies.every((company) =>
@@ -345,9 +358,11 @@ export default function AddCompanyModal({
               location.rooms.every(
                 (room) =>
                   room.roomNumber.trim() !== "" &&
+                  room.roomNumber.length <= 10 &&
                   room.capacity > 0 &&
                   room.type &&
-                  room.status
+                  room.status &&
+                  room.amenities.length > 0
               )
             )
           )

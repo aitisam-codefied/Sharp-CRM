@@ -14,7 +14,7 @@ export interface Food {
   name: string;
   description: string;
   images: string[];
-  mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+  mealType: 'Breakfast' | 'Lunch' | 'Dinner' ;
   dietaryTags: string[];
   allergens: string[];
   nutritionalInfo: {

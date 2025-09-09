@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Checkbox } from "../ui/checkbox";
 
 const nationalities = [
   "Syrian",
@@ -28,11 +30,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
   const dependants = parseInt(formData.guests[0].numberOfDependents || 0);
   const totalPeople = dependants + 1;
 
-  const handleDependantChange = (
-    index: number,
-    field: string,
-    value: string
-  ) => {
+  const [errors, setErrors] = useState<{
+    [key: number]: { email?: string; dob?: string; additionalNotes?: string };
+  }>({});
+
+  const handleDependantChange = (index: number, field: string, value: any) => {
     setFormData((prev: any) => {
       const updatedGuests = Array.isArray(prev.guests) ? [...prev.guests] : [];
 
@@ -45,6 +47,57 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         ...prev,
         guests: updatedGuests,
       };
+    });
+
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      if (field === "emailAddress") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value.trim()) {
+          newErrors[index] = {
+            ...newErrors[index],
+            email: "Email is required.",
+          };
+        } else if (!emailRegex.test(value)) {
+          newErrors[index] = {
+            ...newErrors[index],
+            email: "Invalid email format.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].email;
+        }
+      }
+
+      if (field === "additionalNotes") {
+        if (value.length > 200) {
+          setErrors((prev) => ({
+            ...prev,
+            additionalNotes: "Additional notes cannot exceed 200 characters",
+          }));
+        } else {
+          setErrors((prev) => ({ ...prev, additionalNotes: "" }));
+        }
+      }
+
+      if (field === "dateOfBirth") {
+        const today = new Date();
+        const selected = new Date(value);
+        if (!value.trim()) {
+          newErrors[index] = {
+            ...newErrors[index],
+            dob: "Date of birth is required.",
+          };
+        } else if (selected >= today) {
+          newErrors[index] = {
+            ...newErrors[index],
+            dob: "DOB cannot be today or future date.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].dob;
+        }
+      }
+
+      return newErrors;
     });
   };
 
@@ -71,7 +124,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
   const roomErrors: { [key: string]: string } = {};
   for (const roomId in formData.assignedRooms || {}) {
     const assigned = parseInt(formData.assignedRooms[roomId] || 0);
-    console.log("assigned", assigned);
+    // console.log("assigned", assigned);
     const room = rooms.find((r: any) => r.id === roomId);
     if (room) {
       if (assigned > room.totalAvailableSpace) {
@@ -251,7 +304,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     htmlFor={`emailAddress-${i}`}
                     className="text-gray-600"
                   >
-                    Email Address
+                    Email Address *
                   </Label>
                   <Input
                     id={`emailAddress-${i}`}
@@ -263,12 +316,17 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
+                  {errors[i]?.email && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" /> {errors[i].email}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`phone-${i}`} className="text-gray-600">
-                    Phone Number
+                    Phone Number *
                   </Label>
                   <Input
                     id={`phone-${i}`}
@@ -277,6 +335,21 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     onChange={(e) =>
                       handleDependantChange(i, "phoneNumber", e.target.value)
                     }
+                    onKeyDown={(e) => {
+                      if (
+                        !/[0-9]/.test(e.key) &&
+                        !(
+                          e.key === "+" && e.currentTarget.selectionStart === 0
+                        ) &&
+                        e.key !== "Backspace" &&
+                        e.key !== "Delete" &&
+                        e.key !== "ArrowLeft" &&
+                        e.key !== "ArrowRight" &&
+                        e.key !== "Tab"
+                      ) {
+                        e.preventDefault();
+                      }
+                    }}
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
                 </div>
@@ -287,12 +360,18 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`dob-${i}`}
                     type="date"
+                    max={new Date().toISOString().split("T")[0]}
                     value={formData.guests?.[i]?.dateOfBirth || ""}
                     onChange={(e) =>
                       handleDependantChange(i, "dateOfBirth", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
+                  {errors[i]?.dob && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" /> {errors[i].dob}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
@@ -379,6 +458,12 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
+                  {errors[i]?.additionalNotes && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />{" "}
+                      {errors[i].additionalNotes}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -409,6 +494,30 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              {/* //kids */}
+              <div className="mt-4">
+                <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`isKid-${i}`}
+                        checked={formData?.guests?.[i]?.isKid || false}
+                        onCheckedChange={(checked) =>
+                          handleDependantChange(i, "isKid", checked as boolean)
+                        }
+                        className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
+                      />
+                      <Label
+                        htmlFor={`isKid-${i}`}
+                        className="text-gray-700 text-sm leading-relaxed"
+                      >
+                        If Kid Then check
+                      </Label>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           ))}
