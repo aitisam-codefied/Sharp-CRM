@@ -31,18 +31,22 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
   const totalPeople = dependants + 1;
 
   const [errors, setErrors] = useState<{
-    [key: number]: { email?: string; dob?: string; additionalNotes?: string };
+    [key: number]: {
+      email?: string;
+      dob?: string;
+      additionalNotes?: string;
+      fullName?: string;
+      address?: string;
+    };
   }>({});
 
   const handleDependantChange = (index: number, field: string, value: any) => {
     setFormData((prev: any) => {
       const updatedGuests = Array.isArray(prev.guests) ? [...prev.guests] : [];
-
       updatedGuests[index] = {
         ...updatedGuests[index],
         [field]: value,
       };
-
       return {
         ...prev,
         guests: updatedGuests,
@@ -51,8 +55,27 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
 
     setErrors((prev) => {
       const newErrors = { ...prev };
+
+      // ✅ Name validation
+      if (field === "fullName") {
+        if (!value.trim()) {
+          newErrors[index] = {
+            ...newErrors[index],
+            fullName: "Name is required.",
+          };
+        } else if (value.length > 20) {
+          newErrors[index] = {
+            ...newErrors[index],
+            fullName: "Name cannot exceed 20 characters.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].fullName;
+        }
+      }
+
+      // ✅ Email validation
       if (field === "emailAddress") {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/; // .c ya 1 char TLD reject karega
         if (!value.trim()) {
           newErrors[index] = {
             ...newErrors[index],
@@ -68,17 +91,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         }
       }
 
-      if (field === "additionalNotes") {
-        if (value.length > 200) {
-          setErrors((prev) => ({
-            ...prev,
-            additionalNotes: "Additional notes cannot exceed 200 characters",
-          }));
-        } else {
-          setErrors((prev) => ({ ...prev, additionalNotes: "" }));
-        }
-      }
-
+      // ✅ DOB validation
       if (field === "dateOfBirth") {
         const today = new Date();
         const selected = new Date(value);
@@ -94,6 +107,30 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
           };
         } else {
           if (newErrors[index]) delete newErrors[index].dob;
+        }
+      }
+
+      // ✅ Address validation
+      if (field === "address") {
+        if (value.length > 150) {
+          newErrors[index] = {
+            ...newErrors[index],
+            address: "Address cannot exceed 150 characters.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].address;
+        }
+      }
+
+      // ✅ Additional Notes validation
+      if (field === "additionalNotes") {
+        if (value.length > 150) {
+          newErrors[index] = {
+            ...newErrors[index],
+            additionalNotes: "Additional notes cannot exceed 150 characters.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].additionalNotes;
         }
       }
 
@@ -298,6 +335,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
+                  {errors[i]?.fullName && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" /> {errors[i].fullName}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label
@@ -437,6 +479,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
+                  {errors[i]?.address && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" /> {errors[i].address}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label

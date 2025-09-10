@@ -31,9 +31,11 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
   const { data: branchData } = useBranches();
 
   const [errors, setErrors] = useState({
+    fullName: "",
     phoneNumber: "",
     emailAddress: "",
     dateOfBirth: "",
+    address: "",
     additionalNotes: "",
   });
 
@@ -56,12 +58,23 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
   const handleInputChange = (e: any, guestIndex?: number) => {
     const { id, value } = e.target;
-    // console.log("Updating field:", id, "with value:", value);
-    // console.log("guestIndex:", guestIndex);
 
-    // Run validations
+    // ✅ Full Name max 20 chars
+    if (id === "fullName") {
+      if (value.length > 20) {
+        setErrors((prev) => ({
+          ...prev,
+          fullName: "Full name cannot exceed 20 characters",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, fullName: "" }));
+      }
+    }
+
+    // ✅ Email strict validation
     if (id === "emailAddress") {
-      if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // must end with at least 2 letters
+      if (value && !emailRegex.test(value)) {
         setErrors((prev) => ({
           ...prev,
           emailAddress: "Invalid email format",
@@ -71,22 +84,35 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       }
     }
 
-    if (id === "additionalNotes") {
-      if (value.length > 200) {
+    // ✅ Address max 150
+    if (id === "address") {
+      if (value.length > 150) {
         setErrors((prev) => ({
           ...prev,
-          additionalNotes: "Additional notes cannot exceed 200 characters",
+          address: "Address cannot exceed 150 characters",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, address: "" }));
+      }
+    }
+
+    // ✅ Additional Notes max 150
+    if (id === "additionalNotes") {
+      if (value.length > 150) {
+        setErrors((prev) => ({
+          ...prev,
+          additionalNotes: "Additional notes cannot exceed 150 characters",
         }));
       } else {
         setErrors((prev) => ({ ...prev, additionalNotes: "" }));
       }
     }
 
+    // ✅ DOB (already added by you)
     if (id === "dateOfBirth") {
       if (value) {
         const dob = new Date(value);
         const today = new Date();
-
         const age = today.getFullYear() - dob.getFullYear();
         const monthDiff = today.getMonth() - dob.getMonth();
         const dayDiff = today.getDate() - dob.getDate();
@@ -105,29 +131,23 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       }
     }
 
+    // 🔹 Rest of your update logic (unchanged) ...
     setFormData((prev: any) => {
       let newData = { ...prev };
 
-      // 🔹 If updating guest field
       if (guestIndex !== undefined) {
         newData.guests = prev.guests.map((guest: any, index: number) =>
           index === guestIndex ? { ...guest, [id]: value } : guest
         );
       } else {
-        // 🔹 Normal top-level field update
         newData = { ...newData, [id]: value };
 
-        // Clean up dependants array if number of dependants is reduced
         if (id === "numberOfDependents") {
           const newDependants = Array.isArray(prev.guests[0].numberOfDependents)
             ? prev.guests[0].numberOfDependents.slice(0, parseInt(value || "0"))
             : Array(parseInt(value || "0")).fill({});
           newData.guests[0].numberOfDependents = newDependants;
           newData.roomAssignments = {};
-        }
-        console.log("value", value);
-        if ((id === "numberOfDependents" && value) || 0 >= 5) {
-          setShowModal(true);
         }
       }
 
@@ -146,6 +166,9 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             value={formData.guests[0].fullName || ""}
             onChange={(e) => handleInputChange(e, 0)}
           />
+          {errors.fullName && (
+            <p className="text-red-500 text-sm">{errors.fullName}</p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="emailAddress">Email Address *</Label>
@@ -262,6 +285,9 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             onChange={(e) => handleInputChange(e, 0)}
             className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
           />
+          {errors.address && (
+            <p className="text-red-500 text-sm">{errors.address}</p>
+          )}
         </div>
       </div>
 
@@ -278,9 +304,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           {errors.additionalNotes && (
             <p className="text-red-500 text-sm">{errors.additionalNotes}</p>
           )}
-          <p className="text-xs text-gray-500">
-            {formData.guests[0].additionalNotes?.length || 0}/200 characters
-          </p>
+         
         </div>
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>
@@ -338,7 +362,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="numberOfDependents">Number of Dependants</Label>
+          <Label htmlFor="numberOfDependents">Number of Dependants *</Label>
           <Input
             id="numberOfDependents"
             type="number"

@@ -201,7 +201,7 @@ export default function StaffTable() {
     const matchesSearch =
       staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      staff.id.toLowerCase().includes(searchTerm.toLowerCase());
+      staff.phone.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesBranch =
       selectedBranches.length === 0 ||
@@ -363,7 +363,7 @@ export default function StaffTable() {
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search by name, email, or ID..."
+                      placeholder="Search by name, email, or phone..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -580,7 +580,7 @@ export default function StaffTable() {
                   </p>
                 </div>
               )}
-              {filteredStaff.length >= 10 && data?.totalCount > limit && (
+              {data?.totalPages > 1 && (
                 <CustomPagination
                   currentPage={currentPage}
                   totalPages={data?.totalPages || 1}

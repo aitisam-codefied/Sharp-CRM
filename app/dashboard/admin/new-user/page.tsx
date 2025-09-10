@@ -141,6 +141,9 @@ export default function NewUserPage() {
   });
   const [rooms, setRooms] = useState<any[]>([]); // State to store API rooms
   const { toast } = useToast();
+  const [medicalErrors, setMedicalErrors] = useState<Record<string, string>>(
+    {}
+  );
 
   const steps = [
     {
@@ -176,13 +179,26 @@ export default function NewUserPage() {
   ];
 
   const isStep1Valid = () => {
+    const dep = formData.guests[0].numberOfDependents;
+
     return (
       formData.guests[0].fullName?.trim() &&
+      formData.guests[0].fullName.length <= 20 && // ✅ full name max 20
       formData.guests[0].emailAddress?.trim() &&
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+        formData.guests[0].emailAddress
+      ) && // ✅ strict email
       formData.guests[0].phoneNumber?.trim() &&
       formData.guests[0].dateOfBirth &&
       formData.guests[0].nationality?.trim() &&
-      formData.guests[0].numberOfDependents !== undefined &&
+      (!formData.guests[0].address ||
+        formData.guests[0].address.length <= 150) && // ✅ max 150
+      (!formData.guests[0].additionalNotes ||
+        formData.guests[0].additionalNotes.length <= 150) && // ✅ max 150
+      dep !== undefined &&
+      dep !== null &&
+      String(dep) !== "" &&
+      Number(dep) >= 0 &&
       formData.branchId?.trim()
     );
   };
@@ -194,12 +210,17 @@ export default function NewUserPage() {
     if (dependants > 0) {
       for (let i = 1; i <= dependants; i++) {
         const dep = formData.guests[i];
+
         if (
           !dep?.fullName?.trim() ||
+          dep.fullName.length > 20 || // ✅ name max 20
           !dep?.phoneNumber?.trim() ||
           !dep?.emailAddress?.trim() ||
+          !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
           !dep?.dateOfBirth ||
-          !dep?.nationality?.trim()
+          !dep?.nationality?.trim() ||
+          (dep.address && dep.address.length > 150) || // ✅ address max 150
+          (dep.additionalNotes && dep.additionalNotes.length > 150) // ✅ notes max 150
         ) {
           console.log("Dependants validation failed at index", i);
           return false;
@@ -211,10 +232,10 @@ export default function NewUserPage() {
       console.log("Room assignments missing");
       return false;
     }
+
     let totalAssigned = 0;
     for (const roomId in formData.assignedRooms) {
       const assigned = Number(formData.assignedRooms[roomId]) || 0;
-      console.log("assigned", assigned);
       const room = rooms.find((r) => r.id === roomId);
       if (room && assigned > room.availableSpace) {
         console.log(`Room ${roomId} over capacity`);
@@ -222,8 +243,22 @@ export default function NewUserPage() {
       }
       totalAssigned += assigned;
     }
-    console.log("Total assigned:", totalAssigned, "Total people:", totalPeople);
+
     return totalAssigned === totalPeople;
+  };
+
+  const validateEmergencyContact = (ec: any) => {
+    if (!ec?.fullName?.trim()) return false;
+    if (ec?.fullName.trim().length > 20) return false;
+
+    if (!ec.phoneNumber?.trim()) return false;
+    // Optional: stricter phone number check
+    // if (!/^\+?\d{7,15}$/.test(ec.phoneNumber.trim())) return false;
+
+    if (!ec?.relationship?.trim()) return false;
+    if (ec?.relationship.trim().length > 15) return false;
+
+    return true;
   };
 
   const isStep3Valid = () => {
@@ -231,26 +266,40 @@ export default function NewUserPage() {
     const total = numDep + 1;
 
     if (numDep === 0 || formData.sameEmergencyContact) {
-      const ec: EmergencyContact = formData.emergencyContact || {
+      const ec = formData.emergencyContact || {
         fullName: "",
         relationship: "",
         phoneNumber: "",
       };
-      return (
-        !!ec.fullName?.trim() &&
-        !!ec.phoneNumber?.trim() &&
-        !!ec.relationship?.trim()
-      );
+      return validateEmergencyContact(ec);
     } else {
       const ecs = formData.guests || [];
       if (ecs.length !== total) return false;
-      return ecs.every(
-        (g: any) =>
-          !!g.emergencyContact?.fullName?.trim() &&
-          !!g.emergencyContact?.phoneNumber?.trim() &&
-          !!g.emergencyContact?.relationship?.trim()
+
+      return ecs.every((g: any) =>
+        validateEmergencyContact(g.emergencyContact)
       );
     }
+  };
+
+  const isStep4Valid = () => {
+    // saare error messages empty hone chahiye aur saari fields filled
+    if (Object.values(medicalErrors).some((e) => e)) return false;
+
+    const numDep = Number(formData.guests[0]?.numberOfDependents || 0);
+    const total = numDep + 1;
+
+    for (let i = 0; i < total; i++) {
+      const g = formData.guests[i];
+      if (
+        !g?.medicalCondition?.trim() ||
+        !g?.allergies?.trim() ||
+        !g?.currentMedications?.trim()
+      ) {
+        return false;
+      }
+    }
+    return true;
   };
 
   const isStep5Valid = () => {
@@ -287,7 +336,7 @@ export default function NewUserPage() {
       case 3:
         return isStep3Valid();
       case 4:
-        return true;
+        return isStep4Valid();
       case 5:
         return isStep5Valid();
       case 6:
@@ -642,7 +691,11 @@ export default function NewUserPage() {
         );
       case 4:
         return (
-          <MedicalDietaryForm formData={formData} setFormData={setFormData} />
+          <MedicalDietaryForm
+            formData={formData}
+            setFormData={setFormData}
+            setErrors={setMedicalErrors}
+          />
         );
       case 5:
         return (

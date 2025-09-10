@@ -98,6 +98,16 @@ export function AddMedicalStaffModal({
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetForm = () => {
+    setName("");
+    setPhoneNumber("");
+    setEmailAddress("");
+    setType("");
+    setStatus("active");
+    setBranches("");
+    setErrors({});
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateFields()) return;
@@ -117,21 +127,14 @@ export function AddMedicalStaffModal({
             title: "Success",
             description: "Medical staff added successfully.",
           });
+          resetForm();
           onClose();
-          // Reset form
-          setName("");
-          setPhoneNumber("");
-          setEmailAddress("");
-          setType("");
-          setStatus("active");
-          setBranches("");
-          setErrors({});
         },
         onError: (error: any) => {
           toast({
             title: "Error Adding Staff",
             description:
-              error.response?.data?.error ||
+              error.response?.data?.details ||
               error.message ||
               "Failed to add staff member.",
             variant: "destructive",
@@ -142,8 +145,16 @@ export function AddMedicalStaffModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetForm(); // clear form when closing
+          onClose(); // call parent close handler
+        }
+      }}
+    >
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Medical Staff</DialogTitle>
         </DialogHeader>

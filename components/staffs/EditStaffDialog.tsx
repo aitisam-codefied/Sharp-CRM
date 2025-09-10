@@ -89,14 +89,48 @@ export default function EditStaffDialog({
     console.log("Staff prop:", staff);
   }, [staff]);
 
+  function formatDateForInput(dateStr?: string) {
+    if (!dateStr) return "";
+    // Try native parse
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split("T")[0];
+    }
+
+    // Fallback: handle "9th September 2025" like strings
+    try {
+      const cleaned = dateStr.replace(/(\d+)(st|nd|rd|th)/, "$1"); // remove st/nd/rd/th
+      const parsedFallback = new Date(cleaned);
+      if (!isNaN(parsedFallback.getTime())) {
+        return parsedFallback.toISOString().split("T")[0];
+      }
+    } catch (e) {
+      console.warn("Invalid joinDate format:", dateStr);
+    }
+
+    return "";
+  }
+
   const [formData, setFormData] = useState({
     name: staff.name || "",
     email: staff.email || "",
     phone: staff.phone || "",
-    joinDate: staff.joinDate || "",
+    joinDate: formatDateForInput(staff.joinDate),
     shiftStart: staff.shiftTimes?.[0]?.start || "",
     shiftEnd: staff.shiftTimes?.[0]?.end || "",
   });
+
+  const statusOptions = ["active", "inactive", "suspended"];
+  const [selectedStatus, setSelectedStatus] = useState(
+    staff.status || "active"
+  );
+
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
+    setChangedFields((prev) =>
+      prev.includes("status") ? prev : [...prev, "status"]
+    );
+  };
 
   const [changedFields, setChangedFields] = useState<string[]>([]);
   const [errors, setErrors] = useState({
@@ -294,6 +328,7 @@ export default function EditStaffDialog({
       ...(changedFields.includes("roles") && { roles: [selectedRoles] }),
       ...(changedFields.includes("branchId") && { branches: branchIds }),
       ...(changedFields.includes("locations") && { locations: locationIds }),
+      ...(changedFields.includes("status") && { status: selectedStatus }),
     };
 
     if (Object.keys(backendData).length === 0) {
@@ -315,7 +350,7 @@ export default function EditStaffDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Staff Member</DialogTitle>
           <DialogDescription>
@@ -354,7 +389,7 @@ export default function EditStaffDialog({
           )}
 
           {/* Form fields */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -380,7 +415,7 @@ export default function EditStaffDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
               <Input
@@ -410,7 +445,7 @@ export default function EditStaffDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="shiftStart">Shift Start</Label>
               <Input
@@ -438,24 +473,45 @@ export default function EditStaffDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Select
-              onValueChange={handleRoleChange}
-              value={selectedRoles}
-              disabled={updateMutation.isPending}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                {roles.map((role) => (
-                  <SelectItem key={role} value={role}>
-                    {role}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="role">Role</Label>
+              <Select
+                onValueChange={handleRoleChange}
+                value={selectedRoles}
+                disabled={updateMutation.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select
+                onValueChange={handleStatusChange}
+                value={selectedStatus}
+                disabled={updateMutation.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">

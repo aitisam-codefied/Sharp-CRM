@@ -135,7 +135,7 @@ export default function NewDocumentDialog({
           Upload
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload New Document</DialogTitle>
           <DialogDescription>

@@ -292,7 +292,7 @@ export default function ReviewConfirmationForm({
                     )} */}
                   </dl>
                 </div>
-                {formData.sameEmergencyContact ? (
+                {formData.sameEmergencyContact && formData.emergencyContact ? (
                   <div>
                     <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
                       Emergency Contact

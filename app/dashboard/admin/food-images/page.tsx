@@ -36,7 +36,8 @@ import {
   User,
   Clock,
   Plus,
-  Pencil, // Added for edit icon
+  Pencil,
+  Eye, // Added for edit icon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -100,6 +101,7 @@ export default function FoodImagesPage() {
     images: [],
   });
   const [editSelectedFiles, setEditSelectedFiles] = useState<File[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
   // API hooks
   const { data: foods, isLoading: foodsLoading } = useGetFoods();
@@ -432,52 +434,91 @@ export default function FoodImagesPage() {
                   {/* Image Upload */}
                   <div className="space-y-2">
                     <Label htmlFor="image">Food Image</Label>
-                    <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                      <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Drag and drop an image here, or click to select
-                      </p>
+                    <div className="border-2 border-dashed rounded-lg p-4 text-center relative h-60 flex items-center justify-center">
+                      {selectedFiles.length > 0 ? (
+                        <div className="w-full h-full relative">
+                          <img
+                            src={URL.createObjectURL(selectedFiles[0])}
+                            alt="preview"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                          {/* Bottom overlay with filename + actions */}
+                          <div className="absolute bottom-0 left-0 right-0 bg-black/50 flex items-center justify-between px-3 py-2 text-white text-sm rounded-b-lg">
+                            <span className="truncate max-w-[50%]">
+                              {selectedFiles[0].name.length > 20
+                                ? selectedFiles[0].name.slice(0, 20) + "..."
+                                : selectedFiles[0].name}
+                            </span>
+                            <div className="flex gap-2">
+                              {/* 👁 View full image */}
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="bg-white/20 hover:bg-white/30 text-white"
+                                onClick={() =>
+                                  setPreviewImage(
+                                    URL.createObjectURL(selectedFiles[0])
+                                  )
+                                }
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+
+                              {/* 🔄 Re-upload */}
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="bg-white/20 hover:bg-white/30 text-white"
+                                onClick={() => fileInputRef.current?.click()}
+                              >
+                                <Upload className="h-4 w-4 mr-1" /> Re-upload
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          className="flex flex-col items-center justify-center h-full w-full cursor-pointer"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Camera className="h-12 w-12 mb-4 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Drag & drop or click to upload
+                          </p>
+                        </div>
+                      )}
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
-                        multiple // Added for multiple images
+                        multiple
                         onChange={handleFileSelect}
                         className="hidden"
                       />
-                      <Button
-                        variant="outline"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        <Upload className="h-4 w-4 mr-2" /> Choose File
-                      </Button>
-                      {errors.images && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.images}
-                        </p>
-                      )}
-                      {/* ✅ Preview Section */}
-                      {selectedFiles.length > 0 && (
-                        <div className="mt-4">
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Selected file
-                          </p>
-                          <div className="relative w-full max-w-xs h-40 rounded-lg overflow-hidden shadow mx-auto">
-                            <img
-                              src={URL.createObjectURL(selectedFiles[0])}
-                              alt="preview"
-                              className="w-full h-full object-cover"
-                            />
-                            <span className="absolute bottom-1 left-1 bg-black/60 text-white text-xs px-2 py-0.5 rounded">
-                              {selectedFiles[0].name.length > 15
-                                ? selectedFiles[0].name.slice(0, 15) + "..."
-                                : selectedFiles[0].name}
-                            </span>
-                          </div>
-                        </div>
-                      )}
                     </div>
+                    {errors.images && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.images}
+                      </p>
+                    )}
                   </div>
+
+                  {/* 🔍 Fullscreen Preview Modal */}
+                  <Dialog
+                    open={!!previewImage}
+                    onOpenChange={() => setPreviewImage(null)}
+                  >
+                    <DialogContent className="max-w-2xl p-0">
+                      {previewImage && (
+                        <img
+                          src={previewImage}
+                          alt="Full Preview"
+                          className="w-full h-auto rounded-lg"
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
+
                   {/* Basic Information */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">

@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 
 export const DIETARY_REQUIREMENT_TYPES = {
   VEGETARIAN: "Vegetarian",
@@ -16,9 +15,28 @@ export const DIETARY_REQUIREMENT_TYPES = {
   OTHER: "Other",
 };
 
-export default function MedicalDietaryForm({ formData, setFormData }: any) {
-  const numDependants = Number(formData.guests[0].numberOfDependents[0]) || 0;
+export default function MedicalDietaryForm({
+  formData,
+  setFormData,
+  setErrors,
+}: any) {
+  const numDependants = Number(formData.guests[0]?.numberOfDependents || 0);
   const totalPeople = numDependants + 1;
+
+  // local error state
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
+
+  const validateField = (guestIndex: number, field: string, value: string) => {
+    let error = "";
+    if (!value.trim()) {
+      error = `${field} is required`;
+    } else if (value.length > 50) {
+      error = `${field} must be 50 characters or less`;
+    }
+
+    const key = `${guestIndex}-${field}`;
+    setLocalErrors((prev) => ({ ...prev, [key]: error }));
+  };
 
   const handleMedicalChange = (
     guestIndex: number,
@@ -26,13 +44,17 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
     value: string | string[]
   ) => {
     setFormData((prev: any) => {
-      const guests = [...prev.guests]; // clone
+      const guests = [...prev.guests];
       guests[guestIndex] = {
         ...guests[guestIndex],
         [field]: value,
       };
       return { ...prev, guests };
     });
+
+    if (typeof value === "string") {
+      validateField(guestIndex, field, value);
+    }
   };
 
   const toggleDietary = (guestIndex: number, type: string) => {
@@ -43,6 +65,11 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
 
     handleMedicalChange(guestIndex, "dietaryRequirements", updated);
   };
+
+  // Report errors to parent so step validation can use them
+  useEffect(() => {
+    setErrors(localErrors);
+  }, [localErrors, setErrors]);
 
   return (
     <div className="space-y-6">
@@ -58,7 +85,7 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
             {i === 0 ? "Primary User" : `Dependant ${i}`}
           </h4>
           <div className="space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor={`medical-conditions-${i}`}>
                 Medical Conditions
               </Label>
@@ -70,8 +97,13 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
                   handleMedicalChange(i, "medicalCondition", e.target.value)
                 }
               />
+              {localErrors[`${i}-medicalCondition`] && (
+                <p className="text-red-500 text-xs">
+                  {localErrors[`${i}-medicalCondition`]}
+                </p>
+              )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor={`allergies-${i}`}>Allergies</Label>
               <Textarea
                 id={`allergies-${i}`}
@@ -81,8 +113,13 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
                   handleMedicalChange(i, "allergies", e.target.value)
                 }
               />
+              {localErrors[`${i}-allergies`] && (
+                <p className="text-red-500 text-xs">
+                  {localErrors[`${i}-allergies`]}
+                </p>
+              )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor={`medications-${i}`}>Current Medications</Label>
               <Textarea
                 id={`medications-${i}`}
@@ -92,6 +129,11 @@ export default function MedicalDietaryForm({ formData, setFormData }: any) {
                   handleMedicalChange(i, "currentMedications", e.target.value)
                 }
               />
+              {localErrors[`${i}-currentMedications`] && (
+                <p className="text-red-500 text-xs">
+                  {localErrors[`${i}-currentMedications`]}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Dietary Requirements (Select all that apply)</Label>

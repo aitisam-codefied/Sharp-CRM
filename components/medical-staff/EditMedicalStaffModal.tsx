@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -63,7 +63,22 @@ export function EditMedicalStaffModal({
   const { mutate: updateStaff, isPending } = useUpdateMedicalStaff();
   const { toast } = useToast();
 
-  // check agar koi field change hui ha
+  // ✅ validate inputs
+  const isValidEmail = useMemo(
+    () => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress),
+    [emailAddress]
+  );
+
+  const hasEmptyFields = useMemo(
+    () =>
+      !fullName.trim() ||
+      !emailAddress.trim() ||
+      !phoneNumber.trim() ||
+      !type.trim(),
+    [fullName, emailAddress, phoneNumber, type]
+  );
+
+  // ✅ check if anything changed
   const isChanged = useMemo(() => {
     return (
       fullName !== staff.fullName ||
@@ -73,7 +88,12 @@ export function EditMedicalStaffModal({
     );
   }, [fullName, emailAddress, phoneNumber, type, staff]);
 
+  // ✅ final condition for enabling button
+  const isFormValid = isChanged && !hasEmptyFields && isValidEmail;
+
   const handleSubmit = () => {
+    if (!isFormValid) return;
+
     const updatedData: {
       fullName?: string;
       type?: string;
@@ -86,15 +106,6 @@ export function EditMedicalStaffModal({
       updatedData.emailAddress = emailAddress;
     if (phoneNumber !== staff.phoneNumber)
       updatedData.phoneNumber = phoneNumber;
-
-    if (Object.keys(updatedData).length === 0) {
-      toast({
-        title: "No changes",
-        description: "No fields were updated.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     updateStaff(
       { id: staff._id, data: updatedData },
@@ -118,9 +129,18 @@ export function EditMedicalStaffModal({
     );
   };
 
+  useEffect(() => {
+    if (isOpen && staff) {
+      setfullName(staff.fullName || "");
+      setEmailAddress(staff.emailAddress || "");
+      setPhoneNumber(staff.phoneNumber || "");
+      setType(staff.type || "");
+    }
+  }, [isOpen, staff]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Staff Details</DialogTitle>
         </DialogHeader>
@@ -144,6 +164,9 @@ export function EditMedicalStaffModal({
               value={emailAddress}
               onChange={(e) => setEmailAddress(e.target.value)}
             />
+            {!isValidEmail && emailAddress && (
+              <p className="text-red-500 text-sm">Invalid email format</p>
+            )}
           </div>
           <div>
             <label htmlFor="phoneNumber" className="block text-sm font-medium">
@@ -153,7 +176,7 @@ export function EditMedicalStaffModal({
               id="phoneNumber"
               value={phoneNumber}
               onChange={(e) => {
-                const onlyNums = e.target.value.replace(/\D/g, ""); // sirf digits
+                const onlyNums = e.target.value.replace(/\D/g, "");
                 setPhoneNumber(onlyNums);
               }}
               inputMode="numeric"
@@ -178,7 +201,7 @@ export function EditMedicalStaffModal({
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handleSubmit} disabled={!isChanged || isPending}>
+          <Button onClick={handleSubmit} disabled={!isFormValid || isPending}>
             {isPending ? "Updating..." : "Update"}
           </Button>
         </div>

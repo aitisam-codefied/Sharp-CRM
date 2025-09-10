@@ -37,7 +37,7 @@ export function UserDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto rounded-lg p-6">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[80vh] overflow-y-auto rounded-lg p-6">
         <DialogHeader className="mb-6">
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-primary capitalize">
             <User className="h-6 w-6 text-primary" />

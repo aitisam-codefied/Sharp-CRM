@@ -29,9 +29,9 @@ export function EditUserModal({
   nationalities,
 }: EditUserModalProps) {
   console.log("user data", user);
-  console.log("Branches:", branches);
-  console.log("Nationalities:", nationalities);
-  console.log("All rooms:", allRooms);
+  // console.log("Branches:", branches);
+  // console.log("Nationalities:", nationalities);
+  // console.log("All rooms:", allRooms);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

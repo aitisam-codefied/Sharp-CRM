@@ -2,16 +2,19 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils"; // optional helper for classnames
 
 export default function EmergencyContactForm({ formData, setFormData }: any) {
   const numDependants = Number(formData.guests[0].numberOfDependents) || 0;
-  console.log("numDependants", numDependants);
   const totalPeople = numDependants + 1;
   const hasDependants = numDependants > 0;
 
   const [sameEmergencyContact, setSameEmergencyContact] = useState(
     formData.sameEmergencyContact || false
   );
+
+  // 🔹 errors state (track for each guest and field)
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     setFormData((prev: any) => ({
@@ -20,17 +23,24 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
     }));
   }, [sameEmergencyContact]);
 
+  const validateField = (field: string, value: string) => {
+    if (field === "fullName" && value.length > 20) {
+      return "Name must be 20 characters or less";
+    }
+    if (field === "relationship" && value.length > 15) {
+      return "Relation must be 15 characters or less";
+    }
+    return "";
+  };
+
   const handleSameChange = (checked: boolean) => {
     setSameEmergencyContact(checked);
     setFormData((prev: any) => {
       const newData = { ...prev, sameEmergencyContact: checked };
 
       if (checked) {
-        // Switching to same: reset and keep only primary empty contact
         newData.emergencyContact = {};
         delete newData.emergencyContacts;
-
-        // also reset guests ke emergencyContact
         if (prev.guests) {
           newData.guests = prev.guests.map((g: any) => ({
             ...g,
@@ -38,11 +48,8 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
           }));
         }
       } else {
-        // Switching to separate: reset all contacts for each person
         newData.emergencyContacts = Array(totalPeople).fill({});
         delete newData.emergencyContact;
-
-        // guests ke contacts bhi reset
         if (prev.guests) {
           newData.guests = prev.guests.map((g: any) => ({
             ...g,
@@ -50,12 +57,14 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
           }));
         }
       }
-
       return newData;
     });
   };
 
   const handleContactChange = (field: string, value: string) => {
+    const error = validateField(field, value);
+    setErrors((prev) => ({ ...prev, [field]: error }));
+
     setFormData((prev: any) => ({
       ...prev,
       emergencyContact: {
@@ -70,8 +79,12 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
     field: string,
     value: string
   ) => {
+    const key = `${guestIndex}-${field}`;
+    const error = validateField(field, value);
+    setErrors((prev) => ({ ...prev, [key]: error }));
+
     setFormData((prev: any) => {
-      const guests = [...prev.guests]; // clone array
+      const guests = [...prev.guests];
       guests[guestIndex] = {
         ...guests[guestIndex],
         emergencyContact: {
@@ -81,22 +94,6 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
       };
       return { ...prev, guests };
     });
-  };
-
-  const getContact = (index: number) => {
-    if (!hasDependants || sameEmergencyContact) {
-      return formData.emergencyContact || {};
-    } else {
-      return (formData.emergencyContacts || [])[index] || {};
-    }
-  };
-
-  const getContactGuest = (index: number) => {
-    if (!hasDependants || sameEmergencyContact) {
-      return formData.guests.emergencyContact || {};
-    } else {
-      return (formData.guests.emergencyContacts || [])[index] || {};
-    }
   };
 
   return (
@@ -114,14 +111,14 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
         </div>
       )}
 
+      {/* SINGLE CONTACT */}
       {!hasDependants || sameEmergencyContact ? (
-        // Single contact form for primary (or all if same)
         <div className="space-y-4">
           <h3 className="font-semibold text-lg text-gray-800">
             Emergency Contact Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="ec-name">Full Name *</Label>
               <Input
                 id="ec-name"
@@ -130,9 +127,13 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 onChange={(e) =>
                   handleContactChange("fullName", e.target.value)
                 }
+                className={cn(errors["fullName"] && "border-red-500")}
               />
+              {errors["fullName"] && (
+                <p className="text-red-500 text-sm">{errors["fullName"]}</p>
+              )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="ec-phone">Phone Number *</Label>
               <Input
                 id="ec-phone"
@@ -142,22 +143,9 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 onChange={(e) =>
                   handleContactChange("phoneNumber", e.target.value)
                 }
-                onKeyDown={(e) => {
-                  if (
-                    !/[0-9]/.test(e.key) &&
-                    !(e.key === "+" && e.currentTarget.selectionStart === 0) &&
-                    e.key !== "Backspace" &&
-                    e.key !== "Delete" &&
-                    e.key !== "ArrowLeft" &&
-                    e.key !== "ArrowRight" &&
-                    e.key !== "Tab"
-                  ) {
-                    e.preventDefault();
-                  }
-                }}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Label htmlFor="ec-relation">Relation *</Label>
               <Input
                 id="ec-relation"
@@ -166,12 +154,16 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 onChange={(e) =>
                   handleContactChange("relationship", e.target.value)
                 }
+                className={cn(errors["relationship"] && "border-red-500")}
               />
+              {errors["relationship"] && (
+                <p className="text-red-500 text-sm">{errors["relationship"]}</p>
+              )}
             </div>
           </div>
         </div>
       ) : (
-        // Separate contacts for primary and each dependant
+        // MULTIPLE CONTACTS
         <div className="space-y-6">
           <h3 className="font-semibold text-lg text-gray-800">
             Emergency Contact Details
@@ -185,7 +177,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 {i === 0 ? "Primary User" : `Dependant ${i}`}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor={`ec-name-${i}`}>Name *</Label>
                   <Input
                     id={`ec-name-${i}`}
@@ -196,9 +188,15 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                     onChange={(e) =>
                       handleContactChangeGuest(i, "fullName", e.target.value)
                     }
+                    className={cn(errors[`${i}-fullName`] && "border-red-500")}
                   />
+                  {errors[`${i}-fullName`] && (
+                    <p className="text-red-500 text-sm">
+                      {errors[`${i}-fullName`]}
+                    </p>
+                  )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor={`ec-phone-${i}`}>Phone Number *</Label>
                   <Input
                     id={`ec-phone-${i}`}
@@ -212,7 +210,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                     }
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor={`ec-relation-${i}`}>Relation *</Label>
                   <Input
                     id={`ec-relation-${i}`}
@@ -227,7 +225,15 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                         e.target.value
                       )
                     }
+                    className={cn(
+                      errors[`${i}-relationship`] && "border-red-500"
+                    )}
                   />
+                  {errors[`${i}-relationship`] && (
+                    <p className="text-red-500 text-sm">
+                      {errors[`${i}-relationship`]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

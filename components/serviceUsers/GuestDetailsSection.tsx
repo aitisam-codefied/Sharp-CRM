@@ -55,7 +55,7 @@ export function GuestDetailsSection({
       dateOfBirth: "",
       gender: user?.gender || "",
       nationality: user?.nationality || "",
-      language: "",
+      language: user?.language || "",
       numberOfDependents: 0,
       dental: { name: "", phoneNumber: "", emailAddress: "" },
       address: "",
@@ -112,6 +112,11 @@ export function GuestDetailsSection({
     if (user) {
       reset({
         ...user,
+        nationality: user.nationality?.toLowerCase() || "",
+        language: user.language
+          ? user.language.charAt(0).toUpperCase() +
+            user.language.slice(1).toLowerCase()
+          : "",
         dateOfBirth: user.dateOfBirth
           ? new Date(user.dateOfBirth).toISOString().split("T")[0]
           : "",
@@ -119,7 +124,10 @@ export function GuestDetailsSection({
       });
       setBranchChanged(false);
     }
-  }, [user, reset]);
+  }, [user, reset, nationalities]);
+
+  console.log("User nationality:", user?.nationality);
+  console.log("Nationalities list:", nationalities);
 
   const selectedBranch = watch("branch._id");
 
@@ -345,6 +353,15 @@ export function GuestDetailsSection({
             <Input
               id="dateOfBirth"
               type="date"
+              max={
+                user?.isPrimaryGuest
+                  ? new Date(
+                      new Date().setFullYear(new Date().getFullYear() - 18)
+                    )
+                      .toISOString()
+                      .split("T")[0] // 18 years ago
+                  : new Date().toISOString().split("T")[0] // today
+              }
               {...register("dateOfBirth", {
                 required: "Date of birth is required",
               })}
@@ -355,6 +372,7 @@ export function GuestDetailsSection({
               </p>
             )}
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="gender">Gender</Label>
             <Controller
@@ -392,9 +410,9 @@ export function GuestDetailsSection({
                     <SelectValue placeholder="Select nationality" />
                   </SelectTrigger>
                   <SelectContent>
-                    {nationalities?.map((nationality) => (
-                      <SelectItem key={nationality} value={nationality}>
-                        {nationality}
+                    {nationalities?.map((nat) => (
+                      <SelectItem key={nat} value={nat.toLowerCase()}>
+                        {nat}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -409,11 +427,29 @@ export function GuestDetailsSection({
           </div>
           <div className="space-y-2">
             <Label htmlFor="language">Language</Label>
-            <Input
-              id="language"
-              placeholder="e.g., English"
-              {...register("language")}
+            <Controller
+              name="language"
+              control={control}
+              rules={{ required: "Language is required" }}
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="English">English</SelectItem>
+                    <SelectItem value="Spanish">Spanish</SelectItem>
+                    <SelectItem value="French">French</SelectItem>
+                    <SelectItem value="German">German</SelectItem>
+                    <SelectItem value="Chinese">Chinese</SelectItem>
+                    <SelectItem value="Urdu">Urdu</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             />
+            {errors.language && (
+              <p className="text-red-500 text-xs">{errors.language.message}</p>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-1 gap-4 mt-4">
@@ -532,7 +568,7 @@ export function GuestDetailsSection({
         </div>
 
         {/* <DocumentFields2 index={0} control={control} register={register} /> */}
-        <ConsentFields2 register={register} />
+        {/* <ConsentFields2 register={register} /> */}
 
         <div className="mt-4 flex justify-end">
           <Button type="submit" disabled={updateGuest.isPending || !isDirty}>

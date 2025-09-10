@@ -118,7 +118,7 @@ export default function AddStaffDialog() {
       toast({
         title: "Error Adding Staff",
         description:
-          error.response?.data?.error ||
+          error.response?.data?.details ||
           error.message ||
           "Failed to add staff member.",
         variant: "destructive",
@@ -278,7 +278,7 @@ export default function AddStaffDialog() {
           <Plus className="h-4 w-4 mr-2" /> Add Staff
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogDescription>
@@ -315,7 +315,7 @@ export default function AddStaffDialog() {
           )}
 
           {/* Name & Email */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Full Name</Label>
               <Input
@@ -344,7 +344,7 @@ export default function AddStaffDialog() {
           </div>
 
           {/* Phone & Join Date */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Phone Number</Label>
               <Input
@@ -381,7 +381,7 @@ export default function AddStaffDialog() {
           </div>
 
           {/* Shift Times */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Shift Start</Label>
               <Input
