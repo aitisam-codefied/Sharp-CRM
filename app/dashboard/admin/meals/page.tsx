@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useGetMealMarkings } from "@/hooks/useGetMealMarking";
 import MealsStats from "@/components/meals/MealsStats";
 import MealsTable from "@/components/meals/MealsTable";
+import { set } from "date-fns";
 
 export default function MealsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,9 +37,9 @@ export default function MealsPage() {
 
   const { data, isLoading } = useGetMealMarkings();
 
-  useEffect(() => {
-    console.log("meal dataaaaa", data);
-  });
+  // useEffect(() => {
+  //   console.log("meal dataaaaa", data);
+  // });
 
   useEffect(() => {
     if (data) {
@@ -49,17 +50,17 @@ export default function MealsPage() {
         branch: item.branchId.name,
         meals: {
           breakfast: {
-            marked: item.meals.breakfast.taken,
+            marked: item.meals?.breakfast.taken,
             time: null,
             staff: item.staffId?.fullName || null,
           },
           lunch: {
-            marked: item.meals.lunch.taken,
+            marked: item.meals?.lunch.taken,
             time: null,
             staff: item.staffId?.fullName || null,
           },
           dinner: {
-            marked: item.meals.dinner.taken,
+            marked: item.meals?.dinner.taken,
             time: null,
             staff: item.staffId?.fullName || null,
           },
@@ -79,10 +80,9 @@ export default function MealsPage() {
   }, [data]);
 
   const filteredResidents = residents.filter((resident) => {
-    const matchesSearch =
-      resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resident.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resident.id.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = resident?.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
     const matchesBranch =
       selectedBranch === "all" || resident.branch === selectedBranch;
@@ -90,48 +90,9 @@ export default function MealsPage() {
     return matchesSearch && matchesBranch;
   });
 
-  const handleMealToggle = (userId, mealType, checked) => {
-    const currentTime = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-
-    setResidents((prev: any) =>
-      prev.map((r) => {
-        if (r.id === userId) {
-          const updatedMeals = {
-            ...r.meals,
-            [mealType]: {
-              marked: checked,
-              time: checked ? currentTime : null,
-              staff: checked ? "Current Staff" : null,
-            },
-          };
-          return { ...r, meals: updatedMeals };
-        }
-        return r;
-      })
-    );
-
-    const resident = residents.find((r) => r.id === userId);
-    toast({
-      title: checked ? "Meal Marked" : "Meal Unmarked",
-      description: `${mealType} ${checked ? "marked" : "unmarked"} for ${
-        resident?.name
-      }`,
-    });
-
-    // TODO: Integrate API update here
-  };
-
-  // if (isLoading) {
-  //   return (
-  //     <div className="text-center py-8">
-  //       <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-  //       <p className="mt-2"> Loading meals...</p>
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedBranch]);
 
   return (
     <DashboardLayout
@@ -183,7 +144,7 @@ export default function MealsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+              {/* <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                 <SelectTrigger className="w-full md:w-48">
                   <SelectValue placeholder="All Meals" />
                 </SelectTrigger>
@@ -193,7 +154,7 @@ export default function MealsPage() {
                   <SelectItem value="lunch">Lunch</SelectItem>
                   <SelectItem value="dinner">Dinner</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
 
             {isLoading && (
@@ -205,7 +166,6 @@ export default function MealsPage() {
 
             <MealsTable
               residents={filteredResidents}
-              handleMealToggle={handleMealToggle}
               currentPage={currentPage}
               onPageChange={setCurrentPage}
             />

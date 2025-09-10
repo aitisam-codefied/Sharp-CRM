@@ -58,8 +58,8 @@ export default function EditStaffDialog({
   const [selectedCompany, setSelectedCompany] = useState(
     staff.companyId || companies?.[0]?._id || ""
   );
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(
-    staff.roles || []
+  const [selectedRoles, setSelectedRoles] = useState<string>(
+    staff.roles?.[0] || ""
   );
 
   const filteredBranches =
@@ -109,10 +109,9 @@ export default function EditStaffDialog({
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
-  const isGeneralManager = selectedRoles.includes("Manager");
-  const isAssistantManagerOrStaff = selectedRoles.some(
-    (role) => role === "AssistantManager" || role === "Staff"
-  );
+  const isGeneralManager = selectedRoles === "Manager";
+  const isAssistantManagerOrStaff =
+    selectedRoles === "AssistantManager" || selectedRoles === "Staff";
 
   const updateMutation = useMutation({
     mutationFn: updateStaff,
@@ -133,7 +132,7 @@ export default function EditStaffDialog({
         start: data?.shiftStart,
         end: data?.shiftEnd,
         roles: data?.roles,
-        branch: data?.branchId,
+        branch: data?.branches,
         locations: data?.locations,
         company: data?.companyId || "",
       };
@@ -218,11 +217,7 @@ export default function EditStaffDialog({
   };
 
   const handleRoleChange = (value: string) => {
-    setSelectedRoles((prev) =>
-      prev.includes(value)
-        ? prev.filter((role) => role !== value)
-        : [...prev, value]
-    );
+    setSelectedRoles(value);
     setChangedFields((prev) =>
       prev.includes("roles") ? prev : [...prev, "roles"]
     );
@@ -296,8 +291,8 @@ export default function EditStaffDialog({
       ...(changedFields.includes("shiftEnd") && {
         end: formData.shiftEnd,
       }),
-      ...(changedFields.includes("roles") && { roles: selectedRoles }),
-      ...(changedFields.includes("branchId") && { branchId: branchIds }),
+      ...(changedFields.includes("roles") && { roles: [selectedRoles] }),
+      ...(changedFields.includes("branchId") && { branches: branchIds }),
       ...(changedFields.includes("locations") && { locations: locationIds }),
     };
 
@@ -444,33 +439,19 @@ export default function EditStaffDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Role(s)</Label>
+            <Label htmlFor="role">Role</Label>
             <Select
               onValueChange={handleRoleChange}
-              value=""
+              value={selectedRoles}
               disabled={updateMutation.isPending}
             >
               <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    selectedRoles.length > 0
-                      ? selectedRoles.join(", ")
-                      : "Select role(s)"
-                  }
-                />
+                <SelectValue placeholder="Select role" />
               </SelectTrigger>
               <SelectContent>
                 {roles.map((role) => (
                   <SelectItem key={role} value={role}>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedRoles.includes(role)}
-                        readOnly
-                        className="mr-2"
-                      />
-                      {role}
-                    </div>
+                    {role}
                   </SelectItem>
                 ))}
               </SelectContent>

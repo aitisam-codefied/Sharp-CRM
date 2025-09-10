@@ -105,7 +105,6 @@ export default function AddBranchDialog() {
   });
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
-
   const { data } = useCompanies();
 
   const updateBranch = (field: keyof Branch, value: string) => {
@@ -264,7 +263,6 @@ export default function AddBranchDialog() {
 
     mutate(branchData, {
       onSuccess: () => {
-        console.log("Branch created:", branchData);
         updateUserBranchesManually(branchData);
         setIsAddDialogOpen(false);
       },
@@ -273,14 +271,15 @@ export default function AddBranchDialog() {
 
   const isFormValid = () => {
     if (!selectedCompanyId.trim()) return false;
-    if (!branch.name.trim()) return false;
-    if (!branch.address.trim()) return false;
+    if (!branch.name.trim() || branch.name.length > 50) return false;
+    if (!branch.address.trim() || branch.address.length > 100) return false;
 
     for (const location of branch.locations) {
-      if (!location.name.trim()) return false;
+      if (!location.name.trim() || location.name.length > 50) return false;
 
       for (const room of location.rooms) {
-        if (!room.roomNumber.trim()) return false;
+        if (!room.roomNumber.trim() || room.roomNumber.length > 10)
+          return false;
         if (!room.type.trim()) return false;
         if (room.amenities.length === 0) return false;
       }
@@ -305,6 +304,7 @@ export default function AddBranchDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Company Select */}
           <div className="space-y-2">
             <Label htmlFor="company">Company *</Label>
             <Select
@@ -323,6 +323,8 @@ export default function AddBranchDialog() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Branch Name */}
           <div className="space-y-2">
             <Label htmlFor="branch-name">Branch Name *</Label>
             <Input
@@ -330,15 +332,15 @@ export default function AddBranchDialog() {
               value={branch.name}
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
-              maxLength={50} // extra safeguard, user can’t type beyond 50 chars
             />
-            {branch.name.length > 23 && (
+            {branch.name.length > 50 && (
               <p className="text-red-500 text-sm">
-                Branch name cannot exceed 23 characters.
+                Branch name cannot exceed 50 characters.
               </p>
             )}
           </div>
 
+          {/* Branch Address */}
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
             <Textarea
@@ -348,7 +350,14 @@ export default function AddBranchDialog() {
               placeholder="Enter complete branch address"
               rows={3}
             />
+            {branch.address.length > 100 && (
+              <p className="text-red-500 text-sm">
+                Branch address cannot exceed 100 characters.
+              </p>
+            )}
           </div>
+
+          {/* Locations */}
           <div className="space-y-4">
             <Label>Locations</Label>
             {branch.locations.map((location, locationIndex) => (
@@ -356,14 +365,22 @@ export default function AddBranchDialog() {
                 key={locationIndex}
                 className="space-y-4 border p-4 rounded-md"
               >
-                <div className="flex gap-2 items-center">
-                  <Input
-                    value={location.name}
-                    onChange={(e) =>
-                      updateLocation(locationIndex, e.target.value)
-                    }
-                    placeholder="e.g., Floor 1, East Wing, Reception"
-                  />
+                {/* Location Name */}
+                <div className="flex gap-2 items-center w-full">
+                  <div className="flex-1">
+                    <Input
+                      value={location.name}
+                      onChange={(e) =>
+                        updateLocation(locationIndex, e.target.value)
+                      }
+                      placeholder="e.g., Floor 1, East Wing, Reception"
+                    />
+                    {location.name.length > 50 && (
+                      <p className="text-red-500 text-sm">
+                        Location name cannot exceed 50 characters.
+                      </p>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -373,6 +390,8 @@ export default function AddBranchDialog() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* Rooms */}
                 <div className="space-y-4">
                   {location.rooms.map((room, roomIndex) => (
                     <div
@@ -390,7 +409,9 @@ export default function AddBranchDialog() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Room Number */}
                         <div className="space-y-2">
                           <Label>Room Number *</Label>
                           <Input
@@ -405,8 +426,15 @@ export default function AddBranchDialog() {
                             }
                             placeholder="e.g., 101, A-1"
                           />
+                          {room.roomNumber.length > 10 && (
+                            <p className="text-red-500 text-sm">
+                              Room number cannot exceed 10 characters.
+                            </p>
+                          )}
                         </div>
-                        <div>
+
+                        {/* Room Type */}
+                        <div className="space-y-2">
                           <Label>Room Type *</Label>
                           <Select
                             value={room.type}
@@ -418,7 +446,6 @@ export default function AddBranchDialog() {
                                 value
                               );
 
-                              // Auto-update capacity if mapping exists
                               const autoCapacity = ROOM_TYPE_CAPACITY[value];
                               if (autoCapacity) {
                                 updateRoom(
@@ -444,21 +471,13 @@ export default function AddBranchDialog() {
                             </SelectContent>
                           </Select>
                         </div>
+
+                        {/* Room Capacity */}
                         <div className="space-y-2">
                           <Label>Room Capacity *</Label>
-                          <Select
-                            value={room.capacity}
-                            onValueChange={(value) =>
-                              updateRoom(
-                                locationIndex,
-                                roomIndex,
-                                "capacity",
-                                value
-                              )
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Capacity" />
+                          <Select value={room.capacity} disabled>
+                            <SelectTrigger className="text-sm sm:text-base">
+                              <SelectValue placeholder="Auto-selected" />
                             </SelectTrigger>
                             <SelectContent>
                               {[1, 2, 3, 4, 5].map((num) => (
@@ -471,6 +490,7 @@ export default function AddBranchDialog() {
                         </div>
                       </div>
 
+                      {/* Amenities */}
                       <div className="space-y-2">
                         <Label>Amenities</Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -525,6 +545,8 @@ export default function AddBranchDialog() {
             </Button>
           </div>
         </div>
+
+        {/* Footer Buttons */}
         <div className="flex justify-end gap-2">
           <Button
             variant="outline"

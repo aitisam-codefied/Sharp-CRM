@@ -127,10 +127,13 @@ export function AddMedicalStaffModal({
           setBranches("");
           setErrors({});
         },
-        onError: () => {
+        onError: (error: any) => {
           toast({
-            title: "Error",
-            description: "Failed to add staff. Please try again.",
+            title: "Error Adding Staff",
+            description:
+              error.response?.data?.error ||
+              error.message ||
+              "Failed to add staff member.",
             variant: "destructive",
           });
         },

@@ -163,12 +163,6 @@ export default function ClockSystemPage() {
       title="QR Clock In/Out System"
       description="Monitor staff attendance and working hours across all branches"
     >
-      {isPending && (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-          <p className="mt-2"> Loading ClockIn/ClockOut...</p>
-        </div>
-      )}
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -180,12 +174,19 @@ export default function ClockSystemPage() {
               Real-time staff clock in/out monitoring
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <ClockRecordsTable
-              clockRecords={clockRecords}
-              branches={allBranches}
-            />
-          </CardContent>
+          {isPending ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+              <p className="mt-2"> Loading ClockIn/ClockOut...</p>
+            </div>
+          ) : (
+            <CardContent>
+              <ClockRecordsTable
+                clockRecords={clockRecords}
+                branches={allBranches}
+              />
+            </CardContent>
+          )}
         </Card>
 
         <ModuleLogs

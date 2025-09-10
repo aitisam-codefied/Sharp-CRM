@@ -8,80 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+
 import { CheckCircle, Clock } from "lucide-react";
 import { useEffect } from "react";
-
-const CustomPagination = ({ currentPage, totalPages, onPageChange }: any) => {
-  if (totalPages <= 1) return null;
-
-  return (
-    <Pagination className="mt-4">
-      <PaginationContent>
-        <PaginationItem>
-          <PaginationPrevious
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage > 1) onPageChange(currentPage - 1);
-            }}
-            className={`${
-              currentPage === 1
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-            } border border-[#F87D7D] rounded-md`}
-            aria-disabled={currentPage === 1}
-          />
-        </PaginationItem>
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-          <PaginationItem key={page}>
-            <PaginationLink
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                onPageChange(page);
-              }}
-              className={`${
-                currentPage === page
-                  ? "bg-[#F87D7D] text-white"
-                  : "text-[#F87D7D] hover:bg-[#F87D7D] hover:text-white"
-              } border border-[#F87D7D] rounded-md`}
-              isActive={currentPage === page}
-            >
-              {page}
-            </PaginationLink>
-          </PaginationItem>
-        ))}
-        <PaginationItem>
-          <PaginationNext
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              if (currentPage < totalPages) onPageChange(currentPage + 1);
-            }}
-            className={`${
-              currentPage === totalPages
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-            } border border-[#F87D7D] rounded-md`}
-            aria-disabled={currentPage === totalPages}
-          />
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
-  );
-};
+import { CustomPagination } from "../CustomPagination";
 
 export default function MealsTable({
   residents,
-  handleMealToggle,
   currentPage,
   onPageChange,
 }: any) {

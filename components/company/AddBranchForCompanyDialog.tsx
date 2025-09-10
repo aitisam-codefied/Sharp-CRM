@@ -481,19 +481,9 @@ export default function AddBranchForCompanyDialog({
                         </div>
                         <div className="space-y-2">
                           <Label>Room Capacity *</Label>
-                          <Select
-                            value={room.capacity}
-                            onValueChange={(value) =>
-                              updateRoom(
-                                locationIndex,
-                                roomIndex,
-                                "capacity",
-                                value
-                              )
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Capacity" />
+                          <Select value={room.capacity} disabled>
+                            <SelectTrigger className="text-sm sm:text-base">
+                              <SelectValue placeholder="Auto-selected" />
                             </SelectTrigger>
                             <SelectContent>
                               {[1, 2, 3, 4, 5].map((num) => (
