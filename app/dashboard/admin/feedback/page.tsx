@@ -58,8 +58,8 @@ export default function FeedbackPage() {
   const transformed: DisplayFeedback[] =
     data?.map((fb: any) => ({
       id: fb._id,
-      residentId: fb.guestId.userId.portNumber,
-      residentName: fb.guestId.userId?.fullName,
+      residentId: fb.guestId?.userId.portNumber,
+      residentName: fb.guestId?.userId?.fullName,
       room: "N/A", // No room data in API
       branch: fb.branchId?.name,
       mealType: "Weekly", // API is weekly feedback, not per meal
@@ -91,9 +91,11 @@ export default function FeedbackPage() {
 
   const filteredFeedback = transformed.filter((feedback) => {
     const matchesSearch =
-      feedback.residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feedback.residentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feedback.comments.toLowerCase().includes(searchTerm.toLowerCase());
+      feedback.residentName
+        ?.toLowerCase()
+        .includes(searchTerm?.toLowerCase()) ||
+      feedback.residentId?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      feedback.comments?.toLowerCase().includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
       selectedBranch === "all" || feedback.branch === selectedBranch;

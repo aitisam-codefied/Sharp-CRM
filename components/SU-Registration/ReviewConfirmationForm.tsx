@@ -292,7 +292,9 @@ export default function ReviewConfirmationForm({
                     )} */}
                   </dl>
                 </div>
-                {formData.sameEmergencyContact && formData.emergencyContact ? (
+                {Number(formData.guests[0].numberOfDependents) === 0 ||
+                formData.sameEmergencyContact ? (
+                  // 🔹 Case 1 & 2: Single user OR Same emergency contact for all
                   <div>
                     <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
                       Emergency Contact
@@ -325,39 +327,44 @@ export default function ReviewConfirmationForm({
                     </dl>
                   </div>
                 ) : (
+                  // 🔹 Case 3: Dependants hain aur sabke contacts alag hain
                   <div>
                     <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
-                      Emergency Contact
+                      Emergency Contact(s)
                     </h4>
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                      <div className="flex">
-                        <dt className="font-medium text-gray-600 w-1/3">
-                          Name:
-                        </dt>
-                        <dd className="text-gray-800">
-                          {formData.guests[i].emergencyContact?.fullName ||
-                            "N/A"}
-                        </dd>
+                    {formData.guests.map((guest: any, i: number) => (
+                      <div key={i} className="mb-4 border p-4 rounded-lg">
+                        <h5 className="font-semibold mb-2">
+                          {i === 0 ? "Primary User" : `Dependant ${i}`}
+                        </h5>
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                          <div className="flex">
+                            <dt className="font-medium text-gray-600 w-1/3">
+                              Name:
+                            </dt>
+                            <dd className="text-gray-800">
+                              {guest.emergencyContact?.fullName || "N/A"}
+                            </dd>
+                          </div>
+                          <div className="flex">
+                            <dt className="font-medium text-gray-600 w-1/3">
+                              Phone:
+                            </dt>
+                            <dd className="text-gray-800">
+                              {guest.emergencyContact?.phoneNumber || "N/A"}
+                            </dd>
+                          </div>
+                          <div className="flex">
+                            <dt className="font-medium text-gray-600 w-1/3">
+                              Relation:
+                            </dt>
+                            <dd className="text-gray-800">
+                              {guest.emergencyContact?.relationship || "N/A"}
+                            </dd>
+                          </div>
+                        </dl>
                       </div>
-                      <div className="flex">
-                        <dt className="font-medium text-gray-600 w-1/3">
-                          Phone:
-                        </dt>
-                        <dd className="text-gray-800">
-                          {formData.guests[i].emergencyContact?.phoneNumber ||
-                            "N/A"}
-                        </dd>
-                      </div>
-                      <div className="flex">
-                        <dt className="font-medium text-gray-600 w-1/3">
-                          Relation:
-                        </dt>
-                        <dd className="text-gray-800">
-                          {formData.guests[i].emergencyContact?.relationship ||
-                            "N/A"}
-                        </dd>
-                      </div>
-                    </dl>
+                    ))}
                   </div>
                 )}
 

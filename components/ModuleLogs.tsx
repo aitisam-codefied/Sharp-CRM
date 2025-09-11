@@ -129,14 +129,12 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                       >
                         {log.severity}
                       </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
-                      >
-                        {log.actionType}
-                      </Badge>
                     </div>
                   </div>
+                  <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit">
+                    <span className="text-black text-xs">Action:</span>{" "}
+                    {log.actionType}
+                  </p>
                 </div>
               </div>
             );

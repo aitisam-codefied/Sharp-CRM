@@ -24,6 +24,20 @@ import { useCompanies } from "@/hooks/useCompnay";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
 import api from "@/lib/axios";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const updateStaff = async ({
   id,
@@ -516,72 +530,118 @@ export default function EditStaffDialog({
 
           <div className="space-y-2">
             <Label htmlFor="branch">Branch(es)</Label>
-            <Select
-              onValueChange={handleBranchChange}
-              value=""
-              disabled={selectedRoles.length === 0 || !selectedCompany}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    selectedBranches.length > 0
-                      ? selectedBranches.join(", ")
-                      : "Select branch(es)"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredBranches.map((branch: any) => (
-                  <SelectItem key={branch?._id} value={branch.name}>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedBranches.includes(branch.name)}
-                        readOnly
-                        className="mr-2"
-                        disabled={!isGeneralManager}
-                      />
-                      {branch.name}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                  disabled={selectedRoles.length === 0 || !selectedCompany}
+                >
+                  {selectedBranches.length > 0
+                    ? selectedBranches.join(", ")
+                    : "Select branch(es)"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0">
+                <Command>
+                  <CommandInput placeholder="Search branches..." />
+                  <CommandEmpty>No branch found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredBranches.map((branch: any) => (
+                      <CommandItem
+                        key={branch._id}
+                        onSelect={() => {
+                          if (isGeneralManager) {
+                            setSelectedBranches((prev) =>
+                              prev.includes(branch.name)
+                                ? prev.filter((b) => b !== branch.name)
+                                : [...prev, branch.name]
+                            );
+                          } else {
+                            setSelectedBranches([branch.name]);
+                          }
+                          setChangedFields((prev) =>
+                            prev.includes("branchId")
+                              ? prev
+                              : [...prev, "branchId"]
+                          );
+                          setSelectedLocations([]);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedBranches.includes(branch.name)
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {branch.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {isAssistantManagerOrStaff && (
             <div className="space-y-2">
               <Label htmlFor="location">Location(s)</Label>
-              <Select
-                onValueChange={handleLocationChange}
-                value=""
-                disabled={selectedBranches.length === 0}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedLocations.length > 0
-                        ? selectedLocations.join(", ")
-                        : "Select location(s)"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredLocations.map((location: any) => (
-                    <SelectItem key={location?._id} value={location.name}>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedLocations.includes(location.name)}
-                          readOnly
-                          className="mr-2"
-                        />
-                        {location.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                    disabled={selectedBranches.length === 0}
+                  >
+                    {selectedLocations.length > 0
+                      ? selectedLocations.join(", ")
+                      : "Select location(s)"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search locations..." />
+                    <CommandEmpty>No location found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredLocations.map((location: any) => (
+                        <CommandItem
+                          key={location._id}
+                          onSelect={() => {
+                            if (isAssistantManagerOrStaff) {
+                              setSelectedLocations((prev) =>
+                                prev.includes(location.name)
+                                  ? prev.filter((l) => l !== location.name)
+                                  : [...prev, location.name]
+                              );
+                            } else {
+                              setSelectedLocations([location.name]);
+                            }
+                            setChangedFields((prev) =>
+                              prev.includes("locations")
+                                ? prev
+                                : [...prev, "locations"]
+                            );
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedLocations.includes(location.name)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {location.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>

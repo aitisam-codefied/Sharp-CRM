@@ -151,9 +151,7 @@ export default function NewDocumentDialog({
             >
               <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <p className="text-sm text-gray-500">Click to upload</p>
-              <p className="text-xs text-gray-400">
-                PDF, DOC, DOCX, PNG up to 10MB
-              </p>
+              <p className="text-xs text-gray-400">PDF, DOC, DOCX up to 10MB</p>
             </label>
 
             {/* Hidden file input */}
@@ -161,7 +159,7 @@ export default function NewDocumentDialog({
               id="file"
               type="file"
               className="hidden"
-              accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+              accept=".pdf,.doc,.docx"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
 

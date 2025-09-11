@@ -63,7 +63,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
     return baskets
       ?.filter((basket) => {
         const matchesSearch =
-          basket.guestId.userId.fullName
+          basket.guestId?.userId?.fullName
             .toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
           basket.notes.toLowerCase().includes(searchTerm.toLowerCase());
@@ -164,7 +164,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                   <TableCell>
                     <div className="space-y-1">
                       <div className="font-medium">
-                        {basket.guestId.userId.fullName}
+                        {basket.guestId?.userId?.fullName}
                       </div>
                       <div className="text-sm text-muted-foreground line-clamp-2">
                         {basket.notes}

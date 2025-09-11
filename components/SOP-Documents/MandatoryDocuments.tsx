@@ -50,7 +50,7 @@ export default function MandatoryDocuments({
   const mandatoryDocs = filteredDocuments.filter((doc) => doc.mandatory);
 
   // Docs currently visible
-  const visibleDocs = mandatoryDocs.slice(0, visibleCount);
+  const visibleDocs = mandatoryDocs?.slice(0, visibleCount);
 
   return (
     <>
@@ -77,7 +77,7 @@ export default function MandatoryDocuments({
                   <p className="text-sm text-orange-600">{doc.description}</p>
                   <p className="text-xs text-orange-500">
                     {doc.category.charAt(0).toUpperCase() +
-                      doc.category.slice(1)}{" "}
+                      doc.category?.slice(1)}{" "}
                     • {doc.version} • Updated {doc.updatedAt}
                   </p>
                 </div>

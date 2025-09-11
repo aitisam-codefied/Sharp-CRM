@@ -21,6 +21,7 @@ import { useSOPDocuments } from "@/hooks/useGetSOPDocuments";
 import { useBranches } from "@/hooks/useGetBranches";
 import { Document } from "@/lib/types";
 import NewDocumentDialog from "@/components/SOP-Documents/NewDocumentDialog";
+import { API_HOST } from "@/lib/axios";
 
 interface Stats {
   totalDocuments: number;
@@ -57,10 +58,6 @@ export default function DocumentsPage() {
   const documents = data?.data || [];
   const totalDocuments = data?.total || 0;
   const totalPages = Math.ceil(totalDocuments / limit);
-
-  if (error) {
-    return <div>Error loading documents: {(error as Error).message}</div>;
-  }
 
   const categories: string[] = [
     "emergency",
@@ -162,19 +159,27 @@ export default function DocumentsPage() {
   };
 
   const handleDownloadDocument = (docId: string): void => {
-    const doc = documents.find((d) => d.id === docId);
-    if (doc) {
+    const doc = documents.find((d: any) => d.id === docId); // use id, not _id
+
+    if (doc?.documentFile) {
       const link = document.createElement("a");
-      link.href = doc.fileUrl;
-      link.download = doc.title;
+      link.href = `${API_HOST}${doc.documentFile}`; // use API_HOST + saved string
+      link.download = doc.title || "document";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      toast({
+        title: "Download Started",
+        description: `Downloading ${doc.title}`,
+      });
+    } else {
+      toast({
+        title: "Download Failed",
+        description: "Document not found or missing file URL",
+        variant: "destructive",
+      });
     }
-    toast({
-      title: "Download Started",
-      description: `Downloading document ${docId}`,
-    });
   };
 
   const getStats = (): Stats => {
@@ -221,96 +226,108 @@ export default function DocumentsPage() {
       }
     >
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
-          <StatsCard
-            title="Total Documents"
-            value={stats.totalDocuments}
-            icon={<FileText className="h-8 w-8 text-blue-600" />}
-          />
-          <StatsCard
-            title="Active Documents"
-            value={stats.activeDocuments}
-            icon={<Folder className="h-8 w-8 text-green-600" />}
-            color="text-green-600"
-          />
-          <StatsCard
-            title="Mandatory Reading"
-            value={stats.mandatoryDocuments}
-            icon={<Lock className="h-8 w-8 text-orange-600" />}
-            color="text-orange-600"
-          />
-          <StatsCard
-            title="Draft Documents"
-            value={stats.draftDocuments}
-            icon={<Edit className="h-8 w-8 text-yellow-600" />}
-            color="text-yellow-600"
-          />
-        </div>
+        {error ? (
+          <div className="text-center py-8 text-red-600">
+            Error loading documents: {(error as Error).message}
+          </div>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-4">
+              <StatsCard
+                title="Total Documents"
+                value={stats.totalDocuments}
+                icon={<FileText className="h-8 w-8 text-blue-600" />}
+              />
+              <StatsCard
+                title="Active Documents"
+                value={stats.activeDocuments}
+                icon={<Folder className="h-8 w-8 text-green-600" />}
+                color="text-green-600"
+              />
+              <StatsCard
+                title="Mandatory Reading"
+                value={stats.mandatoryDocuments}
+                icon={<Lock className="h-8 w-8 text-orange-600" />}
+                color="text-orange-600"
+              />
+              <StatsCard
+                title="Draft Documents"
+                value={stats.draftDocuments}
+                icon={<Edit className="h-8 w-8 text-yellow-600" />}
+                color="text-yellow-600"
+              />
+            </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Document Library
-            </CardTitle>
-            <CardDescription>
-              Centralized repository of all organizational documents and
-              procedures
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DocumentFilters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedCategory={selectedCategory}
-              setSelectedCategory={setSelectedCategory}
-              selectedBranch={selectedBranch}
-              setSelectedBranch={setSelectedBranch}
-              selectedStatus={selectedStatus}
-              setSelectedStatus={setSelectedStatus}
-              categories={categories}
-              branches={branches}
-              statusOptions={statusOptions}
-            />
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Document Library
+                </CardTitle>
+                <CardDescription>
+                  Centralized repository of all organizational documents and
+                  procedures
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DocumentFilters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  selectedBranch={selectedBranch}
+                  setSelectedBranch={setSelectedBranch}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
+                  categories={categories}
+                  branches={branches}
+                  statusOptions={statusOptions}
+                />
 
-            {isLoading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-                <p className="mt-2"> Loading Document data...</p>
-              </div>
-            )}
+                {isLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                    <p className="mt-2"> Loading Document data...</p>
+                  </div>
+                ) : (
+                  <>
+                    <DocumentTable
+                      filteredDocuments={filteredDocuments}
+                      getStatusColor={getStatusColor}
+                      getCategoryColor={getCategoryColor}
+                      getAccessLevelIcon={getAccessLevelIcon}
+                      handleDownloadDocument={handleDownloadDocument}
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                    />
+                    {filteredDocuments.length === 0 && (
+                      <div className="text-center py-8">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                        <h3 className="text-lg font-medium mb-2">
+                          No documents found
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Try adjusting your search criteria or upload a new
+                          document.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-            <DocumentTable
+            <MandatoryDocuments
               filteredDocuments={filteredDocuments}
               getStatusColor={getStatusColor}
               getCategoryColor={getCategoryColor}
               getAccessLevelIcon={getAccessLevelIcon}
               handleDownloadDocument={handleDownloadDocument}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              stats={stats}
             />
-
-            {filteredDocuments.length === 0 && (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No documents found</h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search criteria or upload a new document.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <MandatoryDocuments
-          filteredDocuments={filteredDocuments}
-          getStatusColor={getStatusColor}
-          getCategoryColor={getCategoryColor}
-          getAccessLevelIcon={getAccessLevelIcon}
-          handleDownloadDocument={handleDownloadDocument}
-          stats={stats}
-        />
+          </>
+        )}
       </div>
     </DashboardLayout>
   );

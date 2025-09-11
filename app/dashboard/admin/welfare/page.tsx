@@ -212,7 +212,6 @@ export default function WelfarePage() {
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="ok">OK</SelectItem>
               <SelectItem value="critical">Critical</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
             </SelectContent>
           </Select>
         </div>

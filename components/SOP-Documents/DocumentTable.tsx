@@ -131,9 +131,6 @@ export default function DocumentTable({
                     <div className="text-sm text-muted-foreground">
                       {doc.downloadCount} downloads
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {doc.fileSize} • {doc.fileType}
-                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

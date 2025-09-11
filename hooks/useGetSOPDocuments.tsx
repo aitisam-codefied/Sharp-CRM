@@ -73,8 +73,9 @@ export const useSOPDocuments = (page: number, limit: number = 5) => {
         createdAt: formatDate(apiDoc.createdAt),
         updatedAt: formatDate(apiDoc.updatedAt),
         fileSize: apiDoc.documentFile.sizeFormatted,
-        fileType: apiDoc.documentFile.extension.slice(1).toUpperCase(),
-        fileUrl: `${apiDoc.documentFile.fileAccess.basePath}${apiDoc.documentFile.publicUrl}`,
+        fileType: apiDoc.documentFile.extension?.slice(1).toUpperCase(),
+        fileUrl: `${apiDoc.documentFile.fileAccess?.basePath}${apiDoc.documentFile.publicUrl}`,
+        documentFile: apiDoc.documentFile.downloadUrl,
       }));
 
       return { data: documents, total };

@@ -29,6 +29,7 @@ import {
   Building,
   User,
   ShoppingBasket,
+  File,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -91,7 +92,8 @@ export function AppNavbar() {
       // pathname.includes("/rooms") ||
       pathname.includes("/new-user") ||
       pathname.includes("/in-transit") ||
-      pathname.includes("/su-basket")
+      pathname.includes("/su-basket") ||
+      pathname.includes("/occupancy")
     )
       return "users";
     if (pathname.includes("/reports")) return "reports";
@@ -254,6 +256,12 @@ export function AppNavbar() {
         href: "/dashboard/admin/su-basket",
         icon: ShoppingBasket,
         color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "Ocuupancy Agreements",
+        href: "/dashboard/admin/occupancy",
+        icon: File,
+        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
       },
     ],
   };

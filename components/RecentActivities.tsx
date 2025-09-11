@@ -115,12 +115,6 @@ export default function RecentActivities() {
                     <div className="flex flex-wrap items-center gap-4">
                       <Badge
                         variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border-blue-300"
-                      >
-                        {log.actionType}
-                      </Badge>
-                      <Badge
-                        variant="outline"
                         className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
                       >
                         {log.severity}
@@ -133,6 +127,9 @@ export default function RecentActivities() {
                       </Badge>
                     </div>
                   </div>
+                  <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit">
+                    <span className="text-black text-xs">Action:</span> {log.actionType}
+                  </p>
                 </div>
               </div>
             );

@@ -71,7 +71,7 @@ export default function DocumentDetailsModal({
                 className={`mt-1 ${getCategoryColor(document.category)}`}
               >
                 {document.category.charAt(0).toUpperCase() +
-                  document.category.slice(1)}
+                  document.category?.slice(1)}
               </Badge>
             </div>
             <div>
@@ -133,12 +133,6 @@ export default function DocumentDetailsModal({
                 <User className="h-4 w-4 mr-2" />
                 {document.createdBy}
               </div>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">File Info</h3>
-              <p className="mt-1 text-gray-800">
-                {document.fileSize} • {document.fileType}
-              </p>
             </div>
           </div>
 

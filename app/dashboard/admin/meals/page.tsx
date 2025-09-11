@@ -44,10 +44,10 @@ export default function MealsPage() {
   useEffect(() => {
     if (data) {
       const mappedResidents = data.map((item: any) => ({
-        id: item.guestId.userId.portNumber,
-        name: item.guestId.userId.fullName.trim(),
-        room: item.guestId.familyId, // Using familyId as a proxy for room
-        branch: item.branchId.name,
+        id: item.guestId?.userId.portNumber,
+        name: item.guestId?.userId.fullName.trim(),
+        room: item.guestId?.familyId, // Using familyId as a proxy for room
+        branch: item?.branchId?.name,
         meals: {
           breakfast: {
             marked: item.meals?.breakfast.taken,
@@ -80,9 +80,9 @@ export default function MealsPage() {
   }, [data]);
 
   const filteredResidents = residents.filter((resident) => {
-    const matchesSearch = resident?.name
+    const matchesSearch = resident?.name?
       .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      .includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
       selectedBranch === "all" || resident.branch === selectedBranch;

@@ -1,7 +1,8 @@
 import axios from "axios";
 
+// const API_HOST = "http://localhost:5001";
+const API_HOST = "https://beta.api.supasystem.co.uk";
 // const BASE_URL = "http://localhost:5001/api/v1";
-// const BASE_URL = "https://96ee44d6fdc2.ngrok-free.app/api/v1";
 const BASE_URL = "https://beta.api.supasystem.co.uk/api/v1";
 const api = axios.create({
   baseURL: BASE_URL,
@@ -78,4 +79,5 @@ api.interceptors.response.use(
   }
 );
 
+export { API_HOST, BASE_URL };
 export default api;
