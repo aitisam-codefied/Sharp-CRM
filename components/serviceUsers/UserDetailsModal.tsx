@@ -139,9 +139,9 @@ export function UserDetailsModal({
                 <strong>Is Primary Guest:</strong>{" "}
                 {user.isPrimaryGuest ? "Yes" : "No"}
               </p>
-              <p>
+              {/* <p>
                 <strong>Family ID:</strong> {user.familyId || "N/A"}
-              </p>
+              </p> */}
             </CardContent>
           </Card>
 
@@ -187,9 +187,9 @@ export function UserDetailsModal({
                   )}
                 </div>
               </p>
-              <p>
+              {/* <p>
                 <strong>Medic ID:</strong> {user.medic || "N/A"}
-              </p>
+              </p> */}
             </CardContent>
           </Card>
 
@@ -258,48 +258,7 @@ export function UserDetailsModal({
           <Separator className="my-4" />
 
           {/* Documents and Additional Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">
-                  <strong>Occupancy Agreement:</strong>{" "}
-                  {user.occupancyAgreementUrl ? (
-                    <a
-                      href={user.occupancyAgreementUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      View Agreement
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </p>
-                <p className="text-sm mt-3">
-                  <strong>Signature:</strong>{" "}
-                  {user.signatureUrl ? (
-                    <a
-                      href={user.signatureUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      View Signature
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </p>
-              </CardContent>
-            </Card>
-
+          <div className="grid grid-cols-1 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">

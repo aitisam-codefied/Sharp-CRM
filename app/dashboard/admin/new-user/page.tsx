@@ -21,6 +21,7 @@ import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 import { useCreateGuest } from "@/hooks/useCreateGuest";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
+import { isValidPhoneNumber } from "react-phone-number-input";
 
 const triggerHaptic = async (style: ImpactStyle) => {
   // ✅ Only run on iOS/Android, not web
@@ -187,14 +188,15 @@ export default function NewUserPage() {
       formData.guests[0].emailAddress?.trim() &&
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
         formData.guests[0].emailAddress
-      ) && // ✅ strict email
+      ) &&
       formData.guests[0].phoneNumber?.trim() &&
+      isValidPhoneNumber(formData.guests[0].phoneNumber) &&
       formData.guests[0].dateOfBirth &&
       formData.guests[0].nationality?.trim() &&
       (!formData.guests[0].address ||
-        formData.guests[0].address.length <= 150) && // ✅ max 150
-      (!formData.guests[0].additionalNotes ||
-        formData.guests[0].additionalNotes.length <= 150) && // ✅ max 150
+        formData.guests[0].address.length <= 150) &&
+      formData.guests[0].additionalNotes?.trim() &&
+      formData.guests[0].additionalNotes.length <= 150 &&
       dep !== undefined &&
       dep !== null &&
       String(dep) !== "" &&
@@ -213,23 +215,23 @@ export default function NewUserPage() {
 
         if (
           !dep?.fullName?.trim() ||
-          dep.fullName.length > 20 || // ✅ name max 20
+          dep.fullName.length > 20 ||
           !dep?.phoneNumber?.trim() ||
           !dep?.emailAddress?.trim() ||
           !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
           !dep?.dateOfBirth ||
           !dep?.nationality?.trim() ||
-          (dep.address && dep.address.length > 150) || // ✅ address max 150
-          (dep.additionalNotes && dep.additionalNotes.length > 150) // ✅ notes max 150
+          (dep.address && dep.address.length > 150) ||
+          (dep.additionalNotes && dep.additionalNotes.length > 150)
         ) {
-          console.log("Dependants validation failed at index", i);
+          // console.log("Dependants validation failed at index", i);
           return false;
         }
       }
     }
 
     if (!formData.assignedRooms) {
-      console.log("Room assignments missing");
+      // console.log("Room assignments missing");
       return false;
     }
 
@@ -238,7 +240,7 @@ export default function NewUserPage() {
       const assigned = Number(formData.assignedRooms[roomId]) || 0;
       const room = rooms.find((r) => r.id === roomId);
       if (room && assigned > room.availableSpace) {
-        console.log(`Room ${roomId} over capacity`);
+        // console.log(`Room ${roomId} over capacity`);
         return false;
       }
       totalAssigned += assigned;

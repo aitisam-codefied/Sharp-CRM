@@ -40,16 +40,13 @@ function formatDate(dateString: string): string {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-export const useSOPDocuments = (page: number, limit: number = 5) => {
+export const useSOPDocuments = () => {
   return useQuery<SOPDocumentsResult>({
-    queryKey: ["sopDocuments", page, limit],
+    queryKey: ["sopDocuments"],
     queryFn: async () => {
-      const response = await api.get("/sop/list", {
-        params: { page, limit }, // Only send page and limit
-      });
+      const response = await api.get("/sop/list?limit=100");
 
       const apiDocs = response.data.data;
-      const total = response.data.pagination.totalDocuments;
 
       const documents: Document[] = apiDocs.map((apiDoc: any) => ({
         id: apiDoc._id,
@@ -78,7 +75,7 @@ export const useSOPDocuments = (page: number, limit: number = 5) => {
         documentFile: apiDoc.documentFile.downloadUrl,
       }));
 
-      return { data: documents, total };
+      return { data: documents };
     },
   });
 };

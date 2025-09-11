@@ -44,7 +44,7 @@ export default function DocumentTable({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    console.log("documents", filteredDocuments);
+    console.log("documentssssssssss", filteredDocuments);
   }, [filteredDocuments]);
 
   const handleOpenModal = (doc: Document) => {
@@ -167,13 +167,11 @@ export default function DocumentTable({
         </Table>
       </div>
 
-      {filteredDocuments.length >= 10 && (
-        <CustomPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={onPageChange}
-        />
-      )}
+      <CustomPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
 
       <DocumentDetailsModal
         document={selectedDocument}

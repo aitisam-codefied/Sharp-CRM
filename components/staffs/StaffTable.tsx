@@ -56,10 +56,8 @@ import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "../CustomPagination";
 
 // Fetch staff members with pagination
-const fetchStaffMembers = async (page: number, limit: number) => {
-  const response = await api.get("/user/list", {
-    params: { page, limit },
-  });
+const fetchStaffMembers = async () => {
+  const response = await api.get("/user/list?limit=1000");
   return response.data;
 };
 
@@ -75,7 +73,7 @@ export default function StaffTable() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingStaff, setDeletingStaff] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const limit = 10;
+  const itemsPerPage = 10;
   const searchParams = useSearchParams();
   const highlight = searchParams.get("highlight");
 
@@ -100,7 +98,7 @@ export default function StaffTable() {
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["staffList", currentPage],
-    queryFn: () => fetchStaffMembers(currentPage, limit),
+    queryFn: fetchStaffMembers,
   });
 
   useEffect(() => {
@@ -111,11 +109,7 @@ export default function StaffTable() {
     useDeleteStaff();
 
   const roles = ["Manager", "AssistantManager", "Staff"];
-  const {
-    data: branchData,
-    isLoading: isBranchLoading,
-    isError: isBranchError,
-  } = useBranches();
+  const { data: branchData } = useBranches();
 
   // useEffect(() => {
   //   console.log("branch data", branchData);
@@ -216,6 +210,13 @@ export default function StaffTable() {
 
     return matchesSearch && matchesBranch && matchesRole && matchesStatus;
   });
+
+  const totalPages = Math.ceil(filteredStaff.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedStaffs = filteredStaff.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -322,10 +323,6 @@ export default function StaffTable() {
         setDeletingStaff(null);
       },
     });
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
   };
 
   useEffect(() => {
@@ -437,7 +434,7 @@ export default function StaffTable() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStaff.map((staff: any) => (
+                    {paginatedStaffs.map((staff: any) => (
                       <TableRow
                         key={staff.id}
                         ref={(el) => (rowRefs.current[staff.username] = el)}
@@ -580,13 +577,12 @@ export default function StaffTable() {
                   </p>
                 </div>
               )}
-              {data?.totalPages > 1 && (
-                <CustomPagination
-                  currentPage={currentPage}
-                  totalPages={data?.totalPages || 1}
-                  onPageChange={handlePageChange}
-                />
-              )}
+
+              <CustomPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </>
           )}
         </CardContent>

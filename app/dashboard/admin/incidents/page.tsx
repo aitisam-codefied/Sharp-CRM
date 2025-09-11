@@ -21,22 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import {
   AlertTriangle,
   Search,
@@ -53,6 +38,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useIncidents } from "@/hooks/useGetIncidents";
 import IncidentsTable from "@/components/incidents/IncidentsTable";
+import { CustomPagination } from "@/components/CustomPagination";
 
 interface UIIncident {
   id: string;
@@ -78,12 +64,14 @@ export default function IncidentsPage() {
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [isNewIncidentOpen, setIsNewIncidentOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { toast } = useToast();
   const { data: incidents = [], isLoading, error } = useIncidents();
 
-  const itemsPerPage = 10;
+  useEffect(() => {
+    console.log("incidentssssssss", incidents);
+  });
 
   const branches = useMemo(() => {
     const unique = [...new Set(incidents.map((i) => i.branch))];
@@ -95,27 +83,30 @@ export default function IncidentsPage() {
 
   const filteredIncidents = incidents.filter((incident: UIIncident) => {
     const matchesSearch =
-      incident.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      incident.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      incident.title?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      incident.description?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
       incident.residentInvolved
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+        ?.toLowerCase()
+        .includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
       selectedBranch === "all" || incident.branch === selectedBranch;
     const matchesSeverity =
       selectedSeverity === "all" ||
-      incident.severity.toLowerCase() === selectedSeverity.toLowerCase();
+      incident.severity?.toLowerCase() === selectedSeverity?.toLowerCase();
     const matchesStatus =
       selectedStatus === "all" ||
-      incident.status.toLowerCase() === selectedStatus.toLowerCase();
+      incident.status?.toLowerCase() === selectedStatus?.toLowerCase();
 
     return matchesSearch && matchesBranch && matchesSeverity && matchesStatus;
   });
 
-  const currentIncidents = filteredIncidents.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  // Pagination logic
+  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedIncidents = filteredIncidents.slice(
+    startIndex,
+    startIndex + itemsPerPage
   );
 
   useEffect(() => {
@@ -167,15 +158,6 @@ export default function IncidentsPage() {
     }
   };
 
-  const handleNewIncident = () => {
-    toast({
-      title: "Incident Reported",
-      description:
-        "New incident has been logged and assigned for investigation.",
-    });
-    setIsNewIncidentOpen(false);
-  };
-
   const handleViewIncident = (incidentId: string) => {
     toast({
       title: "View Incident",
@@ -201,12 +183,6 @@ export default function IncidentsPage() {
   };
 
   const stats = getStats();
-
-  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filteredIncidents]);
 
   return (
     <DashboardLayout
@@ -356,35 +332,18 @@ export default function IncidentsPage() {
             ) : (
               <>
                 <IncidentsTable
-                  incidents={currentIncidents}
+                  incidents={paginatedIncidents}
                   getSeverityColor={getSeverityColor}
                   getCategoryColor={getCategoryColor}
                   getStatusColor={getStatusColor}
                   handleViewIncident={handleViewIncident}
                 />
 
-                {}
-                <div className="flex justify-end items-center gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage <= 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage >= totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
               </>
             )}
           </CardContent>

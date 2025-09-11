@@ -112,7 +112,14 @@ export default function MealsPage() {
               Mark meal attendance for residents across all branches
             </CardDescription>
           </CardHeader>
-          <CardContent>
+
+ {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+                <p className="mt-2"> Loading meals...</p>
+              </div>
+            ):(
+ <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
@@ -157,12 +164,7 @@ export default function MealsPage() {
               </Select> */}
             </div>
 
-            {isLoading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-                <p className="mt-2"> Loading meals...</p>
-              </div>
-            )}
+           
 
             <MealsTable
               residents={filteredResidents}
@@ -180,6 +182,9 @@ export default function MealsPage() {
               </div>
             )}
           </CardContent>
+            )}
+
+         
         </Card>
       </div>
     </DashboardLayout>

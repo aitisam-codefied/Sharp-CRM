@@ -14,6 +14,7 @@ import DependantsModal from "./DependantsModal";
 import { useBranches } from "@/hooks/useGetBranches";
 import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 const nationalities = [
   "Syrian",
@@ -188,25 +189,19 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Phone Number *</Label>
-          <Input
+          <StyledPhoneInput
             id="phoneNumber"
-            placeholder="+447700900000"
             value={formData.guests[0].phoneNumber || ""}
-            onChange={(e) => handleInputChange(e, 0)}
-            // 🔹 Allow digits, + (only at start), backspace, delete, arrows, tab
-            onKeyDown={(e) => {
-              if (
-                !/[0-9]/.test(e.key) &&
-                !(e.key === "+" && e.currentTarget.selectionStart === 0) &&
-                e.key !== "Backspace" &&
-                e.key !== "Delete" &&
-                e.key !== "ArrowLeft" &&
-                e.key !== "ArrowRight" &&
-                e.key !== "Tab"
-              ) {
-                e.preventDefault();
-              }
-            }}
+            onChange={(value) =>
+              setFormData((prev: any) => ({
+                ...prev,
+                guests: prev.guests.map((guest: any, index: number) =>
+                  index === 0 ? { ...guest, phoneNumber: value } : guest
+                ),
+              }))
+            }
+            error={validatePhone(formData.guests[0].phoneNumber)}
+            defaultCountry="GB" // 👈 change this if you want another default
           />
         </div>
         <div className="space-y-2">
@@ -293,7 +288,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="address">Additional Notes</Label>
+          <Label htmlFor="address">Additional Notes *</Label>
           <Textarea
             id="additionalNotes"
             placeholder="Enter any additional notes"
@@ -304,7 +299,6 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
           {errors.additionalNotes && (
             <p className="text-red-500 text-sm">{errors.additionalNotes}</p>
           )}
-         
         </div>
         <div className="space-y-2">
           <Label htmlFor="language">Language</Label>

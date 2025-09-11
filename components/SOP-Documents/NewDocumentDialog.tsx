@@ -50,18 +50,22 @@ export default function NewDocumentDialog({
   accessLevels,
 }: NewDocumentDialogProps) {
   const [title, setTitle] = useState("");
-  const [titleError, setTitleError] = useState(""); // ✅ new state
+  const [titleError, setTitleError] = useState("");
   const [version, setVersion] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionError, setDescriptionError] = useState("");
   const [category, setCategory] = useState("");
   const [branchId, setBranchId] = useState("");
   const [accessLevel, setAccessLevel] = useState("");
   const [tags, setTags] = useState("");
+  const [tagsError, setTagsError] = useState("");
   const [isMandatory, setIsMandatory] = useState(false);
   const [effectiveDate, setEffectiveDate] = useState("");
   const [priority, setPriority] = useState("");
   const [department, setDepartment] = useState("");
+  const [departmentError, setDepartmentError] = useState("");
   const [notes, setNotes] = useState("");
+  const [notesError, setNotesError] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
   const { mutate, isPending } = useCreateSOPDocument();
@@ -81,6 +85,11 @@ export default function NewDocumentDialog({
     setDepartment("");
     setNotes("");
     setFile(null);
+    setTitleError("");
+    setDescriptionError("");
+    setTagsError("");
+    setDepartmentError("");
+    setNotesError("");
   };
 
   const handleUpload = () => {
@@ -126,6 +135,13 @@ export default function NewDocumentDialog({
       },
     });
   };
+
+  const hasErrors =
+    !!titleError ||
+    !!descriptionError ||
+    !!departmentError ||
+    !!tagsError ||
+    !!notesError;
 
   return (
     <Dialog open={isNewDocumentOpen} onOpenChange={setIsNewDocumentOpen}>
@@ -183,7 +199,7 @@ export default function NewDocumentDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Document Title</Label>
               <Input
@@ -214,15 +230,29 @@ export default function NewDocumentDialog({
               />
             </div>
           </div>
+
+          {/* description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               placeholder="Brief description of the document..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDescription(value);
+                setDescriptionError(
+                  value.length > 500
+                    ? "Description cannot exceed 500 characters."
+                    : ""
+                );
+              }}
             />
+            {descriptionError && (
+              <p className="text-sm text-red-500">{descriptionError}</p>
+            )}
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
@@ -310,33 +340,67 @@ export default function NewDocumentDialog({
               />
             </div>
           </div>
+
+          {/* department */}
           <div className="space-y-2">
             <Label htmlFor="department">Department</Label>
             <Input
               id="department"
               placeholder="Enter department"
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setDepartment(value);
+                setDepartmentError(
+                  value.length > 200
+                    ? "Department cannot exceed 200 characters."
+                    : ""
+                );
+              }}
             />
+            {departmentError && (
+              <p className="text-sm text-red-500">{departmentError}</p>
+            )}
           </div>
+
+          {/* tags */}
           <div className="space-y-2">
             <Label htmlFor="tags">Tags</Label>
             <Input
               id="tags"
               placeholder="Enter tags separated by commas"
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setTags(value);
+                setTagsError(
+                  value.length > 300 ? "Tags cannot exceed 300 characters." : ""
+                );
+              }}
             />
+            {tagsError && <p className="text-sm text-red-500">{tagsError}</p>}
           </div>
+
+          {/* notes */}
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               placeholder="Additional notes..."
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setNotes(value);
+                setNotesError(
+                  value.length > 500
+                    ? "Notes cannot exceed 500 characters."
+                    : ""
+                );
+              }}
             />
+            {notesError && <p className="text-sm text-red-500">{notesError}</p>}
           </div>
+
           <div className="flex items-center space-x-2">
             <Checkbox
               id="mandatory"
@@ -352,7 +416,7 @@ export default function NewDocumentDialog({
           </Button>
           <Button
             onClick={handleUpload}
-            disabled={isPending || !!titleError} // ✅ disable if error
+            disabled={isPending || hasErrors} // ✅ disable if error
           >
             {isPending ? "Uploading..." : "Upload Document"}
           </Button>

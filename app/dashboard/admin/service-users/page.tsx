@@ -64,7 +64,9 @@ export default function ServiceUsersPage() {
       const matchesStatus =
         selectedStatus === "all" || status === selectedStatus;
       const matchesNationality =
-        selectedNationality === "all" || nationality === selectedNationality;
+        selectedNationality === "all" ||
+        nationality.trim()?.toLowerCase() ===
+          selectedNationality.trim()?.toLowerCase();
 
       return (
         matchesSearch && matchesBranch && matchesStatus && matchesNationality

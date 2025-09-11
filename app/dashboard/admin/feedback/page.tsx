@@ -206,26 +206,33 @@ export default function FeedbackPage() {
               Detailed meal feedback and ratings
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by name, ID, or comments..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+              <p className="mt-2"> Loading feedbacks...</p>
+            </div>
+          ) : (
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search by name, ID, or comments..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
                 </div>
-              </div>
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full"
-              />
-              {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full"
+                />
+                {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Branches" />
                 </SelectTrigger>
@@ -243,56 +250,55 @@ export default function FeedbackPage() {
                   ))}
                 </SelectContent>
               </Select> */}
-              <Select value={selectedMeal} onValueChange={setSelectedMeal}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Meals" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Meals</SelectItem>
-                  {mealTypes.map((meal) => (
-                    <SelectItem key={meal} value={meal}>
-                      {meal}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedRating} onValueChange={setSelectedRating}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Ratings" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Ratings</SelectItem>
-                  <SelectItem value="excellent">Excellent (4.5+)</SelectItem>
-                  <SelectItem value="good">Good (3.5-4.4)</SelectItem>
-                  <SelectItem value="fair">Fair (2.5-3.4)</SelectItem>
-                  <SelectItem value="poor">Poor (&lt;2.5)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {isLoading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-                <p className="mt-2"> Loading feedbacks...</p>
+                <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Meals" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Meals</SelectItem>
+                    {mealTypes.map((meal) => (
+                      <SelectItem key={meal} value={meal}>
+                        {meal}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={selectedRating}
+                  onValueChange={setSelectedRating}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Ratings" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Ratings</SelectItem>
+                    <SelectItem value="excellent">Excellent (4.5+)</SelectItem>
+                    <SelectItem value="good">Good (3.5-4.4)</SelectItem>
+                    <SelectItem value="fair">Fair (2.5-3.4)</SelectItem>
+                    <SelectItem value="poor">Poor (&lt;2.5)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            <FeedbackTable
-              filteredFeedback={filteredFeedback}
-              getRatingColor={getRatingColor}
-              getMealTypeColor={getMealTypeColor}
-            />
+              <FeedbackTable
+                filteredFeedback={filteredFeedback}
+                getRatingColor={getRatingColor}
+                getMealTypeColor={getMealTypeColor}
+              />
 
-            {filteredFeedback.length === 0 && (
-              <div className="text-center py-8">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">No feedback found</h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search criteria.
-                </p>
-              </div>
-            )}
-          </CardContent>
+              {filteredFeedback.length === 0 && (
+                <div className="text-center py-8">
+                  <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-medium mb-2">
+                    No feedback found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Try adjusting your search criteria.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          )}
         </Card>
       </div>
     </DashboardLayout>

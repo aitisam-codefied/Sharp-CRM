@@ -490,7 +490,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     htmlFor={`additional-notes-${i}`}
                     className="text-gray-600"
                   >
-                    Additional Notes
+                    Additional Notes *
                   </Label>
                   <Textarea
                     id={`additional-notes-${i}`}

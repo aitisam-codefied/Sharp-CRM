@@ -50,6 +50,7 @@ import {
 } from "@/hooks/useGetFoodCategories";
 import { useCreateFoodCategory } from "@/hooks/useCreateFoodCategory";
 import { useBranches } from "@/hooks/useGetBranches";
+import { API_HOST } from "@/lib/axios";
 
 const fallbackImages = [
   "/food1.jpg",
@@ -58,6 +59,13 @@ const fallbackImages = [
   "/food4.jpg",
   "/food5.jpg",
 ];
+
+const MAX_NAME_LENGTH = 50;
+const MAX_DESCRIPTION_LENGTH = 300;
+const MAX_PREP_TIME_LENGTH = 4; // number of digits allowed
+const MAX_CALORIES_LENGTH = 5;
+const MAX_PROTEIN_LENGTH = 5;
+const MAX_CATEGORY_NAME_LENGTH = 20;
 
 export default function FoodImagesPage() {
   const { user } = useAuth();
@@ -152,14 +160,57 @@ export default function FoodImagesPage() {
     setEditSelectedFiles(files);
     setEditFormData((prev) => ({ ...prev, images: files }));
   };
+
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
     setErrors((prev) => ({ ...prev, [field]: "" }));
   };
+
+  const validateField = (field: string, value: any) => {
+    let error = "";
+
+    switch (field) {
+      case "name":
+        if (value.length > MAX_NAME_LENGTH) {
+          error = `Food name cannot exceed ${MAX_NAME_LENGTH} characters`;
+        }
+        break;
+      case "description":
+        if (value.length > MAX_DESCRIPTION_LENGTH) {
+          error = `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`;
+        }
+        break;
+      case "preparationTime":
+        if (String(value).length > MAX_PREP_TIME_LENGTH) {
+          error = `Preparation time cannot exceed ${MAX_PREP_TIME_LENGTH} digits`;
+        }
+        break;
+      case "calories":
+        if (String(value).length > MAX_CALORIES_LENGTH) {
+          error = `Calories cannot exceed ${MAX_CALORIES_LENGTH} digits`;
+        }
+        break;
+      case "protein":
+        if (String(value).length > MAX_PROTEIN_LENGTH) {
+          error = `Protein cannot exceed ${MAX_PROTEIN_LENGTH} digits`;
+        }
+        break;
+      case "categoryName":
+        if (value.length > MAX_CATEGORY_NAME_LENGTH) {
+          error = `Category name cannot exceed ${MAX_CATEGORY_NAME_LENGTH} characters`;
+        }
+        break;
+    }
+
+    setErrors((prev) => ({ ...prev, [field]: error }));
+  };
+
   const handleEditFormChange = (field: keyof CreateFoodData, value: any) => {
     setEditFormData((prev) => ({ ...prev, [field]: value }));
     setEditErrors((prev) => ({ ...prev, [field]: "" }));
   };
+
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!formData.name.trim()) newErrors.name = "Food name is required";
@@ -185,6 +236,7 @@ export default function FoodImagesPage() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const validateEditForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!editFormData.name.trim()) newErrors.name = "Food name is required";
@@ -365,14 +417,23 @@ export default function FoodImagesPage() {
     const year = date.getFullYear();
     return `${day}${suffix} ${month} ${year}`;
   }
+
   const isFormValid = useMemo(() => {
     return (
       formData.name.trim() &&
       formData.categoryId &&
       formData.mealType &&
-      formData?.images?.length > 0
+      formData?.images?.length > 0 &&
+      !errors.name &&
+      !errors.description &&
+      !errors.preparationTime &&
+      !errors.calories &&
+      !errors.protein &&
+      formData.name.trim() &&
+      formData.mealType
     );
   }, [formData]);
+
   const hasChanges = useMemo(() => {
     if (!selectedFood) return false;
     const initial = {
@@ -405,6 +466,7 @@ export default function FoodImagesPage() {
   };
 
   const isCategoryValid = newCategoryName.trim().length > 0 && !categoryError;
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -513,7 +575,7 @@ export default function FoodImagesPage() {
                         <img
                           src={previewImage}
                           alt="Full Preview"
-                          className="w-full h-auto rounded-lg"
+                          className="w-full max-h-[80vh] rounded-lg"
                         />
                       )}
                     </DialogContent>
@@ -526,9 +588,10 @@ export default function FoodImagesPage() {
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={(e) =>
-                          handleFormChange("name", e.target.value)
-                        }
+                        onChange={(e) => {
+                          handleFormChange("name", e.target.value);
+                          validateField("name", e.target.value);
+                        }}
                         placeholder="Enter food name"
                       />
                       {errors.name && (
@@ -562,6 +625,7 @@ export default function FoodImagesPage() {
                       )}
                     </div>
                   </div>
+
                   {/* Category Selection */}
                   <div className="space-y-2">
                     <Label htmlFor="category">Food Category *</Label>
@@ -616,11 +680,17 @@ export default function FoodImagesPage() {
                               <Input
                                 id="categoryName"
                                 value={newCategoryName}
-                                onChange={(e) =>
-                                  handleNewCategoryChange(e.target.value)
-                                }
+                                onChange={(e) => {
+                                  handleNewCategoryChange(e.target.value);
+                                  validateField("categoryName", e.target.value);
+                                }}
                                 placeholder="Enter category name"
                               />
+                              {errors.categoryName && (
+                                <p className="text-red-500 text-xs">
+                                  {errors.categoryName}
+                                </p>
+                              )}
                             </div>
                             <div className="flex justify-end gap-2">
                               <Button
@@ -631,7 +701,10 @@ export default function FoodImagesPage() {
                               </Button>
                               <Button
                                 onClick={handleCreateCategory}
-                                disabled={!isCategoryValid}
+                                disabled={
+                                  !isCategoryValid ||
+                                  newCategoryName.length > 20
+                                }
                               >
                                 Create Category
                               </Button>
@@ -653,31 +726,18 @@ export default function FoodImagesPage() {
                       id="description"
                       value={formData.description}
                       onChange={(e) => {
-                        const value = e.target.value;
-                        if (value.length <= 500) {
-                          handleFormChange("description", value);
-                          setErrors((prev) => ({ ...prev, description: "" }));
-                        } else {
-                          setErrors((prev) => ({
-                            ...prev,
-                            description:
-                              "Description cannot exceed 500 characters",
-                          }));
-                        }
+                        handleFormChange("description", e.target.value);
+                        validateField("description", e.target.value);
                       }}
                       placeholder="Describe the food item..."
                     />
-                    {/* Character count */}
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>{formData.description.length} / 500</span>
-                    </div>
-                    {/* Error message */}
                     {errors.description && (
                       <p className="text-red-500 text-xs">
                         {errors.description}
                       </p>
                     )}
                   </div>
+
                   {/* Preparation Time */}
                   <div className="space-y-2">
                     <Label htmlFor="preparationTime">
@@ -686,14 +746,19 @@ export default function FoodImagesPage() {
                     <Input
                       id="preparationTime"
                       type="number"
-                      min={0} // ✅ prevents typing negatives
-                      value={formData.preparationTime}
+                      value={
+                        formData.preparationTime === 0
+                          ? ""
+                          : formData.preparationTime
+                      }
                       onChange={(e) => {
-                        const val = parseInt(e.target.value);
+                        const val =
+                          e.target.value === "" ? "" : parseInt(e.target.value);
                         handleFormChange(
                           "preparationTime",
-                          isNaN(val) || val < 0 ? 0 : val
+                          val === "" ? 0 : isNaN(val) || val < 0 ? 0 : val
                         );
+                        validateField("preparationTime", val);
                       }}
                       placeholder="Enter preparation time"
                     />
@@ -703,6 +768,7 @@ export default function FoodImagesPage() {
                       </p>
                     )}
                   </div>
+
                   {/* Dietary Tags */}
                   {/* <div className="space-y-2">
                     <Label>Dietary Tags</Label>
@@ -774,6 +840,7 @@ export default function FoodImagesPage() {
                               ...formData.nutritionalInfo,
                               calories: isNaN(val) || val < 0 ? 0 : val,
                             });
+                            validateField("calories", val);
                           }}
                           placeholder="Calories"
                         />
@@ -796,6 +863,7 @@ export default function FoodImagesPage() {
                               ...formData.nutritionalInfo,
                               protein: isNaN(val) || val < 0 ? 0 : val,
                             });
+                            validateField("protein", val);
                           }}
                           placeholder="Protein"
                         />
@@ -994,20 +1062,20 @@ export default function FoodImagesPage() {
                     >
                       <div className="relative">
                         <img
-                          src={`http://localhost:5001${food.images?.[0] || ""}`}
+                          src={`${API_HOST}${food.images?.[0] || ""}`}
                           alt={food.name}
                           className="w-full h-48 object-cover rounded-lg"
-                          onError={(e) => {
-                            const target = e.currentTarget as HTMLImageElement;
-                            target.onerror = null; // infinite loop se bachaega
-                            const randomFallback =
-                              fallbackImages[
-                                Math.floor(
-                                  Math.random() * fallbackImages.length
-                                )
-                              ];
-                            target.src = randomFallback;
-                          }}
+                          // onError={(e) => {
+                          //   const target = e.currentTarget as HTMLImageElement;
+                          //   target.onerror = null; // infinite loop se bachaega
+                          //   const randomFallback =
+                          //     fallbackImages[
+                          //       Math.floor(
+                          //         Math.random() * fallbackImages.length
+                          //       )
+                          //     ];
+                          //   target.src = randomFallback;
+                          // }}
                         />
                         <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-sm">
                           <span className="font-medium">{food.mealType}</span>

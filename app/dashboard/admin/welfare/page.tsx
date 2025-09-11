@@ -224,96 +224,103 @@ export default function WelfarePage() {
             <p className="mt-2"> Loading welfare data...</p>
           </div>
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Welfare Check ID</TableHead>
-                  <TableHead>Week Period</TableHead>
-                  <TableHead>Physical Health</TableHead>
-                  <TableHead>Mental Health</TableHead>
-                  <TableHead>Emotional Wellbeing</TableHead>
-                  <TableHead>Social Support</TableHead>
-                  <TableHead>Overall Assessment</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedChecks.map((check) => (
-                  <TableRow key={check._id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{check._id.slice(-8)}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {check.guestId?.userId?.fullName || "No Guest"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        {new Date(check.weekStartDate).toLocaleDateString()} -{" "}
-                        {new Date(check.weekEndDate).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={getHealthColor(check.physicalHealth.status)}
-                      >
-                        {check.physicalHealth.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={getMentalStateColor(
-                          check.mentalHealth.status
-                        )}
-                      >
-                        {check.mentalHealth.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={getHealthColor(
-                          check.emotionalWellbeing.status
-                        )}
-                      >
-                        {check.emotionalWellbeing.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={getHealthColor(check.socialSupport.status)}
-                      >
-                        {check.socialSupport.status}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className={getHealthColor(check.overallAssessment)}>
-                        {check.overallAssessment}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={getStatusColor(check.status)}
-                      >
-                        {check.status}
-                      </Badge>
-                    </TableCell>
+          <>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Welfare Check ID</TableHead>
+                    <TableHead>Week Period</TableHead>
+                    <TableHead>Physical Health</TableHead>
+                    <TableHead>Mental Health</TableHead>
+                    <TableHead>Emotional Wellbeing</TableHead>
+                    <TableHead>Social Support</TableHead>
+                    <TableHead>Overall Assessment</TableHead>
+                    <TableHead>Status</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-
-        {paginatedChecks.length === 0 && (
-          <div className="text-center py-8">
-            <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="text-lg font-medium mb-2">
-              No welfare checks found
-            </h3>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {paginatedChecks.map((check) => (
+                    <TableRow key={check._id}>
+                      <TableCell>
+                        <div>
+                          <div className="font-medium">
+                            {check._id.slice(-8)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {check.guestId?.userId?.fullName || "No Guest"}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          {new Date(check.weekStartDate).toLocaleDateString()} -{" "}
+                          {new Date(check.weekEndDate).toLocaleDateString()}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={getHealthColor(
+                            check.physicalHealth.status
+                          )}
+                        >
+                          {check.physicalHealth.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={getMentalStateColor(
+                            check.mentalHealth.status
+                          )}
+                        >
+                          {check.mentalHealth.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={getHealthColor(
+                            check.emotionalWellbeing.status
+                          )}
+                        >
+                          {check.emotionalWellbeing.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={getHealthColor(check.socialSupport.status)}
+                        >
+                          {check.socialSupport.status}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={getHealthColor(check.overallAssessment)}
+                        >
+                          {check.overallAssessment}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={getStatusColor(check.status)}
+                        >
+                          {check.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {paginatedChecks.length === 0 && (
+              <div className="text-center py-8">
+                <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-lg font-medium mb-2">
+                  No welfare checks found
+                </h3>
+              </div>
+            )}
+          </>
         )}
 
         {/* Pagination */}

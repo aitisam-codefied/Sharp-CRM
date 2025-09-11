@@ -42,10 +42,10 @@ export default function DocumentsPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isNewDocumentOpen, setIsNewDocumentOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const limit = 10; // Documents per page
+  const itemsPerPage = 10;
   const { toast } = useToast();
 
-  const { data, isLoading, error } = useSOPDocuments(currentPage, limit);
+  const { data, isLoading, error } = useSOPDocuments();
   const { data: branchData } = useBranches();
 
   const allBranches =
@@ -56,8 +56,10 @@ export default function DocumentsPage() {
     })) || [];
 
   const documents = data?.data || [];
-  const totalDocuments = data?.total || 0;
-  const totalPages = Math.ceil(totalDocuments / limit);
+
+  useEffect(() => {
+    console.log("documents", documents);
+  });
 
   const categories: string[] = [
     "emergency",
@@ -104,6 +106,13 @@ export default function DocumentsPage() {
 
     return matchesSearch && matchesCategory && matchesBranch && matchesStatus;
   });
+
+  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedDocuments = filteredDocuments.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   const getStatusColor = (status: string): string => {
     switch (status) {
@@ -292,7 +301,7 @@ export default function DocumentsPage() {
                 ) : (
                   <>
                     <DocumentTable
-                      filteredDocuments={filteredDocuments}
+                      filteredDocuments={paginatedDocuments}
                       getStatusColor={getStatusColor}
                       getCategoryColor={getCategoryColor}
                       getAccessLevelIcon={getAccessLevelIcon}
@@ -301,7 +310,7 @@ export default function DocumentsPage() {
                       totalPages={totalPages}
                       onPageChange={setCurrentPage}
                     />
-                    {filteredDocuments.length === 0 && (
+                    {paginatedDocuments.length === 0 && (
                       <div className="text-center py-8">
                         <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                         <h3 className="text-lg font-medium mb-2">
@@ -319,7 +328,7 @@ export default function DocumentsPage() {
             </Card>
 
             <MandatoryDocuments
-              filteredDocuments={filteredDocuments}
+              filteredDocuments={paginatedDocuments}
               getStatusColor={getStatusColor}
               getCategoryColor={getCategoryColor}
               getAccessLevelIcon={getAccessLevelIcon}
