@@ -969,7 +969,7 @@ export default function FoodImagesPage() {
                 <h2 className="text-lg font-semibold">Food Gallery</h2>
               </div>
               {/* Filters Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -1002,7 +1002,7 @@ export default function FoodImagesPage() {
                     ))}
                   </SelectContent>
                 </Select> */}
-                {/* <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
                   </SelectTrigger>
@@ -1012,13 +1012,13 @@ export default function FoodImagesPage() {
                     <SelectItem value="lunch">Lunch</SelectItem>
                     <SelectItem value="dinner">Dinner</SelectItem>
                   </SelectContent>
-                </Select> */}
+                </Select>
                 {/* <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" /> Filters
                 </Button> */}
               </div>
               {/* Filter Tabs with Icons */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
+              {/* <div className="flex flex-wrap items-center justify-between gap-2">
                 <Button
                   variant={activeFilter === "All" ? "default" : "outline"}
                   size="lg"
@@ -1082,7 +1082,7 @@ export default function FoodImagesPage() {
                     Dinner
                   </div>
                 </Button>
-              </div>
+              </div> */}
               {/* Loading State */}
               {foodsLoading ? (
                 <div className="text-center py-8">
@@ -1135,17 +1135,45 @@ export default function FoodImagesPage() {
                             {food.name}
                           </h3>
                           <p className="text-xs">{food.description}</p>
-                          {/* <div className="flex flex-wrap gap-1">
-                            {food.dietaryTags.map((tag) => (
-                              <Badge
-                                key={tag}
-                                variant="secondary"
-                                className="text-xs px-2 py-1 bg-gray-100 text-gray-700 hover:bg-gray-200"
-                              >
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div> */}
+
+                          {food?.dietaryTags.length > 0 ? (
+                            <>
+                              <p className="text-xs">Dietary Tags:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {food?.dietaryTags.map((dietaryTags) => (
+                                  <Badge
+                                    key={dietaryTags}
+                                    variant="outline"
+                                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700"
+                                  >
+                                    {dietaryTags}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </>
+                          ) : (
+                            ""
+                          )}
+
+                          {food?.allergens.length > 0 ? (
+                            <>
+                              <p className="text-xs">Allergens:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {food?.allergens.map((allergen) => (
+                                  <Badge
+                                    key={allergen}
+                                    variant="outline"
+                                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700"
+                                  >
+                                    {allergen}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </>
+                          ) : (
+                            ""
+                          )}
+
                           <div className="space-y-1 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
                               <User className="h-3 w-3" />
