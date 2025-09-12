@@ -24,7 +24,6 @@ const nationalities = [
   "Iraqi",
   "Iranian",
   "Sudanese",
-  "Other",
 ];
 
 export default function PersonalInfoForm({ formData, setFormData }: any) {

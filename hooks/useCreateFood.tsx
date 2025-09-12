@@ -6,8 +6,8 @@ export interface CreateFoodData {
   name: string;
   description: string;
   mealType: "Breakfast" | "Lunch" | "Dinner";
-  // dietaryTags: string[];
-  // allergens: string[];
+  dietaryTags: string[];
+  allergens: string[];
   nutritionalInfo: {
     calories?: number;
     protein?: number;
@@ -34,21 +34,21 @@ export const useCreateFood = () => {
       formData.append("preparationTime", data.preparationTime.toString());
 
       // Add arrays
-      // data.dietaryTags.forEach(tag => {
-      //   formData.append('dietaryTags[]', tag);
-      // });
+      data.dietaryTags.forEach((tag) => {
+        formData.append("dietaryTags[]", tag);
+      });
 
-      // data.allergens.forEach(allergen => {
-      //   formData.append('allergens[]', allergen);
-      // });
+      data.allergens.forEach((allergen) => {
+        formData.append("allergens[]", allergen);
+      });
 
-      // Add nutritional info as JSON string
-      if (data.nutritionalInfo) {
-        formData.append(
-          "nutritionalInfo",
-          JSON.stringify(data.nutritionalInfo)
-        );
-      }
+      // // Add nutritional info as JSON string
+      // if (data.nutritionalInfo) {
+      //   formData.append(
+      //     "nutritionalInfo",
+      //     JSON.stringify(data.nutritionalInfo)
+      //   );
+      // }
 
       // Add images if any
       if (data.images) {

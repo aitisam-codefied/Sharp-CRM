@@ -96,7 +96,7 @@ export default function NewDocumentDialog({
     if (!file || !title || !category || !accessLevel) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields and select a file.",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;

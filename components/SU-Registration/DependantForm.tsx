@@ -24,7 +24,6 @@ const nationalities = [
   "Iraqi",
   "Iranian",
   "Sudanese",
-  "Other",
 ];
 
 export default function DependantsForm({ formData, setFormData, rooms }: any) {

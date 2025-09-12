@@ -89,8 +89,8 @@ export default function FoodImagesPage() {
     name: "",
     description: "",
     mealType: "Breakfast",
-    // dietaryTags: [],
-    // allergens: [],
+    dietaryTags: [],
+    allergens: [],
     nutritionalInfo: {},
     preparationTime: 0,
     images: [],
@@ -104,6 +104,8 @@ export default function FoodImagesPage() {
     name: "",
     description: "",
     mealType: "Breakfast",
+    dietaryTags: [],
+    allergens: [],
     nutritionalInfo: {},
     preparationTime: 0,
     images: [],
@@ -150,15 +152,37 @@ export default function FoodImagesPage() {
       color: "text-purple-600",
     },
   ];
+
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setSelectedFiles(files);
     setFormData((prev) => ({ ...prev, images: files }));
   };
+
   const handleEditFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     setEditSelectedFiles(files);
     setEditFormData((prev) => ({ ...prev, images: files }));
+  };
+
+  // Add missing handler for dietary tags
+  const handleDietaryTagChange = (tag: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      dietaryTags: checked
+        ? [...prev.dietaryTags, tag]
+        : prev.dietaryTags.filter((t) => t !== tag),
+    }));
+  };
+
+  // Add missing handler for allergens
+  const handleAllergenChange = (allergen: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      allergens: checked
+        ? [...prev.allergens, allergen]
+        : prev.allergens.filter((a) => a !== allergen),
+    }));
   };
 
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
@@ -263,6 +287,7 @@ export default function FoodImagesPage() {
     setEditErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleUpload = () => {
     if (!validateForm()) return;
     createFoodMutation.mutate(formData, {
@@ -277,8 +302,8 @@ export default function FoodImagesPage() {
           name: "",
           description: "",
           mealType: "Breakfast",
-          // dietaryTags: [],
-          // allergens: [],
+          dietaryTags: [],
+          allergens: [],
           nutritionalInfo: {},
           preparationTime: 0,
           images: [],
@@ -329,6 +354,8 @@ export default function FoodImagesPage() {
               name: "",
               description: "",
               mealType: "Breakfast",
+              dietaryTags: [],
+              allergens: [],
               nutritionalInfo: {},
               preparationTime: 0,
               images: [],
@@ -401,6 +428,7 @@ export default function FoodImagesPage() {
         })();
       return matchesSearch && matchesMeal && matchesFilter && matchesDate;
     }) || [];
+
   function formatDateWithSuffix(dateString: string) {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -703,7 +731,8 @@ export default function FoodImagesPage() {
                                 onClick={handleCreateCategory}
                                 disabled={
                                   !isCategoryValid ||
-                                  newCategoryName.length > 20
+                                  newCategoryName.length > 20 ||
+                                  createCategoryMutation.isPending
                                 }
                               >
                                 Create Category
@@ -719,6 +748,7 @@ export default function FoodImagesPage() {
                       </Dialog>
                     </div>
                   </div>
+
                   {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Description</Label>
@@ -770,7 +800,7 @@ export default function FoodImagesPage() {
                   </div>
 
                   {/* Dietary Tags */}
-                  {/* <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label>Dietary Tags</Label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
@@ -781,20 +811,26 @@ export default function FoodImagesPage() {
                         "Halal",
                         "Kosher",
                       ].map((tag) => (
-                        <label key={tag} className="flex items-center space-x-2">
+                        <label
+                          key={tag}
+                          className="flex items-center space-x-2"
+                        >
                           <input
                             type="checkbox"
                             checked={formData.dietaryTags.includes(tag)}
-                            onChange={(e) => handleDietaryTagChange(tag, e.target.checked)}
+                            onChange={(e) =>
+                              handleDietaryTagChange(tag, e.target.checked)
+                            }
                             className="rounded"
                           />
                           <span className="text-sm">{tag}</span>
                         </label>
                       ))}
                     </div>
-                  </div> */}
+                  </div>
+
                   {/* Allergens */}
-                  {/* <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label>Allergens</Label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
@@ -822,9 +858,10 @@ export default function FoodImagesPage() {
                         </label>
                       ))}
                     </div>
-                  </div> */}
+                  </div>
+
                   {/* Nutritional Information */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label>Nutritional Information</Label>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -874,7 +911,7 @@ export default function FoodImagesPage() {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -932,7 +969,7 @@ export default function FoodImagesPage() {
                 <h2 className="text-lg font-semibold">Food Gallery</h2>
               </div>
               {/* Filters Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -965,7 +1002,7 @@ export default function FoodImagesPage() {
                     ))}
                   </SelectContent>
                 </Select> */}
-                <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                {/* <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
                   </SelectTrigger>
@@ -975,7 +1012,7 @@ export default function FoodImagesPage() {
                     <SelectItem value="lunch">Lunch</SelectItem>
                     <SelectItem value="dinner">Dinner</SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
                 {/* <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-2" /> Filters
                 </Button> */}
