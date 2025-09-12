@@ -13,6 +13,13 @@ import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
 import { useGetGuests } from "@/hooks/useGetGuests";
 import { useRooms } from "@/hooks/useGetRooms";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function ServiceUsersPage() {
   const router = useRouter();
@@ -93,19 +100,19 @@ export default function ServiceUsersPage() {
     setCurrentPage(1);
   }, [searchTerm, selectedBranch, selectedStatus, selectedNationality]);
 
-  if (isPending) {
-    return (
-      <DashboardLayout
-        title="Service User Management"
-        description="Manage resident profiles and information across all branches"
-      >
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-          <p className="mt-2"> Loading Guests...</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  // if (isPending) {
+  //   return (
+  //     <DashboardLayout
+  //       title="Service User Management"
+  //       description="Manage resident profiles and information across all branches"
+  //     >
+  //       <div className="text-center py-8">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+  //         <p className="mt-2"> Loading Guests...</p>
+  //       </div>
+  //     </DashboardLayout>
+  //   );
+  // }
 
   return (
     <DashboardLayout
@@ -122,31 +129,53 @@ export default function ServiceUsersPage() {
       }
     >
       <div className="space-y-6">
-        <UserStats users={filteredUsers} /> {/* Stats use filtered data */}
-        <UserFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          selectedBranch={selectedBranch}
-          setSelectedBranch={setSelectedBranch}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          selectedNationality={selectedNationality}
-          setSelectedNationality={setSelectedNationality}
-          branches={branchNames}
-          statusOptions={statusOptions}
-          nationalities={nationalities}
-        />
-        <UserTable
-          users={paginatedUsers} // 🚨 only send paginated slice
-          searchTerm={searchTerm}
-          selectedBranch={selectedBranch}
-          selectedStatus={selectedStatus}
-          selectedNationality={selectedNationality}
-          branches={branches}
-          allLocations={locations}
-          allRooms={rooms}
-          nationalities={nationalities}
-        />
+        <UserStats users={filteredUsers} />{" "}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              Service User Management
+            </CardTitle>
+            <CardDescription>
+              Manage resident profiles and information across all branches
+            </CardDescription>
+          </CardHeader>
+          {isPending ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+              <p className="mt-2"> Loading Service Users...</p>
+            </div>
+          ) : (
+            <CardContent>
+              {/* Stats use filtered data */}
+              <div className="">
+                <UserFilters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  selectedBranch={selectedBranch}
+                  setSelectedBranch={setSelectedBranch}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
+                  selectedNationality={selectedNationality}
+                  setSelectedNationality={setSelectedNationality}
+                  branches={branchNames}
+                  statusOptions={statusOptions}
+                  nationalities={nationalities}
+                />
+              </div>
+              <UserTable
+                users={paginatedUsers} // 🚨 only send paginated slice
+                searchTerm={searchTerm}
+                selectedBranch={selectedBranch}
+                selectedStatus={selectedStatus}
+                selectedNationality={selectedNationality}
+                branches={branches}
+                allLocations={locations}
+                allRooms={rooms}
+                nationalities={nationalities}
+              />
+            </CardContent>
+          )}
+        </Card>
         <CustomPagination
           currentPage={currentPage}
           totalPages={totalPages}

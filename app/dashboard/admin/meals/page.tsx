@@ -119,7 +119,7 @@ export default function MealsPage() {
                 <p className="mt-2"> Loading meals...</p>
               </div>
             ):(
- <CardContent>
+          <CardContent>
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">

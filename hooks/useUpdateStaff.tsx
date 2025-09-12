@@ -29,7 +29,7 @@ export function useUpdateStaff(
       toast({
         title: "Staff Member Updated",
         description: `Staff member ${
-          data?.fullName ||  "staff"
+          data?.fullName || "staff"
         } has been successfully updated.`,
       });
 
@@ -47,7 +47,8 @@ export function useUpdateStaff(
 
       if (onUpdate) onUpdate(data?._id, updatedData);
 
-      queryClient.invalidateQueries({ queryKey: ["guestList"] });
+      queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["guest"] });
 
       if (onClose) onClose();
     },

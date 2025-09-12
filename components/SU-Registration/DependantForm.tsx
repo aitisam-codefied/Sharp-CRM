@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -27,6 +27,10 @@ const nationalities = [
 ];
 
 export default function DependantsForm({ formData, setFormData, rooms }: any) {
+  const [touchedRooms, setTouchedRooms] = useState<{
+    [roomId: string]: boolean;
+  }>({});
+
   const dependants = parseInt(formData.guests[0].numberOfDependents || 0);
   const totalPeople = dependants + 1;
 
@@ -39,6 +43,28 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       address?: string;
     };
   }>({});
+
+  // ✅ Auto-check kids if all dependants are kids
+  useEffect(() => {
+    const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
+    const numKids = Number(formData.numKids || 0);
+
+    if (totalDependents > 0 && totalDependents === numKids) {
+      setFormData((prev: any) => {
+        // Guests array ko ensure karo ke enough dependants bane huye hain
+        let updatedGuests = [...prev.guests];
+
+        for (let i = 1; i <= totalDependents; i++) {
+          if (!updatedGuests[i]) {
+            updatedGuests[i] = {}; // agar dependant object missing hai to create karo
+          }
+          updatedGuests[i] = { ...updatedGuests[i], isKid: true };
+        }
+
+        return { ...prev, guests: updatedGuests };
+      });
+    }
+  }, [formData.guests[0]?.numberOfDependents, formData.numKids, setFormData]);
 
   const handleDependantChange = (index: number, field: string, value: any) => {
     setFormData((prev: any) => {
@@ -253,7 +279,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Label htmlFor={`assign-${room.id}`} className="text-black">
                     Assign people
                   </Label>
-                  <Input
+                  {/* <Input
                     id={`assign-${room.id}`}
                     type="number"
                     min="0"
@@ -264,14 +290,31 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     }
                     placeholder="0"
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                  /> */}
+                  <Input
+                    id={`assign-${room.id}`}
+                    type="number"
+                    min="0"
+                    max={room.totalAvailableSpace}
+                    value={formData.assignedRooms?.[room.id] || ""}
+                    onFocus={() =>
+                      setTouchedRooms((prev) => ({ ...prev, [room.id]: true }))
+                    }
+                    onChange={(e) =>
+                      handleRoomAssignmentChange(room.id, e.target.value)
+                    }
+                    placeholder="0"
+                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
-                  {roomErrors[room.id] && (
+
+                  {touchedRooms[room.id] && roomErrors[room.id] && (
                     <Alert variant="destructive" className="mt-2">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>{roomErrors[room.id]}</AlertDescription>
                     </Alert>
                   )}
-                  {totalAssigned !== totalPeople && (
+
+                  {touchedRooms[room.id] && totalAssigned !== totalPeople && (
                     <Alert variant="destructive" className="mt-2">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
@@ -297,18 +340,6 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
           <p className="text-sm font-medium text-gray-800">
             Total assigned: {totalAssigned} / {totalPeople}
           </p>
-          {totalAssigned !== totalPeople && (
-            <Alert variant="destructive" className="flex-1">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {totalAssigned < totalPeople
-                  ? `You need to assign ${
-                      totalPeople - totalAssigned
-                    } more people.`
-                  : "You have assigned more people than needed."}
-              </AlertDescription>
-            </Alert>
-          )}
         </div>
       </div>
       {dependants > 0 && (
@@ -476,7 +507,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     htmlFor={`additional-notes-${i}`}
                     className="text-gray-600"
                   >
-                    Additional Notes *
+                    Additional Notes
                   </Label>
                   <Textarea
                     id={`additional-notes-${i}`}

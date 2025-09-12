@@ -63,7 +63,7 @@ interface Guest {
   gender?: "Male" | "Female" | "Other" | string;
   nationality?: string;
   language?: string;
-  numberOfDependents?: number;
+  numberOfDependents?: any;
   medic?: string; // objectId
   address?: string;
   emergencyContact?: EmergencyContact;
@@ -125,7 +125,7 @@ export default function NewUserPage() {
         gender: "",
         nationality: "",
         language: "",
-        numberOfDependents: 0,
+        numberOfDependents: "",
         medic: "",
         address: "",
         emergencyContact: {
@@ -141,7 +141,7 @@ export default function NewUserPage() {
       },
     ],
   });
-  
+
   const [rooms, setRooms] = useState<any[]>([]); // State to store API rooms
   const { toast } = useToast();
   const [medicalErrors, setMedicalErrors] = useState<Record<string, string>>(
@@ -184,9 +184,16 @@ export default function NewUserPage() {
   const isStep1Valid = () => {
     const dep = formData.guests[0].numberOfDependents;
 
+    const isDependantValid =
+      dep !== undefined &&
+      dep !== null &&
+      String(dep).trim() !== "" && // user ne input kiya ho
+      !isNaN(Number(dep)) && // number ho
+      Number(dep) >= 0; // 0 ya upar
+
     return (
       formData.guests[0].fullName?.trim() &&
-      formData.guests[0].fullName.length <= 20 && // ✅ full name max 20
+      formData.guests[0].fullName.length <= 20 &&
       formData.guests[0].emailAddress?.trim() &&
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
         formData.guests[0].emailAddress
@@ -199,10 +206,7 @@ export default function NewUserPage() {
         formData.guests[0].address.length <= 150) &&
       formData.guests[0].additionalNotes?.trim() &&
       formData.guests[0].additionalNotes.length <= 150 &&
-      dep !== undefined &&
-      dep !== null &&
-      String(dep) !== "" &&
-      Number(dep) >= 0 &&
+      isDependantValid && // ✅ yahan enforce hoga
       formData.branchId?.trim()
     );
   };
@@ -351,10 +355,13 @@ export default function NewUserPage() {
     }
   };
 
+  const [Loading, setLoading] = useState(false);
+
   const handleNext = async () => {
     if (!isCurrentStepValid()) return;
 
     if (currentStep === 1) {
+      setLoading(true); // 🔹 Start loader/disable
       try {
         const capacity =
           parseInt(String(formData?.guests[0]?.numberOfDependents ?? "0"), 10) +
@@ -392,6 +399,8 @@ export default function NewUserPage() {
           description: "An error occurred while fetching rooms.",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false); // 🔹 Always reset
       }
     } else if (currentStep < steps.length) {
       console.log("formData", formData);
@@ -593,16 +602,31 @@ export default function NewUserPage() {
           apiFormData.append(`guests[${index}][isKid]`, String(guest.isKid));
         }
 
-        apiFormData.append(
-          `guests[${index}][dateOfBirth]`,
-          guest.dateOfBirth || ""
-        );
-        apiFormData.append(`guests[${index}][gender]`, guest.gender || "");
-        apiFormData.append(
-          `guests[${index}][nationality]`,
-          guest.nationality || ""
-        );
-        apiFormData.append(`guests[${index}][language]`, guest.language || "");
+        if (guest.dateOfBirth) {
+          apiFormData.append(
+            `guests[${index}][dateOfBirth]`,
+            guest.dateOfBirth || ""
+          );
+        }
+
+        if (guest.gender) {
+          apiFormData.append(`guests[${index}][gender]`, guest.gender || "");
+        }
+
+        if (guest.nationality) {
+          apiFormData.append(
+            `guests[${index}][nationality]`,
+            guest.nationality || ""
+          );
+        }
+
+        if (guest.language) {
+          apiFormData.append(
+            `guests[${index}][language]`,
+            guest.language || ""
+          );
+        }
+
         apiFormData.append(
           `guests[${index}][numberOfDependents]`,
           String(guest.numberOfDependents || 0)
@@ -818,8 +842,11 @@ export default function NewUserPage() {
                 )}
               </Button>
             ) : (
-              <Button onClick={handleNext} disabled={!isCurrentStepValid()}>
-                Next
+              <Button
+                onClick={handleNext}
+                disabled={!isCurrentStepValid() || Loading}
+              >
+                {Loading ? "Loading..." : "Next"}
               </Button>
             )}
           </div>

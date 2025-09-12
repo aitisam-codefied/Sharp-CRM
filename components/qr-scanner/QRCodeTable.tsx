@@ -164,17 +164,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted text-black rounded-md">
-              <TableHead className="text-black font-semibold">
-                Modules
-              </TableHead>
-              <TableHead className="text-black font-semibold">
-                Associated With
-              </TableHead>
-              <TableHead className="text-black font-semibold">Code</TableHead>
-              <TableHead className="text-black font-semibold">
-                Generated On
-              </TableHead>
+            <TableRow className="rounded-md">
+              <TableHead>Modules</TableHead>
+              <TableHead>Associated With</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Generated On</TableHead>
               {/* <TableHead className="text-white font-semibold">
                 Actions
               </TableHead> */}

@@ -82,11 +82,20 @@ export default function EditStaffDialog({
       (branch: any) => branch.companyId?._id === selectedCompany
     ) || [];
 
-  const [selectedBranches, setSelectedBranches] = useState<string[]>(
-    filteredBranches.some((b: any) => b.name === staff.branch)
-      ? [staff.branch]
-      : []
-  );
+  // const [selectedBranches, setSelectedBranches] = useState<string[]>(
+  //   filteredBranches.some((b: any) => b.name === staff.branch)
+  //     ? [staff.branch]
+  //     : []
+  // );
+
+  const [selectedBranches, setSelectedBranches] = useState<string[]>(() => {
+    if (!staff.branchIds || staff.branchIds.length === 0) return [];
+
+    // Staff ke branch IDs ke against filteredBranches ke names nikalo
+    return filteredBranches
+      .filter((b: any) => staff.branchIds.includes(b._id))
+      .map((b: any) => b.name);
+  });
 
   const filteredLocations =
     locations?.filter((location: any) => {
@@ -679,19 +688,20 @@ export default function EditStaffDialog({
           </Button>
           <Button
             onClick={handleUpdateStaff}
-            disabled={
-              changedFields.length === 0 ||
-              !formData.name ||
-              formData.name.length > 32 ||
-              !formData.email ||
-              !formData.phone ||
-              !!validatePhone(formData.phone) ||
-              !formData.joinDate ||
-              selectedRoles.length === 0 ||
-              selectedBranches.length === 0 ||
-              !selectedCompany ||
-              updateMutation.isPending
-            }
+            // disabled={
+            //   changedFields.length === 0 ||
+            //   !formData.name ||
+            //   formData.name.length > 32 ||
+            //   !formData.email ||
+            //   !formData.phone ||
+            //   !!validatePhone(formData.phone) ||
+            //   !formData.joinDate ||
+            //   selectedRoles.length === 0 ||
+            //   selectedBranches.length === 0 ||
+            //   !selectedCompany ||
+            //   updateMutation.isPending
+            // }
+            disabled={updateMutation.isPending || changedFields.length === 0}
           >
             {updateMutation.isPending ? "Updating..." : "Update Staff Member"}
           </Button>

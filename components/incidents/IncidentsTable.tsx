@@ -49,7 +49,7 @@ export default function IncidentsTable({
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="bg-muted">
+          <TableRow className="">
             <TableHead>Incident Details</TableHead>
             <TableHead>Location & Resident</TableHead>
             <TableHead>Severity & Category</TableHead>
