@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "../ui/badge";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 interface AddMedicalStaffModalProps {
   isOpen: boolean;
@@ -56,8 +57,8 @@ export function AddMedicalStaffModal({
   const [type, setType] = useState("");
   const [status, setStatus] = useState("active");
   const [branches, setBranches] = useState("");
-
   const [errors, setErrors] = useState<Record<string, string>>({});
+
   const { toast } = useToast();
   const createMutation = useCreateMedicalStaff();
   const { data: branchData } = useBranches();
@@ -69,33 +70,45 @@ export function AddMedicalStaffModal({
       company: branch.companyId.name,
     })) || [];
 
-  // check agar sab fields filled hain
-  const isFormValid =
-    fullName.trim() &&
-    phoneNumber.trim() &&
-    emailAddress.trim() &&
-    type.trim() &&
-    branches.trim();
-
+  // 🔹 Validate fields
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
+    let valid = true;
 
-    if (!fullName.trim()) newErrors.fullName = "Name is required.";
+    if (!fullName.trim()) {
+      newErrors.fullName = "Name is required.";
+      valid = false;
+    } else if (fullName.length > 32) {
+      newErrors.fullName = "Name must not exceed 32 characters.";
+      valid = false;
+    }
+
     if (!emailAddress.trim()) {
       newErrors.emailAddress = "Email is required.";
+      valid = false;
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress)) {
       newErrors.emailAddress = "Enter a valid email address.";
+      valid = false;
     }
-    if (!phoneNumber.trim()) {
-      newErrors.phoneNumber = "Phone is required.";
-    } else if (!/^\+?\d{7,15}$/.test(phoneNumber)) {
-      newErrors.phoneNumber = "Enter a valid phone number.";
+
+    const phoneErr = validatePhone(phoneNumber);
+    if (phoneErr) {
+      newErrors.phoneNumber = phoneErr;
+      valid = false;
     }
-    if (!type.trim()) newErrors.type = "Type is required.";
-    if (!branches.trim()) newErrors.branches = "Branch is required.";
+
+    if (!type.trim()) {
+      newErrors.type = "Type is required.";
+      valid = false;
+    }
+
+    if (!branches.trim()) {
+      newErrors.branches = "Branch is required.";
+      valid = false;
+    }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return valid;
   };
 
   const resetForm = () => {
@@ -144,13 +157,23 @@ export function AddMedicalStaffModal({
     );
   };
 
+  const isFormValid =
+    fullName.trim() &&
+    fullName.length <= 32 &&
+    phoneNumber.trim() &&
+    !validatePhone(phoneNumber) &&
+    emailAddress.trim() &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress) &&
+    type.trim() &&
+    branches.trim();
+
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
         if (!open) {
-          resetForm(); // clear form when closing
-          onClose(); // call parent close handler
+          resetForm();
+          onClose();
         }
       }}
     >
@@ -170,7 +193,18 @@ export function AddMedicalStaffModal({
             <Input
               id="fullName"
               value={fullName}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setName(value);
+                setErrors((prev) => ({
+                  ...prev,
+                  fullName:
+                    value.length > 32
+                      ? "Name must not exceed 32 characters."
+                      : "",
+                }));
+              }}
+              maxLength={40} // UI cap, but validation enforces 32
             />
             {errors.fullName && (
               <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
@@ -204,20 +238,19 @@ export function AddMedicalStaffModal({
             >
               Phone
             </label>
-            <Input
+            <StyledPhoneInput
               id="phoneNumber"
               value={phoneNumber}
-              onChange={(e) => {
-                const onlyNums = e.target.value.replace(/\D/g, ""); // sirf digits allow
-                setPhoneNumber(onlyNums);
+              onChange={(val) => {
+                setPhoneNumber(val || "");
+                setErrors((prev) => ({
+                  ...prev,
+                  phoneNumber: validatePhone(val || ""),
+                }));
               }}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              placeholder="Enter phone number"
+              error={errors.phoneNumber}
+              defaultCountry="GB"
             />
-            {errors.phoneNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>
-            )}
           </div>
 
           {/* Type */}

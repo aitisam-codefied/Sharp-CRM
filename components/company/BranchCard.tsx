@@ -97,13 +97,17 @@ export default function BranchCard({
           onBranchUpdate({ ...branch, ...editBranchData });
           setEditingBranchId(null);
         },
-        onError: () => {
-          toast({
-            title: "Error",
-            description: "Failed to update branch",
-            variant: "destructive",
-          });
-        },
+        onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to update branch.";
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        });
+      },
       }
     );
   };

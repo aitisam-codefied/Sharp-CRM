@@ -121,6 +121,8 @@ export default function AddBranchForCompanyDialog({
         setBranchNameError(
           "A branch with this name already exists in this company."
         );
+      } else if (value.length > 50) {
+        setBranchNameError("Branch name cannot exceed 50 characters.");
       } else {
         setBranchNameError(null);
       }
@@ -128,10 +130,6 @@ export default function AddBranchForCompanyDialog({
 
     setBranch((prev) => ({ ...prev, [field]: value }));
   };
-
-  // const updateBranch = (field: keyof Branch, value: string) => {
-  //   setBranch((prev) => ({ ...prev, [field]: value }));
-  // };
 
   const addLocation = () => {
     setBranch((prev) => ({
@@ -257,14 +255,7 @@ export default function AddBranchForCompanyDialog({
   };
 
   const handleSubmit = () => {
-    if (!branch.name || !branch.address) {
-      toast({
-        title: "Error",
-        description: "Branch name and address are required.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!isFormValid()) return;
 
     const branchData = {
       companyId,
@@ -326,14 +317,20 @@ export default function AddBranchForCompanyDialog({
   };
 
   const isFormValid = () => {
-    if (branchNameError) return false; // 👈 duplicate branch prevent
-    if (!branch.name.trim() || !branch.address.trim()) return false;
+    if (branchNameError) return false;
+    if (!branch.name.trim() || branch.name.length > 50) return false;
+    if (!branch.address.trim() || branch.address.length > 100) return false;
 
     for (const location of branch.locations) {
-      if (!location.name.trim()) return false;
+      if (!location.name.trim() || location.name.length > 100) return false;
 
       for (const room of location.rooms) {
-        if (!room.roomNumber.trim() || !room.type.trim()) return false;
+        if (
+          !room.roomNumber.trim() ||
+          room.roomNumber.length > 10 ||
+          !room.type.trim()
+        )
+          return false;
         if (room.amenities.length === 0) return false;
       }
     }
@@ -349,7 +346,7 @@ export default function AddBranchForCompanyDialog({
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -357,6 +354,7 @@ export default function AddBranchForCompanyDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Branch Name */}
           <div className="space-y-2">
             <Label htmlFor="branch-name">Branch Name *</Label>
             <Input
@@ -365,15 +363,12 @@ export default function AddBranchForCompanyDialog({
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
             />
-            {branch.name.length > 23 && (
-              <p className="text-red-500 text-sm">
-                Branch name cannot exceed 23 characters.
-              </p>
-            )}
             {branchNameError && (
               <p className="text-red-600 text-sm">{branchNameError}</p>
             )}
           </div>
+
+          {/* Branch Address */}
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
             <Textarea
@@ -383,7 +378,14 @@ export default function AddBranchForCompanyDialog({
               placeholder="Enter complete branch address"
               rows={3}
             />
+            {branch.address.length > 100 && (
+              <p className="text-red-500 text-sm">
+                Address cannot exceed 100 characters.
+              </p>
+            )}
           </div>
+
+          {/* Locations */}
           <div className="space-y-4">
             <Label>Locations</Label>
             {branch.locations.map((location, locationIndex) => (
@@ -408,6 +410,12 @@ export default function AddBranchForCompanyDialog({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+                {location.name.length > 100 && (
+                  <p className="text-red-500 text-sm">
+                    Location name cannot exceed 100 characters.
+                  </p>
+                )}
+
                 <div className="space-y-4">
                   {location.rooms.map((room, roomIndex) => (
                     <div
@@ -440,6 +448,11 @@ export default function AddBranchForCompanyDialog({
                             }
                             placeholder="e.g., 101, A-1"
                           />
+                          {room.roomNumber.length > 10 && (
+                            <p className="text-red-500 text-sm">
+                              Room number cannot exceed 10 characters.
+                            </p>
+                          )}
                         </div>
                         <div>
                           <Label>Room Type *</Label>
@@ -452,8 +465,6 @@ export default function AddBranchForCompanyDialog({
                                 "type",
                                 value
                               );
-
-                              // Auto-update capacity if mapping exists
                               const autoCapacity = ROOM_TYPE_CAPACITY[value];
                               if (autoCapacity) {
                                 updateRoom(

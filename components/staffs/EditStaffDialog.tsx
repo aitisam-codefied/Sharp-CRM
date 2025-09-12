@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 const updateStaff = async ({
   id,
@@ -209,15 +210,22 @@ export default function EditStaffDialog({
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
       isValid = false;
+    } else if (formData.name.length > 32) {
+      newErrors.name = "Name must not exceed 32 characters";
+      isValid = false;
     }
+
     if (!formData.email.trim() || !/^\S+@\S+\.\S+$/.test(formData.email)) {
       newErrors.email = "Valid email is required";
       isValid = false;
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
+
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) {
+      newErrors.phone = phoneErr;
       isValid = false;
     }
+
     if (!formData.joinDate) {
       newErrors.joinDate = "Join date is required";
       isValid = false;
@@ -409,7 +417,21 @@ export default function EditStaffDialog({
               <Input
                 id="name"
                 value={formData.name}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, name: value }));
+                  setChangedFields((prev) =>
+                    prev.includes("name") ? prev : [...prev, "name"]
+                  );
+                  setErrors((prev) => ({
+                    ...prev,
+                    name:
+                      value.length > 32
+                        ? "Name must not exceed 32 characters"
+                        : "",
+                  }));
+                }}
+                maxLength={40} // optional UI limit
               />
               {errors.name && (
                 <p className="text-sm text-red-600">{errors.name}</p>
@@ -432,17 +454,22 @@ export default function EditStaffDialog({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input
+              <StyledPhoneInput
                 id="phone"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
                 value={formData.phone}
-                onChange={handleInputChange}
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, phone: val || "" }));
+                  setChangedFields((prev) =>
+                    prev.includes("phone") ? prev : [...prev, "phone"]
+                  );
+                  setErrors((prev) => ({
+                    ...prev,
+                    phone: validatePhone(val || ""),
+                  }));
+                }}
+                error={errors.phone}
+                defaultCountry="GB"
               />
-              {errors.phone && (
-                <p className="text-sm text-red-600">{errors.phone}</p>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="joinDate">Join Date</Label>
@@ -653,10 +680,12 @@ export default function EditStaffDialog({
           <Button
             onClick={handleUpdateStaff}
             disabled={
-              changedFields.length === 0 || // until something is modified
+              changedFields.length === 0 ||
               !formData.name ||
+              formData.name.length > 32 ||
               !formData.email ||
               !formData.phone ||
+              !!validatePhone(formData.phone) ||
               !formData.joinDate ||
               selectedRoles.length === 0 ||
               selectedBranches.length === 0 ||

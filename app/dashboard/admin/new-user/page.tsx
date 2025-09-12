@@ -97,6 +97,7 @@ export interface CreateGuestForm {
 
 export default function NewUserPage() {
   const [currentStep, setCurrentStep] = useState(1);
+
   const [formData, setFormData] = useState<CreateGuestForm>({
     branchId: "",
     locations: [],
@@ -140,6 +141,7 @@ export default function NewUserPage() {
       },
     ],
   });
+  
   const [rooms, setRooms] = useState<any[]>([]); // State to store API rooms
   const { toast } = useToast();
   const [medicalErrors, setMedicalErrors] = useState<Record<string, string>>(
@@ -169,8 +171,8 @@ export default function NewUserPage() {
     },
     {
       id: 5,
-      title: "Dental Clinic Info",
-      description: "Dental clinic preferences",
+      title: "Assigning Medical Staff",
+      description: "Assigning medical staff",
     },
     {
       id: 6,
@@ -217,6 +219,7 @@ export default function NewUserPage() {
           !dep?.fullName?.trim() ||
           dep.fullName.length > 20 ||
           !dep?.phoneNumber?.trim() ||
+          isValidPhoneNumber(dep.phoneNumber) === false ||
           !dep?.emailAddress?.trim() ||
           !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
           !dep?.dateOfBirth ||
@@ -609,23 +612,37 @@ export default function NewUserPage() {
           apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
         }
 
-        apiFormData.append(`guests[${index}][address]`, guest.address || "");
-        apiFormData.append(
-          `guests[${index}][medicalCondition]`,
-          guest.medicalCondition || ""
-        );
-        apiFormData.append(
-          `guests[${index}][allergies]`,
-          guest.allergies || ""
-        );
-        apiFormData.append(
-          `guests[${index}][currentMedications]`,
-          guest.currentMedications || ""
-        );
-        apiFormData.append(
-          `guests[${index}][additionalNotes]`,
-          guest.additionalNotes || ""
-        );
+        if (guest.address) {
+          apiFormData.append(`guests[${index}][address]`, guest.address || "");
+        }
+
+        if (guest.medicalCondition) {
+          apiFormData.append(
+            `guests[${index}][medicalCondition]`,
+            guest.medicalCondition || ""
+          );
+        }
+
+        if (guest.allergies) {
+          apiFormData.append(
+            `guests[${index}][allergies]`,
+            guest.allergies || ""
+          );
+        }
+
+        if (guest.currentMedications) {
+          apiFormData.append(
+            `guests[${index}][currentMedications]`,
+            guest.currentMedications || ""
+          );
+        }
+
+        if (guest.additionalNotes) {
+          apiFormData.append(
+            `guests[${index}][additionalNotes]`,
+            guest.additionalNotes || ""
+          );
+        }
 
         // Append dietaryRequirements as an array
         (guest.dietaryRequirements || []).forEach(

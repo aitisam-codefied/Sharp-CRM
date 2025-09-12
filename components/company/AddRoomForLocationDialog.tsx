@@ -93,10 +93,14 @@ export default function AddRoomForLocationDialog({
 
   const updateRoom = (field: keyof Room, value: string) => {
     if (field === "roomNumber") {
-      const exists = existingRooms.some(
-        (r) => r.roomNumber.trim().toLowerCase() === value.trim().toLowerCase()
-      );
-      if (exists) {
+      if (value.length > 10) {
+        setRoomNumberError("Room number cannot exceed 10 characters.");
+      } else if (
+        existingRooms.some(
+          (r) =>
+            r.roomNumber.trim().toLowerCase() === value.trim().toLowerCase()
+        )
+      ) {
         setRoomNumberError("This room number already exists in this location.");
       } else {
         setRoomNumberError(null);
@@ -115,13 +119,6 @@ export default function AddRoomForLocationDialog({
     if (room.amenities.length === 0) return false;
     return true;
   };
-
-  // const updateRoom = (field: keyof Room, value: string) => {
-  //   setRoom((prev) => ({
-  //     ...prev,
-  //     [field]: value,
-  //   }));
-  // };
 
   const toggleAmenity = (amenity: string) => {
     setRoom((prev) => {
@@ -192,14 +189,6 @@ export default function AddRoomForLocationDialog({
           variant: "destructive",
         });
       },
-      // onError: (error) => {
-      //   console.error("Failed to create room:", error);
-      //   toast({
-      //     title: "Error",
-      //     description: "Failed to create room",
-      //     variant: "destructive",
-      //   });
-      // },
     });
   };
 
@@ -211,7 +200,7 @@ export default function AddRoomForLocationDialog({
           Add Room
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[500px] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
         <DialogHeader>
           <DialogTitle>Add New Room</DialogTitle>
           <DialogDescription>
@@ -238,8 +227,6 @@ export default function AddRoomForLocationDialog({
               value={room.type}
               onValueChange={(value) => {
                 updateRoom("type", value);
-
-                // Auto-update capacity if mapping exists
                 const autoCapacity = ROOM_TYPE_CAPACITY[value];
                 if (autoCapacity) {
                   updateRoom("capacity", String(autoCapacity));

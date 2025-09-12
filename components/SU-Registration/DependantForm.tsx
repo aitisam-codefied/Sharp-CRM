@@ -14,6 +14,7 @@ import { AlertCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 const nationalities = [
   "Syrian",
@@ -370,31 +371,17 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Label htmlFor={`phone-${i}`} className="text-gray-600">
                     Phone Number *
                   </Label>
-                  <Input
+                  <StyledPhoneInput
                     id={`phone-${i}`}
-                    placeholder="+44 7700 900000"
                     value={formData.guests?.[i]?.phoneNumber || ""}
-                    onChange={(e) =>
-                      handleDependantChange(i, "phoneNumber", e.target.value)
+                    onChange={(value) =>
+                      handleDependantChange(i, "phoneNumber", value)
                     }
-                    onKeyDown={(e) => {
-                      if (
-                        !/[0-9]/.test(e.key) &&
-                        !(
-                          e.key === "+" && e.currentTarget.selectionStart === 0
-                        ) &&
-                        e.key !== "Backspace" &&
-                        e.key !== "Delete" &&
-                        e.key !== "ArrowLeft" &&
-                        e.key !== "ArrowRight" &&
-                        e.key !== "Tab"
-                      ) {
-                        e.preventDefault();
-                      }
-                    }}
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                    error={validatePhone(formData.guests?.[i]?.phoneNumber)}
+                    defaultCountry="GB"
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor={`dob-${i}`} className="text-gray-600">
                     Date of Birth *

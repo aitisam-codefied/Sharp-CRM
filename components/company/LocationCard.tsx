@@ -125,10 +125,14 @@ export default function LocationCard({
           onLocationUpdate?.({ ...location, name: editLocationName });
           setEditingLocationId(null);
         },
-        onError: () => {
+        onError: (error: any) => {
+          const message =
+            error.response?.data?.error ||
+            error.message ||
+            "Failed to update location.";
           toast({
             title: "Error",
-            description: "Failed to update location",
+            description: message,
             variant: "destructive",
           });
         },

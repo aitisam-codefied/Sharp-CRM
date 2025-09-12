@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils"; // optional helper for classnames
+import { cn } from "@/lib/utils";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 export default function EmergencyContactForm({ formData, setFormData }: any) {
   const numDependants = Number(formData.guests[0].numberOfDependents) || 0;
@@ -13,7 +14,6 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
     formData.sameEmergencyContact || false
   );
 
-  // 🔹 errors state (track for each guest and field)
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -118,6 +118,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
             Emergency Contact Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Full Name */}
             <div className="space-y-1">
               <Label htmlFor="ec-name">Full Name *</Label>
               <Input
@@ -133,18 +134,20 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 <p className="text-red-500 text-sm">{errors["fullName"]}</p>
               )}
             </div>
+
+            {/* Phone Number ✅ replaced with StyledPhoneInput */}
             <div className="space-y-1">
               <Label htmlFor="ec-phone">Phone Number *</Label>
-              <Input
+              <StyledPhoneInput
                 id="ec-phone"
-                type="tel"
-                placeholder="+44 7700 900000"
                 value={formData?.emergencyContact?.phoneNumber || ""}
-                onChange={(e) =>
-                  handleContactChange("phoneNumber", e.target.value)
-                }
+                onChange={(value) => handleContactChange("phoneNumber", value)}
+                error={validatePhone(formData?.emergencyContact?.phoneNumber)}
+                defaultCountry="GB"
               />
             </div>
+
+            {/* Relationship */}
             <div className="space-y-1">
               <Label htmlFor="ec-relation">Relation *</Label>
               <Input
@@ -177,6 +180,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                 {i === 0 ? "Primary User" : `Dependant ${i}`}
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Full Name */}
                 <div className="space-y-1">
                   <Label htmlFor={`ec-name-${i}`}>Name *</Label>
                   <Input
@@ -196,20 +200,26 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                     </p>
                   )}
                 </div>
+
+                {/* Phone Number ✅ replaced with StyledPhoneInput */}
                 <div className="space-y-1">
                   <Label htmlFor={`ec-phone-${i}`}>Phone Number *</Label>
-                  <Input
+                  <StyledPhoneInput
                     id={`ec-phone-${i}`}
-                    type="tel"
-                    placeholder="+44 7700 900000"
                     value={
                       formData?.guests[i]?.emergencyContact?.phoneNumber || ""
                     }
-                    onChange={(e) =>
-                      handleContactChangeGuest(i, "phoneNumber", e.target.value)
+                    onChange={(value) =>
+                      handleContactChangeGuest(i, "phoneNumber", value)
                     }
+                    error={validatePhone(
+                      formData?.guests[i]?.emergencyContact?.phoneNumber
+                    )}
+                    defaultCountry="GB"
                   />
                 </div>
+
+                {/* Relationship */}
                 <div className="space-y-1">
                   <Label htmlFor={`ec-relation-${i}`}>Relation *</Label>
                   <Input

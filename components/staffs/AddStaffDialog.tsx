@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 
 const createStaff = async (staffData: any) => {
   const response = await api.post("/user/create", staffData);
@@ -149,15 +150,22 @@ export default function AddStaffDialog() {
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
       valid = false;
+    } else if (formData.name.length > 32) {
+      newErrors.name = "Name must not exceed 32 characters";
+      valid = false;
     }
+
     if (!validateEmail(formData.email)) {
       newErrors.email = "Valid email is required";
       valid = false;
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
+
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) {
+      newErrors.phone = phoneErr;
       valid = false;
     }
+
     if (!formData.joinDate) {
       newErrors.joinDate = "Join date is required";
       valid = false;
@@ -335,13 +343,24 @@ export default function AddStaffDialog() {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, name: value }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    name:
+                      value.length > 32
+                        ? "Name must not exceed 32 characters"
+                        : "",
+                  }));
+                }}
                 placeholder="Enter full name"
               />
               {errors.name && (
                 <p className="text-sm text-red-600">{errors.name}</p>
               )}
             </div>
+
             <div>
               <Label>Email</Label>
               <Input
@@ -361,24 +380,21 @@ export default function AddStaffDialog() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <Label>Phone Number</Label>
-              <Input
+              <StyledPhoneInput
                 id="phone"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
                 value={formData.phone}
-                onChange={(e) => {
-                  // sirf digits allow karne ke liye
-                  const onlyNums = e.target.value.replace(/\D/g, "");
-                  setFormData((prev) => ({ ...prev, phone: onlyNums }));
-                  setErrors((prev) => ({ ...prev, phone: "" }));
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, phone: val || "" }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    phone: validatePhone(val || ""),
+                  }));
                 }}
-                placeholder="Enter phone number"
+                error={errors.phone}
+                defaultCountry="GB"
               />
-              {errors.phone && (
-                <p className="text-sm text-red-600">{errors.phone}</p>
-              )}
             </div>
+
             <div>
               <Label>Join Date</Label>
               <Input
@@ -543,15 +559,14 @@ export default function AddStaffDialog() {
 
         {/* Footer */}
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-            Cancel
-          </Button>
           <Button
             onClick={handleAddStaff}
             disabled={
               !formData.name ||
+              formData.name.length > 32 ||
               !validateEmail(formData.email) ||
               !formData.phone ||
+              !!validatePhone(formData.phone) ||
               !formData.joinDate ||
               !selectedRole ||
               selectedBranches.length === 0 ||

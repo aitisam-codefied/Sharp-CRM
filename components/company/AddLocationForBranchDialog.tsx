@@ -102,14 +102,22 @@ export default function AddLocationForBranchDialog({
   });
   const { toast } = useToast();
   const { mutate, isPending } = useCreateLocation();
+
   const [locationNameError, setLocationNameError] = useState<string | null>(
     null
+  );
+  const [roomErrors, setRoomErrors] = useState<Record<number, string | null>>(
+    {}
   );
 
   const updateLocationName = (value: string) => {
     setLocation((prev) => ({ ...prev, name: value }));
 
-    // ✅ Check duplicate name
+    if (value.trim().length > 50) {
+      setLocationNameError("Location name cannot exceed 50 characters.");
+      return;
+    }
+
     if (
       existingLocations.some(
         (loc: any) =>
@@ -123,10 +131,6 @@ export default function AddLocationForBranchDialog({
       setLocationNameError(null);
     }
   };
-
-  // const updateLocationName = (value: string) => {
-  //   setLocation((prev) => ({ ...prev, name: value }));
-  // };
 
   const addRoom = () => {
     setLocation((prev) => ({
@@ -156,6 +160,17 @@ export default function AddLocationForBranchDialog({
       };
       return { ...prev, rooms: updatedRooms };
     });
+
+    if (field === "roomNumber") {
+      if (typeof value === "string" && value.trim().length > 10) {
+        setRoomErrors((prev) => ({
+          ...prev,
+          [roomIndex]: "Room number cannot exceed 10 characters.",
+        }));
+      } else {
+        setRoomErrors((prev) => ({ ...prev, [roomIndex]: null }));
+      }
+    }
   };
 
   const removeRoom = (roomIndex: number) => {
@@ -163,6 +178,11 @@ export default function AddLocationForBranchDialog({
       ...prev,
       rooms: prev.rooms.filter((_, i) => i !== roomIndex),
     }));
+    setRoomErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[roomIndex];
+      return newErrors;
+    });
   };
 
   const toggleAmenity = (roomIndex: number, amenity: string) => {
@@ -189,21 +209,9 @@ export default function AddLocationForBranchDialog({
   };
 
   const handleSubmit = () => {
-    if (!location.name) {
-      toast({
-        title: "Error",
-        description: "Location name is required.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!location.name || locationNameError) return;
 
-    if (location.rooms.some((room) => !room.roomNumber || !room.type)) {
-      toast({
-        title: "Error",
-        description: "All rooms must have a room number and capacity.",
-        variant: "destructive",
-      });
+    if (location.rooms.some((room, i) => !room.roomNumber || roomErrors[i])) {
       return;
     }
 
@@ -222,19 +230,10 @@ export default function AddLocationForBranchDialog({
       ],
     };
 
-    // ✅ Log the data being sent
-    console.log("Sending location data to API:", locationData);
-
     mutate(locationData, {
       onSuccess: (data) => {
-        // ✅ Log the API response
-        console.log("Location created successfully:", data);
-
         const createdLocation = data.locations[0];
-        // const createdRooms = data.locations.rooms;
-        toast({
-          title: "Location Created Successfully",
-        });
+        toast({ title: "Location Created Successfully" });
         if (createdLocation) {
           onLocationCreated({
             _id: createdLocation._id,
@@ -255,7 +254,6 @@ export default function AddLocationForBranchDialog({
           ],
         });
       },
-
       onError: (error: any) => {
         const message =
           error.response?.data?.error ||
@@ -274,8 +272,9 @@ export default function AddLocationForBranchDialog({
     location.name.trim() !== "" &&
     !locationNameError &&
     location.rooms.every(
-      (room) =>
+      (room, i) =>
         room.roomNumber.trim() !== "" &&
+        !roomErrors[i] &&
         room.type.trim() !== "" &&
         room.amenities.length > 0
     );
@@ -288,7 +287,7 @@ export default function AddLocationForBranchDialog({
           Add Location
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Location</DialogTitle>
           <DialogDescription>
@@ -336,6 +335,11 @@ export default function AddLocationForBranchDialog({
                       }
                       placeholder="e.g., 101, A-1"
                     />
+                    {roomErrors[roomIndex] && (
+                      <p className="text-red-500 text-sm">
+                        {roomErrors[roomIndex]}
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label>Room Type *</Label>
@@ -343,8 +347,6 @@ export default function AddLocationForBranchDialog({
                       value={room.type}
                       onValueChange={(value) => {
                         updateRoom(roomIndex, "type", value);
-
-                        // Auto-update capacity if mapping exists
                         const autoCapacity = ROOM_TYPE_CAPACITY[value];
                         if (autoCapacity) {
                           updateRoom(

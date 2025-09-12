@@ -106,7 +106,7 @@ export default function OccupancyAgreementsPage() {
   const handleDownloadAgreement = (agreement: (typeof agreements)[0]) => {
     if (agreement.documentUrl) {
       const link = document.createElement("a");
-      link.href = `${API_HOST}/api/v1${agreement.documentUrl}`;
+      link.href = `${API_HOST}${agreement.documentUrl}`;
       link.download = agreement.documentUrl.split("/").pop() || "document.pdf";
       link.click();
     } else {

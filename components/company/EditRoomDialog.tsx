@@ -177,7 +177,10 @@ export default function EditRoomDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!hasChanges || isPending}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!hasChanges || isPending || form.amenities.length === 0}
+          >
             {isPending ? "Updating..." : "Update Room"}
           </Button>
         </div>

@@ -292,9 +292,8 @@ export default function ReviewConfirmationForm({
                     )} */}
                   </dl>
                 </div>
-                {Number(formData.guests[0].numberOfDependents) === 0 ||
+                {/* {Number(formData.guests[0].numberOfDependents) === 0 ||
                 formData.sameEmergencyContact ? (
-                  // 🔹 Case 1 & 2: Single user OR Same emergency contact for all
                   <div>
                     <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
                       Emergency Contact
@@ -327,15 +326,49 @@ export default function ReviewConfirmationForm({
                     </dl>
                   </div>
                 ) : (
-                  // 🔹 Case 3: Dependants hain aur sabke contacts alag hain
                   <div>
                     <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
                       Emergency Contact(s)
                     </h4>
-                    {formData.guests.map((guest: any, i: number) => (
+
+                    <div className="mb-4 border p-4 rounded-lg">
+                      <h5 className="font-semibold mb-2">Primary User</h5>
+                      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div className="flex">
+                          <dt className="font-medium text-gray-600 w-1/3">
+                            Name:
+                          </dt>
+                          <dd className="text-gray-800">
+                            {formData.guests[0]?.emergencyContact?.fullName ||
+                              "N/A"}
+                          </dd>
+                        </div>
+                        <div className="flex">
+                          <dt className="font-medium text-gray-600 w-1/3">
+                            Phone:
+                          </dt>
+                          <dd className="text-gray-800">
+                            {formData.guests[0]?.emergencyContact
+                              ?.phoneNumber || "N/A"}
+                          </dd>
+                        </div>
+                        <div className="flex">
+                          <dt className="font-medium text-gray-600 w-1/3">
+                            Relation:
+                          </dt>
+                          <dd className="text-gray-800">
+                            {formData.guests[0]?.emergencyContact
+                              ?.relationship || "N/A"}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                  
+                    {formData.guests.slice(1).map((guest: any, i: number) => (
                       <div key={i} className="mb-4 border p-4 rounded-lg">
                         <h5 className="font-semibold mb-2">
-                          {i === 0 ? "Primary User" : `Dependant ${i}`}
+                          Dependant {i + 1}
                         </h5>
                         <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                           <div className="flex">
@@ -366,7 +399,7 @@ export default function ReviewConfirmationForm({
                       </div>
                     ))}
                   </div>
-                )}
+                )} */}
 
                 <div>
                   <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
@@ -412,6 +445,116 @@ export default function ReviewConfirmationForm({
             </Card>
           );
         })}
+      </div>
+
+      {/* Emergency Contacts */}
+      <div className="space-y-6">
+        <h3 className="text-2xl font-bold text-[#F87D7D] tracking-tight">
+          Emergency Contacts
+        </h3>
+        <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
+          <CardContent className="p-6 space-y-6">
+            {Number(formData.guests[0]?.numberOfDependents) === 0 ||
+            formData.sameEmergencyContact ? (
+              // 🔹 Case 1 & 2: Single user OR Same contact for all
+              <div>
+                <h4 className="text-lg font-semibold text-[#F87D7D] mb-3">
+                  Emergency Contact
+                </h4>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                  <div className="flex">
+                    <dt className="font-medium text-gray-600 w-1/3">Name:</dt>
+                    <dd className="text-gray-800">
+                      {formData.emergencyContact?.fullName || "N/A"}
+                    </dd>
+                  </div>
+                  <div className="flex">
+                    <dt className="font-medium text-gray-600 w-1/3">Phone:</dt>
+                    <dd className="text-gray-800">
+                      {formData.emergencyContact?.phoneNumber || "N/A"}
+                    </dd>
+                  </div>
+                  <div className="flex">
+                    <dt className="font-medium text-gray-600 w-1/3">
+                      Relation:
+                    </dt>
+                    <dd className="text-gray-800">
+                      {formData.emergencyContact?.relationship || "N/A"}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            ) : (
+              // 🔹 Case 3: Dependants > 0 aur alag-alag contacts
+              <div>
+                {/* Primary User */}
+                <div className="mb-4 border p-4 rounded-lg">
+                  <h5 className="font-semibold mb-2">Primary User</h5>
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="flex">
+                      <dt className="font-medium text-gray-600 w-1/3">Name:</dt>
+                      <dd className="text-gray-800">
+                        {formData.guests[0]?.emergencyContact?.fullName ||
+                          "N/A"}
+                      </dd>
+                    </div>
+                    <div className="flex">
+                      <dt className="font-medium text-gray-600 w-1/3">
+                        Phone:
+                      </dt>
+                      <dd className="text-gray-800">
+                        {formData.guests[0]?.emergencyContact?.phoneNumber ||
+                          "N/A"}
+                      </dd>
+                    </div>
+                    <div className="flex">
+                      <dt className="font-medium text-gray-600 w-1/3">
+                        Relation:
+                      </dt>
+                      <dd className="text-gray-800">
+                        {formData.guests[0]?.emergencyContact?.relationship ||
+                          "N/A"}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* Dependants */}
+                {formData.guests.slice(1).map((guest: any, i: number) => (
+                  <div key={i} className="mb-4 border p-4 rounded-lg">
+                    <h5 className="font-semibold mb-2">Dependant {i + 1}</h5>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Name:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {guest.emergencyContact?.fullName || "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Phone:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {guest.emergencyContact?.phoneNumber || "N/A"}
+                        </dd>
+                      </div>
+                      <div className="flex">
+                        <dt className="font-medium text-gray-600 w-1/3">
+                          Relation:
+                        </dt>
+                        <dd className="text-gray-800">
+                          {guest.emergencyContact?.relationship || "N/A"}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Consents */}
