@@ -392,6 +392,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         <DependantsModal
           setFormData={setFormData}
           onClose={() => setShowModal(false)}
+          maxDependants={formData.guests[0].numberOfDependents}
         />
       )}
     </div>
