@@ -348,19 +348,29 @@ export interface Guest {
 
 export interface Branch {
   _id: string;
+  companyId: {
+    _id: string;
+    name: string;
+  };
   name: string;
   address: string;
+  locations: Location[];
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Room {
   _id: string;
   roomNumber: string;
   type: string;
+  amenities: string[];
 }
 
 export interface Location {
   _id: string;
   name: string;
+  rooms: Room[];
 }
 
 export interface GuestId {
