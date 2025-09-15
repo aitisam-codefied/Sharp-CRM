@@ -18,14 +18,14 @@ const nextConfig = {
   // You can add more Next.js settings here as needed
 };
 
-// const pwaConfig = withPWA({
-//   dest: "public",
-//   register: true,
-//   skipWaiting: true,
-//   disable: false,
-// });
+const pwaConfig = withPWA({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: false,
+});
 
-// export default pwaConfig(nextConfig);
+export default pwaConfig(nextConfig);
 
 // next.config.js
 // import withPWA from "next-pwa";
