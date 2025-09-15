@@ -422,3 +422,38 @@ export interface WelfareCheckResponse {
     totalPages: number;
   };
 }
+
+// Branch List API Types
+export interface BranchListRoom {
+  _id: string;
+  roomNumber: string;
+  type: string;
+  amenities: string[];
+}
+
+export interface BranchListLocation {
+  _id: string;
+  name: string;
+  rooms: BranchListRoom[];
+}
+
+export interface BranchListCompany {
+  _id: string;
+  name: string;
+}
+
+export interface BranchListItem {
+  _id: string;
+  companyId: BranchListCompany;
+  name: string;
+  address: string;
+  locations: BranchListLocation[];
+  documents: any[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BranchListResponse {
+  success: boolean;
+  branches: BranchListItem[];
+}
