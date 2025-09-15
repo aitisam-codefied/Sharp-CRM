@@ -44,3 +44,17 @@ export const useGetBranches = () => {
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
 };
+
+export const useBranches = () => {
+  return useQuery({
+    queryKey: ["branches"],
+    queryFn: async (): Promise<Branch[]> => {
+      const res = await api.get("/branch/list");
+      if (res.data.success) {
+        return res.data.branches;
+      } else {
+        throw new Error("Failed to fetch branches");
+      }
+    },
+  });
+};
