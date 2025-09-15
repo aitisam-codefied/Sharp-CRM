@@ -102,10 +102,8 @@ export default function BranchPerformanceTable() {
   const itemsPerPage = 5;
   
   // Filter states
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedRole, setSelectedRole] = useState("all-roles");
-  const [selectedStatus, setSelectedStatus] = useState("all-status");
   
   // Fetch branch data from API
   const { data: branchListData, isLoading, error } = useGetBranchList();
