@@ -25,6 +25,7 @@ import { Plus, Upload } from "lucide-react";
 import { useCreateSOPDocument } from "@/hooks/useCreateSOPDocument";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
+import { useCompanies } from "@/hooks/useCompnay";
 
 interface Branch {
   id: string;
@@ -70,6 +71,15 @@ export default function NewDocumentDialog({
 
   const { mutate, isPending } = useCreateSOPDocument();
   const { toast } = useToast();
+  const { data: companyData } = useCompanies();
+
+  // New states
+  const [selectedCompany, setSelectedCompany] = useState("");
+
+  // Filtered branches
+  const filteredBranches = selectedCompany
+    ? branches.filter((b) => b.company === selectedCompany)
+    : [];
 
   const resetForm = () => {
     setTitle("");
@@ -253,7 +263,7 @@ export default function NewDocumentDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select onValueChange={setCategory}>
@@ -272,26 +282,7 @@ export default function NewDocumentDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch</Label>
-              <Select onValueChange={setBranchId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select branch" />
-                </SelectTrigger>
-                <SelectContent>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{branch.name}</span>-
-                        <Badge className="bg-[#F87D7D] text-white">
-                          {branch.company}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="space-y-2">
               <Label htmlFor="accessLevel">Access Level</Label>
               <Select onValueChange={setAccessLevel}>
@@ -315,6 +306,55 @@ export default function NewDocumentDialog({
               </Select>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Company Dropdown */}
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Select
+                onValueChange={(val) => {
+                  setSelectedCompany(val);
+                  setBranchId(""); // reset branch jab company change ho
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {/* companyData se companies show karo */}
+                  {companyData?.map((company: any) => (
+                    <SelectItem key={company.id} value={company.name}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Branch Dropdown */}
+            <div className="space-y-2">
+              <Label htmlFor="branch">Branch</Label>
+              <Select
+                value={branchId}
+                onValueChange={setBranchId}
+                disabled={!selectedCompany} // disable jab tak company select na ho
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredBranches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{branch.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="priority">Priority</Label>

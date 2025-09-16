@@ -485,7 +485,7 @@ export default function BranchPerformanceTable() {
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-between mt-4">
+        {/* <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
             Rows per page: {itemsPerPage}
           </div>
@@ -513,7 +513,7 @@ export default function BranchPerformanceTable() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+        </div> */}
       </CardContent>
     </Card>
   );

@@ -55,9 +55,7 @@ export function UserTable({
     fullName: guest.userId?.fullName || "",
     email: guest.userId?.emailAddress || "",
     phone: guest.userId?.phoneNumber || "",
-    branch:
-      branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.name ||
-      "",
+    branch: guest.familyRooms[0]?.roomId?.locationId?.branchId?.name || "",
     location:
       branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.address ||
       "",

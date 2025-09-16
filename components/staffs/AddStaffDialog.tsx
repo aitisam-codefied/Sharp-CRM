@@ -133,7 +133,7 @@ export default function AddStaffDialog() {
       toast({
         title: "Error Adding Staff",
         description:
-          error.response?.data?.details ||
+          error.response?.data?.error ||
           error.message ||
           "Failed to add staff member.",
         variant: "destructive",

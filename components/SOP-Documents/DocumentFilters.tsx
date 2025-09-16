@@ -14,12 +14,15 @@ interface DocumentFiltersProps {
   setSearchTerm: (value: string) => void;
   selectedCategory: string;
   setSelectedCategory: (value: string) => void;
+  selectedCompany: string; // ✅ add
+  setSelectedCompany: (value: string) => void; // ✅ add
   selectedBranch: string;
   setSelectedBranch: (value: string) => void;
   selectedStatus: string;
   setSelectedStatus: (value: string) => void;
   categories: string[];
-  branches: string[];
+  companies: any[]; // ✅ add
+  branches: { id: string; name: string }[];
   statusOptions: string[];
 }
 
@@ -27,17 +30,27 @@ export default function DocumentFilters({
   searchTerm,
   setSearchTerm,
   selectedCategory,
+  selectedCompany,
+  setSelectedCompany,
   setSelectedCategory,
   selectedBranch,
   setSelectedBranch,
   selectedStatus,
   setSelectedStatus,
   categories,
+  companies,
   branches,
   statusOptions,
 }: DocumentFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
+    <div
+      className={`grid gap-4 mb-6 ${
+        selectedCompany !== "all"
+          ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
+          : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+      }`}
+    >
+      {/* Search */}
       <div className="flex-1">
         <div className="relative">
           <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -49,34 +62,57 @@ export default function DocumentFilters({
           />
         </div>
       </div>
+
+      {/* Category */}
       <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-        <SelectTrigger className="w-full md:w-48">
+        <SelectTrigger>
           <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Categories</SelectItem>
           {categories.map((category) => (
             <SelectItem key={category} value={category}>
-              {category.charAt(0).toUpperCase() + category?.slice(1)}
+              {category.charAt(0).toUpperCase() + category.slice(1)}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-        <SelectTrigger className="w-full md:w-48">
-          <SelectValue placeholder="All Branches" />
+
+      {/* Company */}
+      <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+        <SelectTrigger>
+          <SelectValue placeholder="All Companies" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Branches</SelectItem>
-          {branches.map((branch) => (
-            <SelectItem key={branch} value={branch}>
-              {branch}
+          <SelectItem value="all">All Companies</SelectItem>
+          {companies.map((company: any) => (
+            <SelectItem key={company._id} value={company._id}>
+              {company.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+
+      {/* Branch (only if company selected) */}
+      {selectedCompany !== "all" && (
+        <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+          <SelectTrigger>
+            <SelectValue placeholder="All Branches" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Branches</SelectItem>
+            {branches.map((branch) => (
+              <SelectItem key={branch.id} value={branch.id}>
+                {branch.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {/* Status */}
       <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-        <SelectTrigger className="w-full md:w-48">
+        <SelectTrigger>
           <SelectValue placeholder="All Status" />
         </SelectTrigger>
         <SelectContent>

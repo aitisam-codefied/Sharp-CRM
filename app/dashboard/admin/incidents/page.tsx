@@ -34,11 +34,13 @@ import {
   FileText,
   Download,
   Filter,
+  WarehouseIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIncidents } from "@/hooks/useGetIncidents";
 import IncidentsTable from "@/components/incidents/IncidentsTable";
 import { CustomPagination } from "@/components/CustomPagination";
+import { useCompanies } from "@/hooks/useCompnay";
 
 interface UIIncident {
   id: string;
@@ -49,6 +51,7 @@ interface UIIncident {
   reportedBy: string;
   assignedTo: string;
   branch: string;
+  branchId: string;
   location: string;
   residentInvolved: string;
   dateReported: string;
@@ -62,26 +65,38 @@ interface UIIncident {
 export default function IncidentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedCompany, setSelectedCompany] = useState("all");
   const [selectedSeverity, setSelectedSeverity] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const { toast } = useToast();
   const { data: incidents = [], isLoading, error } = useIncidents();
+  const { data: CompanyData } = useCompanies();
+
+  const companyBranches =
+    selectedCompany !== "all"
+      ? CompanyData?.find((c: any) => c._id === selectedCompany)?.branches || []
+      : [];
+
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // branch list
+  const branches = companyBranches.map((b: any) => ({
+    id: b._id,
+    name: b.name,
+  }));
 
   useEffect(() => {
     console.log("incidentssssssss", incidents);
   });
 
-  const branches = useMemo(() => {
-    const unique = [...new Set(incidents.map((i) => i.branch))];
-    return unique.sort();
-  }, [incidents]);
-
   const severityLevels = ["low", "medium", "high", "critical"];
   const statusOptions = ["open", "investigating", "resolved", "closed"];
 
-  const filteredIncidents = incidents.filter((incident: UIIncident) => {
+  const filteredIncidents = incidents.filter((incident: any) => {
     const matchesSearch =
       incident.title?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
       incident.description?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
@@ -90,10 +105,12 @@ export default function IncidentsPage() {
         .includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
-      selectedBranch === "all" || incident.branch === selectedBranch;
+      selectedBranch === "all" || incident.branchId === selectedBranch;
+
     const matchesSeverity =
       selectedSeverity === "all" ||
       incident.severity?.toLowerCase() === selectedSeverity?.toLowerCase();
+
     const matchesStatus =
       selectedStatus === "all" ||
       incident.status?.toLowerCase() === selectedStatus?.toLowerCase();
@@ -264,7 +281,13 @@ export default function IncidentsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div
+              className={`grid gap-4 mb-6 ${
+                selectedCompany !== "all"
+                  ? "grid-cols-1 md:grid-cols-5"
+                  : "grid-cols-1 md:grid-cols-4"
+              }`}
+            >
               <div className="flex-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -276,24 +299,47 @@ export default function IncidentsPage() {
                   />
                 </div>
               </div>
-              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="All Branches" />
+              <Select
+                value={selectedCompany}
+                onValueChange={setSelectedCompany}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Companies" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Branches</SelectItem>
-                  {branches.map((branch) => (
-                    <SelectItem key={branch} value={branch}>
-                      {branch}
+                  <SelectItem value="all">All Companies</SelectItem>
+                  {CompanyData?.map((company: any) => (
+                    <SelectItem key={company._id} value={company._id}>
+                      {company.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
+              {/* Branch (only if company selected) */}
+              {selectedCompany !== "all" && (
+                <Select
+                  value={selectedBranch}
+                  onValueChange={setSelectedBranch}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Branches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Branches</SelectItem>
+                    {branches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Select
                 value={selectedSeverity}
                 onValueChange={setSelectedSeverity}
               >
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className="">
                   <SelectValue placeholder="All Severities" />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,7 +352,7 @@ export default function IncidentsPage() {
                 </SelectContent>
               </Select>
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className="">
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -338,6 +384,18 @@ export default function IncidentsPage() {
                   getStatusColor={getStatusColor}
                   handleViewIncident={handleViewIncident}
                 />
+
+                {paginatedIncidents.length === 0 && (
+                  <div className="text-center py-8">
+                    <WarehouseIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">
+                      No Incidents found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search criteria.
+                    </p>
+                  </div>
+                )}
 
                 <CustomPagination
                   currentPage={currentPage}

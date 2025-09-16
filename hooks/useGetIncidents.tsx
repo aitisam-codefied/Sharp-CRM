@@ -80,6 +80,8 @@ const fetchIncidents = async (): Promise<UIIncident[]> => {
   const response = await api.get<ApiResponse>("/incident/list?limit=1000");
   const apiIncidents = response.data.data.data;
 
+  console.log("apiIncidents", apiIncidents);
+
   return apiIncidents.map((api: ApiIncident) => ({
     id: api._id,
     title: `${api.incidentType} at ${api.location}`,
@@ -88,7 +90,8 @@ const fetchIncidents = async (): Promise<UIIncident[]> => {
     status: api.status?.toLowerCase(),
     reportedBy: api.staffId?.fullName,
     assignedTo: api.staffId?.fullName,
-    branch: api.branchId.name,
+    branch: api.branchId?.name,
+    branchId: api.branchId?._id,
     location: api.location,
     residentInvolved: api.guestId?.userId.fullName,
     dateReported: new Date(api.reportedAt).toISOString().split("T")[0],

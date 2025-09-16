@@ -49,14 +49,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
       baskets?.map((basket) => basket.branchId?.name)?.filter(Boolean)
     ),
   ];
-  const statuses = [
-    "all",
-    "Pending",
-    "Completed",
-    "Active",
-    "Draft",
-    "In Progress",
-  ];
+  const statuses = ["all", "Out Of Stock", "Requested", "In Progress"];
 
   // 🔹 Filtered + Sorted Data
   const filteredBaskets = useMemo(() => {

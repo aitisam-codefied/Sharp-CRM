@@ -44,6 +44,19 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     };
   }>({});
 
+  // ✅ Compute min date for DOB based on whether all dependents are kids
+  const today = new Date();
+  const eighteenYearsAgo = new Date(
+    today.getFullYear() - 18,
+    today.getMonth(),
+    today.getDate()
+  );
+  const minDate =
+    Number(formData.numKids || 0) === dependants && dependants > 0
+      ? eighteenYearsAgo.toISOString().split("T")[0] // Kids: min DOB 18 years ago (e.g., 2007-09-16)
+      : undefined; // No min for adults or mixed
+  const maxDate = today.toISOString().split("T")[0]; // Always max today
+
   // ✅ Auto-check kids if all dependants are kids
   useEffect(() => {
     const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
@@ -65,6 +78,27 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       });
     }
   }, [formData.guests[0]?.numberOfDependents, formData.numKids, setFormData]);
+
+  // ✅ New useEffect: Auto-set isKid=false for all dependants when no kids
+  useEffect(() => {
+    const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
+    const numKids = Number(formData.numKids || 0);
+
+    if (numKids === 0 && totalDependents > 0) {
+      setFormData((prev: any) => {
+        let updatedGuests = [...prev.guests];
+
+        for (let i = 1; i <= totalDependents; i++) {
+          if (!updatedGuests[i]) {
+            updatedGuests[i] = {}; // Ensure object exists
+          }
+          updatedGuests[i] = { ...updatedGuests[i], isKid: false };
+        }
+
+        return { ...prev, guests: updatedGuests };
+      });
+    }
+  }, [formData.numKids, formData.guests[0]?.numberOfDependents, setFormData]);
 
   const handleDependantChange = (index: number, field: string, value: any) => {
     setFormData((prev: any) => {
@@ -126,10 +160,19 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
             ...newErrors[index],
             dob: "Date of birth is required.",
           };
-        } else if (selected >= today) {
+        } else if (selected > today) {
           newErrors[index] = {
             ...newErrors[index],
             dob: "DOB cannot be today or future date.",
+          };
+        } else if (
+          Number(formData.numKids || 0) === dependants &&
+          dependants > 0 &&
+          selected < eighteenYearsAgo
+        ) {
+          newErrors[index] = {
+            ...newErrors[index],
+            dob: "Kids must be under 18 years old.",
           };
         } else {
           if (newErrors[index]) delete newErrors[index].dob;
@@ -419,7 +462,8 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`dob-${i}`}
                     type="date"
-                    max={new Date().toISOString().split("T")[0]}
+                    min={minDate} // ✅ Restrict DOBs before 18 years ago for all-kids
+                    max={maxDate} // Always max today
                     value={formData.guests?.[i]?.dateOfBirth || ""}
                     onChange={(e) =>
                       handleDependantChange(i, "dateOfBirth", e.target.value)
@@ -560,29 +604,35 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                 </div>
               </div>
 
-              {/* //kids */}
-              <div className="mt-4">
-                <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id={`isKid-${i}`}
-                        checked={formData?.guests?.[i]?.isKid || false}
-                        onCheckedChange={(checked) =>
-                          handleDependantChange(i, "isKid", checked as boolean)
-                        }
-                        className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
-                      />
-                      <Label
-                        htmlFor={`isKid-${i}`}
-                        className="text-gray-700 text-sm leading-relaxed"
-                      >
-                        If Kid Then check
-                      </Label>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              {/* //kids - Only show if numKids > 0 */}
+              {Number(formData.numKids || 0) > 0 && (
+                <div className="mt-4">
+                  <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id={`isKid-${i}`}
+                          checked={formData?.guests?.[i]?.isKid || false}
+                          onCheckedChange={(checked) =>
+                            handleDependantChange(
+                              i,
+                              "isKid",
+                              checked as boolean
+                            )
+                          }
+                          className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
+                        />
+                        <Label
+                          htmlFor={`isKid-${i}`}
+                          className="text-gray-700 text-sm leading-relaxed"
+                        >
+                          If Kid Then check
+                        </Label>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </div>
           ))}
         </div>

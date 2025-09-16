@@ -22,6 +22,7 @@ import { useBranches } from "@/hooks/useGetBranches";
 import { Document } from "@/lib/types";
 import NewDocumentDialog from "@/components/SOP-Documents/NewDocumentDialog";
 import { API_HOST } from "@/lib/axios";
+import { useCompanies } from "@/hooks/useCompnay";
 
 interface Stats {
   totalDocuments: number;
@@ -39,6 +40,7 @@ export default function DocumentsPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [isNewDocumentOpen, setIsNewDocumentOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -47,6 +49,22 @@ export default function DocumentsPage() {
 
   const { data, isLoading, error } = useSOPDocuments();
   const { data: branchData } = useBranches();
+  const { data: companyData } = useCompanies();
+
+  const companyBranches =
+    selectedCompany !== "all"
+      ? companyData?.find((c: any) => c._id === selectedCompany)?.branches || []
+      : [];
+
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // branch list
+  const branches = companyBranches.map((b: any) => ({
+    id: b._id,
+    name: b.name,
+  }));
 
   const allBranches =
     branchData?.map((branch: any) => ({
@@ -57,9 +75,9 @@ export default function DocumentsPage() {
 
   const documents = data?.data || [];
 
-  useEffect(() => {
-    console.log("documents", documents);
-  });
+  // useEffect(() => {
+  //   console.log("documents", documents);
+  // });
 
   const categories: string[] = [
     "emergency",
@@ -73,7 +91,7 @@ export default function DocumentsPage() {
   ];
 
   // const branches = allBranches.map((b) => b.name);
-  const branches = Array.from(new Set(allBranches.map((b) => b.name)));
+  // const branches = Array.from(new Set(allBranches.map((b) => b.name)));
 
   const statusOptions: string[] = [
     "active",
@@ -99,8 +117,10 @@ export default function DocumentsPage() {
 
     const matchesCategory =
       selectedCategory === "all" || doc.category === selectedCategory;
+
     const matchesBranch =
-      selectedBranch === "all" || doc.branch === selectedBranch;
+      selectedBranch === "all" || doc.branchId === selectedBranch;
+
     const matchesStatus =
       selectedStatus === "all" || doc.status === selectedStatus;
 
@@ -284,11 +304,14 @@ export default function DocumentsPage() {
                   setSearchTerm={setSearchTerm}
                   selectedCategory={selectedCategory}
                   setSelectedCategory={setSelectedCategory}
+                  selectedCompany={selectedCompany} // ✅ new
+                  setSelectedCompany={setSelectedCompany}
                   selectedBranch={selectedBranch}
                   setSelectedBranch={setSelectedBranch}
                   selectedStatus={selectedStatus}
                   setSelectedStatus={setSelectedStatus}
                   categories={categories}
+                  companies={companyData || []}
                   branches={branches}
                   statusOptions={statusOptions}
                 />

@@ -48,6 +48,8 @@ export const useSOPDocuments = () => {
 
       const apiDocs = response.data.data;
 
+      console.log("API docs:", apiDocs);
+
       const documents: Document[] = apiDocs.map((apiDoc: any) => ({
         id: apiDoc._id,
         title: apiDoc.title,
@@ -59,6 +61,7 @@ export const useSOPDocuments = () => {
         isMandatoryReading: apiDoc.isMandatoryReading,
         mandatory: apiDoc.isMandatoryReading,
         branch: apiDoc.branchId ? apiDoc.branchId.name : "All Branches",
+        branchId: apiDoc.branchId ? apiDoc.branchId._id : null,
         status: apiDoc.status.toLowerCase(),
         downloadCount: apiDoc.downloadCount,
         viewCount: apiDoc.viewCount,

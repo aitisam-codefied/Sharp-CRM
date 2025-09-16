@@ -20,11 +20,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useCompanies } from "@/hooks/useCompnay";
 
 export default function ServiceUsersPage() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedNationality, setSelectedNationality] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,18 +34,35 @@ export default function ServiceUsersPage() {
   const { data: branchesData } = useBranches();
   const { data: locationsData } = useLocations();
   const { data: roomsData } = useRooms();
-  const { data: guestsData, isPending } = useGetGuests(); // 🚨 fetch ALL guests
+  const { data: guestsData, isPending } = useGetGuests();
 
-  const branches = branchesData || [];
+  // const branches = branchesData || [];
   const locations = locationsData || [];
   const rooms = roomsData || [];
   const guests = guestsData || [];
+  const { data: companyData } = useCompanies();
+
+  const companyBranches =
+    selectedCompany !== "all"
+      ? companyData?.find((c: any) => c._id === selectedCompany)?.branches || []
+      : [];
+
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // branch list
+  const branches = companyBranches.map((b: any) => ({
+    id: b._id,
+    name: b.name,
+  }));
 
   useEffect(() => {
     console.log("guestsss", guests);
   });
 
-  const branchNames = Array.from(new Set(branches.map((b) => b.name)));
+  // const branchNames = Array.from(new Set(branches.map((b) => b.name)));
+
   const nationalities = [
     "Syrian",
     "Afghan",
@@ -59,15 +78,15 @@ export default function ServiceUsersPage() {
   const filteredUsers = useMemo(() => {
     return guests.filter((guest: any) => {
       const fullName = guest.userId?.fullName?.toLowerCase() || "";
-      const branchName =
-        branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.name ||
-        "";
+      const branchId = guest.familyRooms[0]?.roomId?.locationId?.branchId?.name;
       const nationality = guest.nationality || "";
       const status = guest.priorityLevel || "";
 
-      const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+      const matchesSearch = fullName.includes(searchTerm?.toLowerCase());
+
       const matchesBranch =
-        selectedBranch === "all" || branchName === selectedBranch;
+        selectedBranch === "all" || branchId === selectedBranch;
+
       const matchesStatus =
         selectedStatus === "all" || status === selectedStatus;
       const matchesNationality =
@@ -151,13 +170,16 @@ export default function ServiceUsersPage() {
                 <UserFilters
                   searchTerm={searchTerm}
                   setSearchTerm={setSearchTerm}
+                  selectedCompany={selectedCompany}
+                  setSelectedCompany={setSelectedCompany}
                   selectedBranch={selectedBranch}
                   setSelectedBranch={setSelectedBranch}
                   selectedStatus={selectedStatus}
                   setSelectedStatus={setSelectedStatus}
                   selectedNationality={selectedNationality}
                   setSelectedNationality={setSelectedNationality}
-                  branches={branchNames}
+                  companies={companyData || []}
+                  branches={branches}
                   statusOptions={statusOptions}
                   nationalities={nationalities}
                 />

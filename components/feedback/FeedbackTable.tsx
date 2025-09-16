@@ -57,67 +57,68 @@ export const FeedbackTable = ({
   }, [filteredFeedback]);
 
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Resident</TableHead>
-            <TableHead>Meal Details</TableHead>
-            <TableHead>Overall</TableHead>
-            <TableHead>Comments</TableHead>
-            <TableHead>Staff</TableHead>
-            {/* <TableHead className="">Actions</TableHead> */}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currentData.map((feedback) => (
-            <TableRow key={feedback.id}>
-              <TableCell>
-                <div>
-                  <div className="font-medium">{feedback.residentName}</div>
+    <>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Resident</TableHead>
+              <TableHead>Meal Details</TableHead>
+              <TableHead>Overall</TableHead>
+              <TableHead>Comments</TableHead>
+              <TableHead>Staff</TableHead>
+              {/* <TableHead className="">Actions</TableHead> */}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {currentData.map((feedback) => (
+              <TableRow key={feedback.id}>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{feedback.residentName}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {feedback.branch} • Room {feedback.room}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <Badge
+                      variant="outline"
+                      className={getMealTypeColor(feedback.mealType)}
+                    >
+                      {feedback.mealType}
+                    </Badge>
+                    <div className="text-xs text-muted-foreground">
+                      {feedback.date}
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span
+                      className={`font-bold ${getRatingColor(
+                        feedback.ratings.overall
+                      )}`}
+                    >
+                      {feedback.ratings.overall.toFixed(1)}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <p className="text-sm line-clamp-2 max-w-xs">
+                    {feedback.comments}
+                  </p>
+                </TableCell>
+                <TableCell>
                   <div className="text-sm text-muted-foreground">
-                    {feedback.branch} • Room {feedback.room}
+                    {feedback.staffMember
+                      ? feedback.staffMember
+                      : "No Staff Assigned"}
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="space-y-1">
-                  <Badge
-                    variant="outline"
-                    className={getMealTypeColor(feedback.mealType)}
-                  >
-                    {feedback.mealType}
-                  </Badge>
-                  <div className="text-xs text-muted-foreground">
-                    {feedback.date}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span
-                    className={`font-bold ${getRatingColor(
-                      feedback.ratings.overall
-                    )}`}
-                  >
-                    {feedback.ratings.overall.toFixed(1)}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <p className="text-sm line-clamp-2 max-w-xs">
-                  {feedback.comments}
-                </p>
-              </TableCell>
-              <TableCell>
-                <div className="text-sm text-muted-foreground">
-                  {feedback.staffMember
-                    ? feedback.staffMember
-                    : "No Staff Assigned"}
-                </div>
-              </TableCell>
-              {/* <TableCell>
+                </TableCell>
+                {/* <TableCell>
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm">
                     <Eye className="h-4 w-4" />
@@ -130,16 +131,16 @@ export const FeedbackTable = ({
                   </Button>
                 </div>
               </TableCell> */}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       <CustomPagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={(page) => setCurrentPage(page)}
       />
-    </div>
+    </>
   );
 };

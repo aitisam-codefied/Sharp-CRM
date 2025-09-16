@@ -235,6 +235,7 @@ export interface ClockRecord {
   branch: {
     _id: string;
     name: string;
+    companyId: string;
   };
   locations: {
     _id: string;

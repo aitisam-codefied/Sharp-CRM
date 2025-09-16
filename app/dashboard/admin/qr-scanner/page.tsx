@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -22,6 +22,7 @@ import { useGetQRCodes } from "@/hooks/useGetQRCodes";
 import { QRCodeTable } from "@/components/qr-scanner/QRCodeTable";
 import { useBranches } from "@/hooks/useGetBranches";
 import { Badge } from "@/components/ui/badge";
+import { useCompanies } from "@/hooks/useCompnay";
 
 interface QRCode {
   _id: string;
@@ -34,10 +35,26 @@ interface QRCode {
 export default function QRScannerPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("all");
-  const [selectedBranch, setSelectedBranch] = useState("all");
+  // const [selectedBranch, setSelectedBranch] = useState("all");
   const { data: qrcodes = [], isPending: isQRCodesPending } = useGetQRCodes();
 
   const { data: branchData } = useBranches();
+  const { data: companyData } = useCompanies();
+
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+
+  // Branches of selected company
+  const companyBranches =
+    selectedCompany === "all"
+      ? []
+      : companyData?.find((c: any) => c._id === selectedCompany)?.branches ||
+        [];
+
+  // Reset branch when company changes
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
 
   //  useEffect(() => {
   //    console.log("branch data", branchData);
@@ -57,8 +74,10 @@ export default function QRScannerPage() {
       .includes(searchTerm.toLowerCase());
 
     const matchesType = selectedType === "all" || qr.type === selectedType;
+
     const matchesBranch =
       selectedBranch === "all" || qr.branchId?._id === selectedBranch;
+
     return matchesSearch && matchesType && matchesBranch;
   });
 
@@ -86,12 +105,19 @@ export default function QRScannerPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div
+                  className={`grid gap-4 mb-6 ${
+                    selectedCompany !== "all"
+                      ? "grid-cols-1 md:grid-cols-3"
+                      : "grid-cols-1 md:grid-cols-2"
+                  }`}
+                >
+                  {/* Search */}
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Search by Module"
+                        placeholder="Search by name"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"
@@ -99,27 +125,43 @@ export default function QRScannerPage() {
                     </div>
                   </div>
 
+                  {/* Company Select */}
                   <Select
-                    value={selectedBranch}
-                    onValueChange={setSelectedBranch}
+                    value={selectedCompany}
+                    onValueChange={(val) => setSelectedCompany(val)}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="All Branches" />
+                      <SelectValue placeholder="Select Company" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Branches</SelectItem>
-                      {allBranches.map((branch) => (
-                        <SelectItem key={branch?.id} value={branch?.id}>
-                          <div className="flex items-center gap-2">
-                            <span>{branch.name}</span>-
-                            <Badge className="bg-[#F87D7D] text-white">
-                              {branch.company}
-                            </Badge>
-                          </div>
+                      <SelectItem value="all">All Companies</SelectItem>
+                      {companyData?.map((company: any) => (
+                        <SelectItem key={company._id} value={company._id}>
+                          {company.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+
+                  {/* Branch Select (only show if company selected) */}
+                  {selectedCompany !== "all" && (
+                    <Select
+                      value={selectedBranch}
+                      onValueChange={(val) => setSelectedBranch(val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Branch" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Branches</SelectItem>
+                        {companyBranches.map((branch: any) => (
+                          <SelectItem key={branch._id} value={branch._id}>
+                            {branch.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 <QRCodeTable

@@ -287,7 +287,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="address">Additional Notes *</Label>
+          <Label htmlFor="address">Additional Notes</Label>
           <Textarea
             id="additionalNotes"
             placeholder="Enter any additional notes"

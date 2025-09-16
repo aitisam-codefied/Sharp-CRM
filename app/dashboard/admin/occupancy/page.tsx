@@ -68,6 +68,7 @@ export default function OccupancyAgreementsPage() {
     const matchesStatus =
       selectedStatus === "all" ||
       agreement.status.toLowerCase() === selectedStatus;
+      
     const matchesBranch =
       selectedBranch === "All Branches" ||
       agreement.branchId.name === selectedBranch;
@@ -148,7 +149,7 @@ export default function OccupancyAgreementsPage() {
             <>
               <CardContent>
                 {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -164,7 +165,7 @@ export default function OccupancyAgreementsPage() {
                     value={selectedStatus}
                     onValueChange={setSelectedStatus}
                   >
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="">
                       <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
@@ -179,7 +180,7 @@ export default function OccupancyAgreementsPage() {
                     value={selectedBranch}
                     onValueChange={setSelectedBranch}
                   >
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="">
                       <SelectValue placeholder="All Branches" />
                     </SelectTrigger>
                     <SelectContent>

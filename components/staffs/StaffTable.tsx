@@ -54,6 +54,8 @@ import EditStaffDialog from "./EditStaffDialog";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "../CustomPagination";
+import { useCompanies } from "@/hooks/useCompnay";
+import CompanyBranchFilter from "../CompanyBranchFilter";
 
 // Fetch staff members with pagination
 const fetchStaffMembers = async () => {
@@ -110,6 +112,11 @@ export default function StaffTable() {
 
   const roles = ["Manager", "AssistantManager", "Staff"];
   const { data: branchData } = useBranches();
+  const { data: CompanyData } = useCompanies();
+
+  useEffect(() => {
+    console.log("companyy dataa", CompanyData);
+  });
 
   // useEffect(() => {
   //   console.log("branch data", branchData);
@@ -356,7 +363,7 @@ export default function StaffTable() {
           {!isLoading && !isError && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-between gap-4 mb-6">
-                <div className="max-w-sm">
+                <div className="">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -367,27 +374,26 @@ export default function StaffTable() {
                     />
                   </div>
                 </div>
-                <Select
-                  value={selectedBranches[0] || "all"}
-                  onValueChange={(value) => setSelectedBranches([value])}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Branches" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Branches</SelectItem>
-                    {allBranches.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{branch.name}</span>-
-                          <Badge className="bg-[#F87D7D] text-white">
-                            {branch.company}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CompanyBranchFilter
+                  companies={CompanyData || []}
+                  onChange={(companyId, branchId) => {
+                    if (branchId) {
+                      setSelectedBranches([branchId]);
+                    } else if (companyId) {
+                      // agar company select hui but branch all ho → us company ki saari branches filter ho
+                      const company = CompanyData?.find(
+                        (c: any) => c._id === companyId
+                      );
+                      const branchIds =
+                        company?.branches.map((b: any) => b._id) || [];
+                      setSelectedBranches(branchIds);
+                    } else {
+                      // all companies and all branches
+                      setSelectedBranches([]);
+                    }
+                  }}
+                />
+
                 <Select
                   value={selectedRoles[0] || "all"}
                   onValueChange={(value) => setSelectedRoles([value])}

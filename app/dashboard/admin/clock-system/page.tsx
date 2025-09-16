@@ -34,6 +34,7 @@ export default function ClockSystemPage() {
       id: branch._id,
       name: branch.name,
       company: branch.companyId.name,
+      companyId: branch.companyId._id,
     })) || [];
 
   // const branches = allBranches.map((b) => b.name);

@@ -31,6 +31,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ClockRecord } from "@/lib/types";
 import { CustomPagination } from "@/components/CustomPagination";
+import { useCompanies } from "@/hooks/useCompnay";
 
 interface ClockRecordsTableProps {
   clockRecords: ClockRecord[];
@@ -42,8 +43,28 @@ export default function ClockRecordsTable({
   branches,
 }: ClockRecordsTableProps) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+  // const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const { data: comapnayData } = useCompanies();
+
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
+  const [selectedBranch, setSelectedBranch] = useState<string>("all");
+
+  // Branches of selected company
+  const companyBranches =
+    selectedCompany === "all"
+      ? []
+      : comapnayData?.find((c: any) => c._id === selectedCompany)?.branches ||
+        [];
+
+  // Reset branch when company changes
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // useEffect(() => {
+  //   console.log("comapnies list", comapnayData);
+  // });
 
   // pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,15 +81,18 @@ export default function ClockRecordsTable({
     setCurrentPage(1);
   }, [searchTerm, selectedBranch, selectedDate]);
 
+  // Filter logic update
   const filteredRecords = clockRecords.filter((record: ClockRecord) => {
     const matchesSearch =
       record.staff?.fullName
         ?.toLowerCase()
-        .includes(searchTerm?.toLowerCase()) ||
-      record.staff?.username?.toLowerCase().includes(searchTerm?.toLowerCase());
+        .includes(searchTerm.toLowerCase()) ||
+      record.staff?.username?.toLowerCase().includes(searchTerm.toLowerCase());
 
+    // ✅ company ka filter hata diya
     const matchesBranch =
       selectedBranch === "all" || record.branch._id === selectedBranch;
+
     const matchesDate = selectedDate === "" || record.date === selectedDate;
 
     return matchesSearch && matchesBranch && matchesDate;
@@ -106,49 +130,63 @@ export default function ClockRecordsTable({
   return (
     <div>
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div
+        className={`grid gap-4 mb-6 ${
+          selectedCompany !== "all"
+            ? "grid-cols-1 md:grid-cols-3"
+            : "grid-cols-1 md:grid-cols-2"
+        }`}
+      >
+        {/* Search */}
         <div className="flex-1">
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name"
               value={searchTerm}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setSearchTerm(e.target.value)
-              }
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
         </div>
-        {/* <Input
-          type="date"
-          value={selectedDate}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setSelectedDate(e.target.value)
-          }
-          className="w-full"
-        /> */}
+
+        {/* Company Select */}
         <Select
-          value={selectedBranch}
-          onValueChange={(val) => setSelectedBranch(val)}
+          value={selectedCompany}
+          onValueChange={(val) => setSelectedCompany(val)}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="All Branches" />
+            <SelectValue placeholder="Select Company" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Branches</SelectItem>
-            {branches.map((branch) => (
-              <SelectItem key={branch.id} value={branch.id}>
-                <div className="flex items-center gap-2">
-                  <span>{branch.name}</span>-
-                  <Badge variant="outline" className="bg-[#F87D7D] text-white">
-                    {branch.company}
-                  </Badge>
-                </div>
+            <SelectItem value="all">All Companies</SelectItem>
+            {comapnayData?.map((company: any) => (
+              <SelectItem key={company._id} value={company._id}>
+                {company.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
+        {/* Branch Select (only show if company selected) */}
+        {selectedCompany !== "all" && (
+          <Select
+            value={selectedBranch}
+            onValueChange={(val) => setSelectedBranch(val)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Branch" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Branches</SelectItem>
+              {companyBranches.map((branch: any) => (
+                <SelectItem key={branch._id} value={branch._id}>
+                  {branch.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Table */}
@@ -164,7 +202,7 @@ export default function ClockRecordsTable({
               <TableHead>Late</TableHead>
               <TableHead>Early</TableHead>
               <TableHead>On Break</TableHead>
-              <TableHead>Disconnected</TableHead>
+              <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

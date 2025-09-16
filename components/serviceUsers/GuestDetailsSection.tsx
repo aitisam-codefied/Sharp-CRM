@@ -23,6 +23,13 @@ import { ROOM_PREFERENCE_TYPES } from "../AddBranchDialog";
 import { ContactFields2 } from "./ContactFields2";
 import { ConsentFields2 } from "./ConsentFields2";
 import { DocumentFields2 } from "./DocumentFields2";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Command, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Check } from "lucide-react";
 
 interface GuestDetailsSectionProps {
   user: ServiceUser | null;
@@ -502,7 +509,7 @@ export function GuestDetailsSection({
           </div>
           <div className="space-y-2">
             <Label htmlFor="dietaryRequirements">Dietary Requirements</Label>
-            <Controller
+            {/* <Controller
               name="dietaryRequirements"
               control={control}
               render={({ field }) => {
@@ -552,6 +559,77 @@ export function GuestDetailsSection({
                       ))}
                     </div>
                   </div>
+                );
+              }}
+            /> */}
+            <Controller
+              name="dietaryRequirements"
+              control={control}
+              render={({ field }) => {
+                const selectedValues: string[] = field.value || [];
+                return (
+                  <>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-between"
+                        >
+                          {selectedValues.length > 0
+                            ? `${selectedValues.length} selected`
+                            : "Select dietary requirements"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0">
+                        <Command>
+                          <CommandGroup>
+                            {Object.values(DIETARY_REQUIREMENT_TYPES).map(
+                              (type) => {
+                                const isSelected =
+                                  selectedValues.includes(type);
+                                return (
+                                  <CommandItem
+                                    key={type}
+                                    onSelect={() => {
+                                      let updated = isSelected
+                                        ? selectedValues.filter(
+                                            (v) => v !== type
+                                          )
+                                        : [...selectedValues, type];
+                                      field.onChange(updated);
+                                    }}
+                                  >
+                                    <Check
+                                      className={`mr-2 h-4 w-4 ${
+                                        isSelected ? "opacity-100" : "opacity-0"
+                                      }`}
+                                    />
+                                    {type}
+                                  </CommandItem>
+                                );
+                              }
+                            )}
+                          </CommandGroup>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedValues?.map((type) => (
+                        <Badge
+                          key={type}
+                          variant="secondary"
+                          className="cursor-pointer"
+                          onClick={() =>
+                            field.onChange(
+                              selectedValues.filter((v) => v !== type)
+                            )
+                          }
+                        >
+                          {type} ✕
+                        </Badge>
+                      ))}
+                    </div>
+                  </>
                 );
               }}
             />

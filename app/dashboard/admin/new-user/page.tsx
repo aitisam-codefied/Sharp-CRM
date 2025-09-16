@@ -204,8 +204,8 @@ export default function NewUserPage() {
       formData.guests[0].nationality?.trim() &&
       (!formData.guests[0].address ||
         formData.guests[0].address.length <= 150) &&
-      formData.guests[0].additionalNotes?.trim() &&
-      formData.guests[0].additionalNotes.length <= 150 &&
+      // formData.guests[0].additionalNotes?.trim() &&
+      // formData.guests[0].additionalNotes.length <= 150 &&
       isDependantValid && // ✅ yahan enforce hoga
       formData.branchId?.trim()
     );

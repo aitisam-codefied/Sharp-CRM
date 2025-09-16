@@ -17,7 +17,7 @@ export default function DependantsModal({
 
     setFormData((prev: any) => ({
       ...prev,
-      hasKids,
+      hasKids: hasKids ?? false,
       numKids: hasKids ? kids : 0,
       roomRequirement: hasKids && kids > 2 ? 2 : hasKids ? 1 : 2,
     }));
