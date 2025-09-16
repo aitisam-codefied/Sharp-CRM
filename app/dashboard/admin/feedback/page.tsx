@@ -87,6 +87,7 @@ export default function FeedbackPage() {
       name: branch.name,
       company: branch.companyId.name,
     })) || [];
+
   const mealTypes = ["Weekly"]; // Adjusted to match API data
 
   const filteredFeedback = transformed.filter((feedback) => {
@@ -129,13 +130,6 @@ export default function FeedbackPage() {
     return "text-red-600";
   };
 
-  const getRatingBadgeColor = (rating: number) => {
-    if (rating >= 4.5) return "bg-green-100 text-green-800";
-    if (rating >= 3.5) return "bg-blue-100 text-blue-800";
-    if (rating >= 2.5) return "bg-yellow-100 text-yellow-800";
-    return "bg-red-100 text-red-800";
-  };
-
   const getMealTypeColor = (mealType: string) => {
     switch (mealType) {
       case "Breakfast":
@@ -150,44 +144,6 @@ export default function FeedbackPage() {
         return "bg-gray-100 text-gray-800";
     }
   };
-
-  const getStats = () => {
-    const totalFeedback = filteredFeedback.length;
-    const avgRating =
-      filteredFeedback.reduce((sum, f) => sum + f.ratings.overall, 0) /
-        totalFeedback || 0;
-    const positiveCount = filteredFeedback.filter(
-      (f) => f.ratings.overall >= 4
-    ).length;
-    const negativeCount = filteredFeedback.filter(
-      (f) => f.ratings.overall < 3
-    ).length;
-
-    return {
-      totalFeedback,
-      avgRating,
-      positiveCount,
-      negativeCount,
-      positivePercentage: (positiveCount / totalFeedback) * 100 || 0,
-      negativePercentage: (negativeCount / totalFeedback) * 100 || 0,
-    };
-  };
-
-  const stats = getStats();
-
-  const getCategoryAverages = () => {
-    const categories = ["taste", "freshness", "portion", "temperature"];
-    return categories.map((category) => {
-      const avg =
-        filteredFeedback.reduce(
-          (sum, f) => sum + f.ratings[category as keyof typeof f.ratings],
-          0
-        ) / filteredFeedback.length || 0;
-      return { category, average: avg };
-    });
-  };
-
-  const categoryAverages = getCategoryAverages();
 
   return (
     <DashboardLayout

@@ -53,27 +53,35 @@ interface TransformedBranchData {
 
 // Helper function to calculate total rooms across all locations
 const calculateTotalRooms = (locations: any[]) => {
-  return locations.reduce((total, location) => total + location.rooms.length, 0);
+  return locations.reduce(
+    (total, location) => total + location.rooms.length,
+    0
+  );
 };
 
 // Helper function to calculate total capacity (assuming each room has capacity based on type)
 const calculateTotalCapacity = (locations: any[]) => {
   return locations.reduce((total, location) => {
-    return total + location.rooms.reduce((roomTotal: number, room: any) => {
-      // Extract capacity from room type string (e.g., "Triple Room (Capacity 3)")
-      const capacityMatch = room.type.match(/\(Capacity (\d+)\)/);
-      return roomTotal + (capacityMatch ? parseInt(capacityMatch[1]) : 1);
-    }, 0);
+    return (
+      total +
+      location.rooms.reduce((roomTotal: number, room: any) => {
+        // Extract capacity from room type string (e.g., "Triple Room (Capacity 3)")
+        const capacityMatch = room.type.match(/\(Capacity (\d+)\)/);
+        return roomTotal + (capacityMatch ? parseInt(capacityMatch[1]) : 1);
+      }, 0)
+    );
   }, 0);
 };
 
 // Mock data for fields not available in API
 const generateMockData = (branchId: string) => ({
   totalStaff: Math.floor(Math.random() * 100) + 20,
-    status: "Active",
+  status: "Active",
   residents: Math.floor(Math.random() * 500) + 100,
   openIRs: Math.floor(Math.random() * 10),
-  alertLevel: ["High", "Moderate", "Stable", "Requires", "No Issues"][Math.floor(Math.random() * 5)]
+  alertLevel: ["High", "Moderate", "Stable", "Requires", "No Issues"][
+    Math.floor(Math.random() * 5)
+  ],
 });
 
 const getAlertLevelColor = (level: string) => {
@@ -98,82 +106,90 @@ export default function BranchPerformanceTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("all-companies");
   const [selectedStatus, setSelectedStatus] = useState("all-status");
-  const [selectedAlertLevel, setSelectedAlertLevel] = useState("all-alert-levels");
+  const [selectedAlertLevel, setSelectedAlertLevel] =
+    useState("all-alert-levels");
   const itemsPerPage = 5;
-  
+
   // Filter states
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedRole, setSelectedRole] = useState("all-roles");
-  
+
   // Fetch branch data from API
   const { data: branchListData, isLoading, error } = useGetBranchList();
-  
+
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedBranch, selectedRole, selectedStatus]);
-  
+
   // Transform API data to match table structure
-  const transformedBranchData: TransformedBranchData[] = branchListData?.map((branch) => {
-    const mockData = generateMockData(branch._id);
-    const totalRooms = calculateTotalRooms(branch.locations);
-    const totalCapacity = calculateTotalCapacity(branch.locations);
-    const occupancy = totalCapacity > 0 ? Math.round((mockData.residents / totalCapacity) * 100) : 0;
-    
-    return {
-      id: branch._id,
-      branch: branch.name,
-      branchCode: branch._id.slice(-8).toUpperCase(),
-      companyName: branch.companyId.name,
-      address: branch.address,
-      totalStaff: mockData.totalStaff,
-      status: mockData.status,
-      residents: mockData.residents,
-      occupancy: occupancy,
-      openIRs: mockData.openIRs,
-      alertLevel: mockData.alertLevel,
-      totalRooms: totalRooms,
-      totalCapacity: totalCapacity,
-      locations: branch.locations.length,
-      createdAt: branch.createdAt,
-      updatedAt: branch.updatedAt
-    };
-  }) || [];
-  
+  const transformedBranchData: TransformedBranchData[] =
+    branchListData?.map((branch) => {
+      const mockData = generateMockData(branch._id);
+      const totalRooms = calculateTotalRooms(branch.locations);
+      const totalCapacity = calculateTotalCapacity(branch.locations);
+      const occupancy =
+        totalCapacity > 0
+          ? Math.round((mockData.residents / totalCapacity) * 100)
+          : 0;
+
+      return {
+        id: branch._id,
+        branch: branch.name,
+        branchCode: branch._id.slice(-8).toUpperCase(),
+        companyName: branch.companyId.name,
+        address: branch.address,
+        totalStaff: mockData.totalStaff,
+        status: mockData.status,
+        residents: mockData.residents,
+        occupancy: occupancy,
+        openIRs: mockData.openIRs,
+        alertLevel: mockData.alertLevel,
+        totalRooms: totalRooms,
+        totalCapacity: totalCapacity,
+        locations: branch.locations.length,
+        createdAt: branch.createdAt,
+        updatedAt: branch.updatedAt,
+      };
+    }) || [];
+
   // Get unique companies for branch filter
   const uniqueCompanies = Array.from(
-    new Set(transformedBranchData.map(branch => branch.companyName))
+    new Set(transformedBranchData.map((branch) => branch.companyName))
   );
-  
+
   // Apply filters
   const filteredData = transformedBranchData.filter((branch) => {
     // Search filter
-    const matchesSearch = searchTerm === "" || 
+    const matchesSearch =
+      searchTerm === "" ||
       branch.branch.toLowerCase().includes(searchTerm.toLowerCase()) ||
       branch.branchCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       branch.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       branch.address.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     // Branch location filter (using company name as branch location)
-    const matchesBranch = selectedBranch === "all-branches" ||
+    const matchesBranch =
+      selectedBranch === "all-branches" ||
       branch.companyName.toLowerCase().includes(selectedBranch.toLowerCase());
-    
+
     // Status filter
-    const matchesStatus = selectedStatus === "all-status" ||
+    const matchesStatus =
+      selectedStatus === "all-status" ||
       branch.status.toLowerCase() === selectedStatus.toLowerCase();
-    
+
     // Role filter (this doesn't apply to branches, but keeping for consistency)
     const matchesRole = selectedRole === "all-roles";
-    
+
     return matchesSearch && matchesBranch && matchesStatus && matchesRole;
   });
-  
+
   // Reset to first page when filters change
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
-  
+
   // Loading state
   if (isLoading) {
     return (
@@ -192,7 +208,7 @@ export default function BranchPerformanceTable() {
       </Card>
     );
   }
-  
+
   // Error state
   if (error) {
     return (
@@ -205,13 +221,15 @@ export default function BranchPerformanceTable() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-8">
-            <div className="text-red-500">Error loading branches. Please try again.</div>
+            <div className="text-red-500">
+              Error loading branches. Please try again.
+            </div>
           </div>
         </CardContent>
       </Card>
     );
   }
-  
+
   // No results state
   if (filteredData.length === 0 && transformedBranchData.length > 0) {
     return (
@@ -223,22 +241,22 @@ export default function BranchPerformanceTable() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
-            <div className="relative flex-1 max-w-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center justify-between gap-2 mb-6">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search branches..." 
+              <Input
+                placeholder="Search branches..."
                 className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="">
                 <SelectValue placeholder="All Branches" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all-branches">All Branches</SelectItem>
+                <SelectItem value="all-branches">All Companies</SelectItem>
                 {uniqueCompanies.map((company) => (
                   <SelectItem key={company} value={company.toLowerCase()}>
                     {company}
@@ -246,7 +264,7 @@ export default function BranchPerformanceTable() {
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedRole} onValueChange={setSelectedRole}>
+            {/* <Select value={selectedRole} onValueChange={setSelectedRole}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="All Roles" />
               </SelectTrigger>
@@ -255,9 +273,9 @@ export default function BranchPerformanceTable() {
                 <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="staff">Staff</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
@@ -266,8 +284,8 @@ export default function BranchPerformanceTable() {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               size="sm"
               onClick={() => {
                 setSearchTerm("");
@@ -281,7 +299,9 @@ export default function BranchPerformanceTable() {
             </Button>
           </div>
           <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">No branches found matching your filters.</div>
+            <div className="text-muted-foreground">
+              No branches found matching your filters.
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -297,22 +317,22 @@ export default function BranchPerformanceTable() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-6">
-          <div className="relative flex-1 max-w-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center justify-between gap-2 mb-6">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search branches..." 
+            <Input
+              placeholder="Search branches..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="">
               <SelectValue placeholder="All Companies" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all-branches">All Branches</SelectItem>
+              <SelectItem value="all-branches">All Companies</SelectItem>
               {uniqueCompanies.map((company) => (
                 <SelectItem key={company} value={company.toLowerCase()}>
                   {company}
@@ -320,7 +340,7 @@ export default function BranchPerformanceTable() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={selectedRole} onValueChange={setSelectedRole}>
+          {/* <Select value={selectedRole} onValueChange={setSelectedRole}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="All Roles" />
             </SelectTrigger>
@@ -329,9 +349,9 @@ export default function BranchPerformanceTable() {
               <SelectItem value="manager">Manager</SelectItem>
               <SelectItem value="staff">Staff</SelectItem>
             </SelectContent>
-          </Select>
+          </Select> */}
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="">
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -340,8 +360,8 @@ export default function BranchPerformanceTable() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => {
               setSearchTerm("");
@@ -354,16 +374,18 @@ export default function BranchPerformanceTable() {
             Clear Filters
           </Button>
         </div>
-        
+
         {/* Active filters summary */}
-        {(searchTerm || selectedBranch !== "all-branches" || selectedStatus !== "all-status") && (
+        {(searchTerm ||
+          selectedBranch !== "all-branches" ||
+          selectedStatus !== "all-status") && (
           <div className="mb-4 p-3 bg-muted/50 rounded-lg">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="text-muted-foreground">Active filters:</span>
               {searchTerm && (
                 <Badge variant="secondary" className="gap-1">
                   Search: "{searchTerm}"
-                  <button 
+                  <button
                     onClick={() => setSearchTerm("")}
                     className="ml-1 hover:text-destructive"
                   >
@@ -374,7 +396,7 @@ export default function BranchPerformanceTable() {
               {selectedBranch !== "all-branches" && (
                 <Badge variant="secondary" className="gap-1">
                   Company: {selectedBranch}
-                  <button 
+                  <button
                     onClick={() => setSelectedBranch("all-branches")}
                     className="ml-1 hover:text-destructive"
                   >
@@ -385,7 +407,7 @@ export default function BranchPerformanceTable() {
               {selectedStatus !== "all-status" && (
                 <Badge variant="secondary" className="gap-1">
                   Status: {selectedStatus}
-                  <button 
+                  <button
                     onClick={() => setSelectedStatus("all-status")}
                     className="ml-1 hover:text-destructive"
                   >
@@ -396,7 +418,7 @@ export default function BranchPerformanceTable() {
             </div>
           </div>
         )}
-        
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -408,7 +430,7 @@ export default function BranchPerformanceTable() {
                 <TableHead>Occupancy</TableHead>
                 <TableHead>Open IRs</TableHead>
                 <TableHead>Alert Level</TableHead>
-                <TableHead>Actions</TableHead>
+                {/* <TableHead>Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -427,7 +449,10 @@ export default function BranchPerformanceTable() {
                   </TableCell>
                   <TableCell>{branch.totalStaff}</TableCell>
                   <TableCell>
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge
+                      variant="outline"
+                      className="bg-green-100 text-green-800"
+                    >
                       {branch.status}
                     </Badge>
                   </TableCell>
@@ -435,11 +460,14 @@ export default function BranchPerformanceTable() {
                   <TableCell>{branch.occupancy}%</TableCell>
                   <TableCell>{branch.openIRs}</TableCell>
                   <TableCell>
-                    <Badge className={getAlertLevelColor(branch.alertLevel)}>
+                    <Badge
+                      variant="outline"
+                      className={getAlertLevelColor(branch.alertLevel)}
+                    >
                       {branch.alertLevel}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <div className="flex items-center gap-2">
                       <Button variant="ghost" size="sm">
                         <Eye className="h-4 w-4" />
@@ -451,7 +479,7 @@ export default function BranchPerformanceTable() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>

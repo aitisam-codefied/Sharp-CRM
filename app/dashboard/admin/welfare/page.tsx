@@ -154,16 +154,6 @@ export default function WelfarePage() {
     }
   };
 
-  // Stats cards ke liye
-  const stats = {
-    totalChecks: filteredWelfareChecks.length,
-    criticalChecks: filteredWelfareChecks.filter((c) => c.status === "CRITICAL")
-      .length,
-    completedChecks: filteredWelfareChecks.filter((c) => c.isCompleted).length,
-    followUpRequired: filteredWelfareChecks.filter((c) => c.followUpRequired)
-      .length,
-  };
-
   if (error) {
     return (
       <DashboardLayout title="Welfare Check Management" description="Error">
@@ -267,63 +257,67 @@ export default function WelfarePage() {
                           <TableCell>
                             <div className="text-sm">
                               {new Date(
-                                check.weekStartDate
+                                check?.details[0]?.weekStartDate
                               ).toLocaleDateString()}{" "}
                               -{" "}
-                              {new Date(check.weekEndDate).toLocaleDateString()}
+                              {new Date(
+                                check?.details[0]?.weekEndDate
+                              ).toLocaleDateString()}
                             </div>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check.physicalHealth.status
+                                check?.details[0]?.physicalHealth?.status
                               )}
                             >
-                              {check.physicalHealth.status}
+                              {check?.details[0]?.physicalHealth?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getMentalStateColor(
-                                check.mentalHealth.status
+                                check?.details[0]?.mentalHealth?.status
                               )}
                             >
-                              {check.mentalHealth.status}
+                              {check?.details[0]?.mentalHealth?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check.emotionalWellbeing.status
+                                check?.details[0]?.emotionalWellbeing?.status
                               )}
                             >
-                              {check.emotionalWellbeing.status}
+                              {check?.details[0]?.emotionalWellbeing?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check.socialSupport.status
+                                check?.details[0]?.socialSupport?.status
                               )}
                             >
-                              {check.socialSupport.status}
+                              {check?.details[0]?.socialSupport?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check.overallAssessment
+                                check?.details[0]?.overallAssessment
                               )}
                             >
-                              {check.overallAssessment}
+                              {check?.details[0]?.overallAssessment}
                             </span>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
-                              className={getStatusColor(check.status)}
+                              className={getStatusColor(
+                                check?.details[0]?.status
+                              )}
                             >
-                              {check.status}
+                              {check?.details[0]?.status}
                             </Badge>
                           </TableCell>
                         </TableRow>

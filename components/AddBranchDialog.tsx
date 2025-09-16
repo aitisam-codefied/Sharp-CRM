@@ -296,13 +296,14 @@ export default function AddBranchDialog() {
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[500px] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="sticky top-0 bg-white">
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
             Enter the details for the new branch
           </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
           {/* Company Select */}
           <div className="space-y-2">

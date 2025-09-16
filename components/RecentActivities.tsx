@@ -97,14 +97,24 @@ export default function RecentActivities() {
             return (
               <div key={log._id} className="flex items-start space-x-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium">
-                    <Link
+                  <p className="text-xs font-medium mb-1">
+                    {/* <Link
                       href={`/dashboard/admin/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
-                    >
-                      {log.notes}
-                    </Link>
+                    > */}
+                    {log.notes}
+                    {/* </Link> */}
                   </p>
+                  <div className="flex items-center justify-start gap-2">
+                    <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit mt-1">
+                      <span className="text-black text-xs">Action:</span>{" "}
+                      {log.actionType}
+                    </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border border-green-300 w-fit mt-1">
+                      <span className="text-black text-xs">Type:</span>{" "}
+                      {log.moduleType}
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between gap-4 mt-1">
                     <div className="flex items-start sm:items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
@@ -112,24 +122,15 @@ export default function RecentActivities() {
                         {time}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4">
+                    {/* <div className="flex flex-wrap items-center gap-4">
                       <Badge
                         variant="outline"
                         className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
                       >
                         {log.severity}
                       </Badge>
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
-                      >
-                        {log.moduleType}
-                      </Badge>
-                    </div>
+                    </div> */}
                   </div>
-                  <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit">
-                    <span className="text-black text-xs">Action:</span> {log.actionType}
-                  </p>
                 </div>
               </div>
             );
