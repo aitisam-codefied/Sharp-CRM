@@ -373,7 +373,7 @@ export default function AddBranchDialog() {
 
           {/* Locations */}
           <div className="space-y-4">
-            <Label>Locations</Label>
+            <Label>Locations *</Label>
             {branch.locations.map((location, locationIndex) => (
               <div
                 key={locationIndex}

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -16,21 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Building2,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  Loader2,
-  X,
-} from "lucide-react";
+import { Building2, Search } from "lucide-react";
 import { useGetBranchList } from "@/hooks/useGetBranchList";
+import { CustomPagination } from "@/components/CustomPagination"; // 👈 import custom pagination
 
 // Types for transformed data
 interface TransformedBranchData {
@@ -52,7 +43,6 @@ interface TransformedBranchData {
   updatedAt: string;
 }
 
-// Helper function to calculate total rooms across all locations
 const calculateTotalRooms = (locations: any[]) => {
   return locations.reduce(
     (total, location) => total + location.rooms.length,
@@ -60,13 +50,11 @@ const calculateTotalRooms = (locations: any[]) => {
   );
 };
 
-// Helper function to calculate total capacity (assuming each room has capacity based on type)
 const calculateTotalCapacity = (locations: any[]) => {
   return locations.reduce((total, location) => {
     return (
       total +
       location.rooms.reduce((roomTotal: number, room: any) => {
-        // Extract capacity from room type string (e.g., "Triple Room (Capacity 3)")
         const capacityMatch = room.type.match(/\(Capacity (\d+)\)/);
         return roomTotal + (capacityMatch ? parseInt(capacityMatch[1]) : 1);
       }, 0)
@@ -74,7 +62,6 @@ const calculateTotalCapacity = (locations: any[]) => {
   }, 0);
 };
 
-// Mock data for fields not available in API
 const generateMockData = (branchId: string) => ({
   totalStaff: Math.floor(Math.random() * 100) + 20,
   status: "Active",
@@ -107,23 +94,17 @@ export default function BranchPerformanceTable() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState("all-companies");
   const [selectedStatus, setSelectedStatus] = useState("all-status");
-  const [selectedAlertLevel, setSelectedAlertLevel] =
-    useState("all-alert-levels");
-  const itemsPerPage = 5;
-
-  // Filter states
   const [selectedBranch, setSelectedBranch] = useState("all-branches");
   const [selectedRole, setSelectedRole] = useState("all-roles");
 
-  // Fetch branch data from API
+  const itemsPerPage = 5;
+
   const { data: branchListData, isLoading, error } = useGetBranchList();
 
-  // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedBranch, selectedRole, selectedStatus]);
 
-  // Transform API data to match table structure
   const transformedBranchData: TransformedBranchData[] =
     branchListData?.map((branch) => {
       const mockData = generateMockData(branch._id);
@@ -154,14 +135,11 @@ export default function BranchPerformanceTable() {
       };
     }) || [];
 
-  // Get unique companies for branch filter
   const uniqueCompanies = Array.from(
     new Set(transformedBranchData.map((branch) => branch.companyName))
   );
 
-  // Apply filters
   const filteredData = transformedBranchData.filter((branch) => {
-    // Search filter
     const matchesSearch =
       searchTerm === "" ||
       branch.branch.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -169,150 +147,29 @@ export default function BranchPerformanceTable() {
       branch.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       branch.address.toLowerCase().includes(searchTerm.toLowerCase());
 
-    // Branch location filter (using company name as branch location)
     const matchesBranch =
       selectedBranch === "all-branches" ||
       branch.companyName.toLowerCase().includes(selectedBranch.toLowerCase());
 
-    // Status filter
     const matchesStatus =
       selectedStatus === "all-status" ||
       branch.status.toLowerCase() === selectedStatus.toLowerCase();
 
-    // Role filter (this doesn't apply to branches, but keeping for consistency)
     const matchesRole = selectedRole === "all-roles";
 
     return matchesSearch && matchesBranch && matchesStatus && matchesRole;
   });
 
-  // Reset to first page when filters change
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
+  const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  const isFilterApplied =
-    searchTerm !== "" ||
-    selectedBranch !== "all-branches" ||
-    selectedRole !== "all-roles" ||
-    selectedStatus !== "all-status";
-
-  // Loading state
   if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Branch Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">Loading branches...</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <div>Loading...</div>;
   }
 
-  // Error state
   if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Branch Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-red-500">
-              Error loading branches. Please try again.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // No results state
-  if (filteredData.length === 0 && transformedBranchData.length > 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
-            Branch Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center justify-between gap-2 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search branches..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-              <SelectTrigger className="">
-                <SelectValue placeholder="All Branches" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-branches">All Companies</SelectItem>
-                {uniqueCompanies.map((company) => (
-                  <SelectItem key={company} value={company.toLowerCase()}>
-                    {company}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* <Select value={selectedRole} onValueChange={setSelectedRole}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="All Roles" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-roles">All Roles</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="staff">Staff</SelectItem>
-              </SelectContent>
-            </Select> */}
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all-status">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedBranch("all-branches");
-                setSelectedRole("all-roles");
-                setSelectedStatus("all-status");
-              }}
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Clear Filters
-            </Button>
-          </div>
-          <div className="flex items-center justify-center py-8">
-            <div className="text-muted-foreground">
-              No branches found matching your filters.
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <div>Error loading branches</div>;
   }
 
   return (
@@ -324,9 +181,9 @@ export default function BranchPerformanceTable() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 items-center justify-between gap-2 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-6">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search branches..."
               className="pl-10"
@@ -335,7 +192,7 @@ export default function BranchPerformanceTable() {
             />
           </div>
           <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-            <SelectTrigger className="">
+            <SelectTrigger>
               <SelectValue placeholder="All Companies" />
             </SelectTrigger>
             <SelectContent>
@@ -347,18 +204,8 @@ export default function BranchPerformanceTable() {
               ))}
             </SelectContent>
           </Select>
-          {/* <Select value={selectedRole} onValueChange={setSelectedRole}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="All Roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-roles">All Roles</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="staff">Staff</SelectItem>
-            </SelectContent>
-          </Select> */}
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="">
+            <SelectTrigger>
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -367,65 +214,7 @@ export default function BranchPerformanceTable() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={!isFilterApplied}
-            onClick={() => {
-              setSearchTerm("");
-              setSelectedBranch("all-branches");
-              setSelectedRole("all-roles");
-              setSelectedStatus("all-status");
-            }}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Clear Filters
-          </Button>
         </div>
-
-        {/* Active filters summary */}
-        {(searchTerm ||
-          selectedBranch !== "all-branches" ||
-          selectedStatus !== "all-status") && (
-          <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Active filters:</span>
-              {searchTerm && (
-                <Badge variant="secondary" className="gap-1">
-                  Search: "{searchTerm}"
-                  <button
-                    onClick={() => setSearchTerm("")}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </Badge>
-              )}
-              {selectedBranch !== "all-branches" && (
-                <Badge variant="secondary" className="gap-1">
-                  Company: {selectedBranch}
-                  <button
-                    onClick={() => setSelectedBranch("all-branches")}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </Badge>
-              )}
-              {selectedStatus !== "all-status" && (
-                <Badge variant="secondary" className="gap-1">
-                  Status: {selectedStatus}
-                  <button
-                    onClick={() => setSelectedStatus("all-status")}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </Badge>
-              )}
-            </div>
-          </div>
-        )}
 
         <div className="rounded-md border">
           <Table>
@@ -438,7 +227,6 @@ export default function BranchPerformanceTable() {
                 <TableHead>Occupancy</TableHead>
                 <TableHead>Open IRs</TableHead>
                 <TableHead>Alert Level</TableHead>
-                {/* <TableHead>Actions</TableHead> */}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -475,53 +263,18 @@ export default function BranchPerformanceTable() {
                       {branch.alertLevel}
                     </Badge>
                   </TableCell>
-                  {/* <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell> */}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Rows per page: {itemsPerPage}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {startIndex + 1}-{Math.min(endIndex, filteredData.length)} of{" "}
-              {filteredData.length}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+
+        {/* ✅ Custom Pagination integrated */}
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </CardContent>
     </Card>
   );
