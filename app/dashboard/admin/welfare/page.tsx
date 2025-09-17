@@ -231,7 +231,7 @@ export default function WelfarePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Welfare Check ID</TableHead>
+                        <TableHead>Welfare Check</TableHead>
                         <TableHead>Week Period</TableHead>
                         <TableHead>Physical Health</TableHead>
                         <TableHead>Mental Health</TableHead>
@@ -246,12 +246,10 @@ export default function WelfarePage() {
                         <TableRow key={check._id}>
                           <TableCell>
                             <div>
-                              <div className="font-medium">
-                                {check._id.slice(-8)}
-                              </div>
                               <div className="text-sm text-muted-foreground">
                                 {check.guestId?.userId?.fullName || "No Guest"}
                               </div>
+                              <div className="text-xs">{check?.portNumber}</div>
                             </div>
                           </TableCell>
                           <TableCell>

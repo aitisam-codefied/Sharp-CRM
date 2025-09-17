@@ -68,7 +68,7 @@ export default function OccupancyAgreementsPage() {
     const matchesStatus =
       selectedStatus === "all" ||
       agreement.status.toLowerCase() === selectedStatus;
-      
+
     const matchesBranch =
       selectedBranch === "All Branches" ||
       agreement.branchId.name === selectedBranch;
@@ -122,6 +122,16 @@ export default function OccupancyAgreementsPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
   };
 
   return (
@@ -238,13 +248,8 @@ export default function OccupancyAgreementsPage() {
                             <div className="space-y-1">
                               <div className="flex items-center text-xs">
                                 <Calendar className="h-3 w-3 mr-1" />
-                                {new Date(
-                                  agreement.issuedAt
-                                ).toLocaleDateString()}{" "}
-                                to{" "}
-                                {new Date(
-                                  agreement.expiresAt
-                                ).toLocaleDateString()}
+                                {formatDate(agreement.issuedAt)} to{" "}
+                                {formatDate(agreement.expiresAt)}
                               </div>
                               <div className="text-sm text-muted-foreground">
                                 Created by: {agreement.staffId.fullName}
@@ -257,14 +262,14 @@ export default function OccupancyAgreementsPage() {
                                 variant="outline"
                                 className={getStatusColor(agreement.status)}
                               >
-                                {agreement.status.charAt(0).toUpperCase() +
-                                  agreement.status.slice(1)}
+                                {agreement.status?.charAt(0)?.toUpperCase() +
+                                  agreement.status?.slice(1)}
                               </Badge>
                             </div>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end space-x-2">
-                              {agreement.status.toLowerCase() === "draft" && (
+                              {agreement?.status?.toLowerCase() === "draft" && (
                                 <Button
                                   variant="ghost"
                                   size="sm"

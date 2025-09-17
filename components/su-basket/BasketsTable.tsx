@@ -102,6 +102,16 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
     setCurrentPage(1);
   }, [searchTerm, selectedStatus]);
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -133,7 +143,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
             <SelectContent>
               {statuses?.map((status) => (
                 <SelectItem key={status} value={status}>
-                  {status.charAt(0).toUpperCase() + status?.slice(1)}
+                  {status?.charAt(0)?.toUpperCase() + status?.slice(1)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -190,7 +200,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                     <div className="space-y-1">
                       <div className="flex items-center text-xs">
                         <Calendar className="h-3 w-3 mr-1" />
-                        {new Date(basket.createdAt).toLocaleDateString()}
+                        {formatDate(basket.createdAt)}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         By: {basket.staffId?.fullName || "Not Assigned"}

@@ -86,61 +86,64 @@ export default function InTransitPage() {
       <div className="space-y-6">
         <StatsCards filteredUsers={filteredUsers} />
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Truck className="h-5 w-5" />
-              In-Transit Service Users
-            </CardTitle>
-            <CardDescription>
-              Monitor incoming service users and prepare for arrivals
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Filters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              selectedDate={selectedDate}
-              setSelectedDate={setSelectedDate}
-              selectedBranch={selectedBranch}
-              setSelectedBranch={setSelectedBranch}
-              selectedStatus={selectedStatus}
-              setSelectedStatus={setSelectedStatus}
-              branches={branches}
-              statusOptions={statusOptions}
-            />
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
+            <p className="mt-2"> Loading Intransit data...</p>
+          </div>
+        ) : (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Truck className="h-5 w-5" />
+                  In-Transit Service Users
+                </CardTitle>
+                <CardDescription>
+                  Monitor incoming service users and prepare for arrivals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Filters
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  selectedDate={selectedDate}
+                  setSelectedDate={setSelectedDate}
+                  selectedBranch={selectedBranch}
+                  setSelectedBranch={setSelectedBranch}
+                  selectedStatus={selectedStatus}
+                  setSelectedStatus={setSelectedStatus}
+                  branches={branches}
+                  statusOptions={statusOptions}
+                />
 
-            {isLoading && (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-                <p className="mt-2"> Loading Intransit data...</p>
-              </div>
-            )}
+                <UsersTable
+                  filteredUsers={filteredUsers}
+                  handleViewUser={handleViewUser}
+                  handleMarkArrived={handleMarkArrived}
+                />
 
-            <UsersTable
+                {filteredUsers.length === 0 && (
+                  <div className="text-center py-8">
+                    <Truck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-medium mb-2">
+                      No in-transit users found
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search criteria or add a new transit
+                      alert.
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <UrgentArrivals
               filteredUsers={filteredUsers}
               handleViewUser={handleViewUser}
-              handleMarkArrived={handleMarkArrived}
             />
-
-            {filteredUsers.length === 0 && (
-              <div className="text-center py-8">
-                <Truck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-medium mb-2">
-                  No in-transit users found
-                </h3>
-                <p className="text-muted-foreground">
-                  Try adjusting your search criteria or add a new transit alert.
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <UrgentArrivals
-          filteredUsers={filteredUsers}
-          handleViewUser={handleViewUser}
-        />
+          </>
+        )}
       </div>
     </DashboardLayout>
   );

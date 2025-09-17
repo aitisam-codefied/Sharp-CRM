@@ -297,7 +297,7 @@ export default function AddBranchDialog() {
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader className="sticky top-0 bg-white">
+        <DialogHeader className="">
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
             Enter the details for the new branch

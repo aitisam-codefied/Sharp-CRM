@@ -155,6 +155,16 @@ export default function StaffTable() {
     return `${day}${suffix} ${month} ${year}`;
   }
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
   const staffMembers =
     data?.users?.map((staff: any) => ({
       id: staff._id,
@@ -183,10 +193,8 @@ export default function StaffTable() {
           ? staff.companies.map((b: any) => b.name).join(", ")
           : "Unknown",
       status: staff.status.toLowerCase(),
-      joinDate: formatDateWithSuffix(staff.joinDate),
-      registration: staff.createdAt
-        ? formatDateWithSuffix(staff.createdAt)
-        : "N/A",
+      joinDate: formatDate(staff.joinDate),
+      registration: staff.createdAt ? formatDate(staff.createdAt) : "N/A",
       shiftTimes:
         Array.isArray(staff.staffTimes) && staff.staffTimes.length > 0
           ? staff.staffTimes.map((t: any) => ({

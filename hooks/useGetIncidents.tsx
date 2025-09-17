@@ -76,6 +76,16 @@ interface UIIncident {
   actionsTaken: string;
 }
 
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    // hour: "2-digit",
+    // minute: "2-digit",
+  });
+};
+
 const fetchIncidents = async (): Promise<UIIncident[]> => {
   const response = await api.get<ApiResponse>("/incident/list?limit=1000");
   const apiIncidents = response.data.data.data;
@@ -94,8 +104,8 @@ const fetchIncidents = async (): Promise<UIIncident[]> => {
     branchId: api.branchId?._id,
     location: api.location,
     residentInvolved: api.guestId?.userId.fullName,
-    dateReported: new Date(api.reportedAt).toISOString().split("T")[0],
-    timeReported: new Date(api.reportedAt).toLocaleTimeString("en-GB", {
+    dateReported: formatDate(api?.reportedAt),
+    timeReported: new Date(api?.reportedAt).toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
     }),

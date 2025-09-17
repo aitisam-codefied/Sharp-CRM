@@ -51,6 +51,16 @@ export default function FeedbackPage() {
   const { data, isLoading, error } = useFoodFeedbacks();
   const { data: branchData } = useBranches();
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
   if (error) {
     return <div>Error loading feedback: {error.message}</div>;
   }
@@ -63,7 +73,7 @@ export default function FeedbackPage() {
       room: "N/A", // No room data in API
       branch: fb.branchId?.name,
       mealType: "Weekly", // API is weekly feedback, not per meal
-      date: new Date(fb.weekStartDate).toISOString().split("T")[0],
+      date: formatDate(fb?.weekStartDate),
       time: "", // No time data
       ratings: {
         taste: 0, // No breakdown in API

@@ -97,8 +97,8 @@ export default function DocumentTable({
                       variant="outline"
                       className={getCategoryColor(doc.category)}
                     >
-                      {doc.category.charAt(0).toUpperCase() +
-                        doc.category.slice(1)}
+                      {doc.category.charAt(0)?.toUpperCase() +
+                        doc.category?.slice(1)}
                     </Badge>
                     <div className="text-sm text-muted-foreground">
                       {doc.branch}

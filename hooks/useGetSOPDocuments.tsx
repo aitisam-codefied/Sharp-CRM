@@ -20,25 +20,15 @@ interface SOPDocumentsResult {
   total: number;
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-
-  const day = date.getDate();
-  const month = date.toLocaleString("en-US", { month: "long" });
-  const year = date.getFullYear();
-
-  // ordinal suffix logic
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-      ? "nd"
-      : day % 10 === 3 && day !== 13
-      ? "rd"
-      : "th";
-
-  return `${day}${suffix} ${month} ${year}`;
-}
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    // hour: "2-digit",
+    // minute: "2-digit",
+  });
+};
 
 export const useSOPDocuments = () => {
   return useQuery<SOPDocumentsResult>({
@@ -73,7 +63,7 @@ export const useSOPDocuments = () => {
         createdAt: formatDate(apiDoc.createdAt),
         updatedAt: formatDate(apiDoc.updatedAt),
         fileSize: apiDoc.documentFile.sizeFormatted,
-        fileType: apiDoc.documentFile.extension?.slice(1).toUpperCase(),
+        fileType: apiDoc.documentFile.extension?.slice(1)?.toUpperCase(),
         fileUrl: `${apiDoc.documentFile.fileAccess?.basePath}${apiDoc.documentFile.publicUrl}`,
         documentFile: apiDoc.documentFile.downloadUrl,
       }));
