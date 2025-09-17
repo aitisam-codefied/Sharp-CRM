@@ -32,17 +32,36 @@ import { Search, Download, Calendar, FileText } from "lucide-react";
 import { useOccupancyAgreements } from "@/hooks/useGetOccupancy";
 import { API_HOST } from "@/lib/axios";
 import { CustomPagination } from "@/components/CustomPagination";
+import { useCompanies } from "@/hooks/useCompnay";
 
 export default function OccupancyAgreementsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
-  const [selectedBranch, setSelectedBranch] = useState("All Branches");
+  const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedCompany, setSelectedCompany] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const { toast } = useToast();
 
   const { data, isLoading } = useOccupancyAgreements();
   const agreements = data?.data.data || [];
+
+  const { data: companyData } = useCompanies();
+
+  const companyBranches =
+    selectedCompany !== "all"
+      ? companyData?.find((c: any) => c._id === selectedCompany)?.branches || []
+      : [];
+
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // branch list
+  const branches = companyBranches.map((b: any) => ({
+    id: b._id,
+    name: b.name,
+  }));
 
   useEffect(() => {
     console.log("agreements", agreements);
@@ -53,25 +72,25 @@ export default function OccupancyAgreementsPage() {
     "all",
     ...new Set(agreements.map((a) => a.status.toLowerCase())),
   ];
-  const branches = [
-    "All Branches",
-    ...new Set(agreements.map((a: any) => a.branchId.name)),
-  ];
+
+  // const branches = [
+  //   "All Branches",
+  //   ...new Set(agreements.map((a: any) => a.branchId.name)),
+  // ];
 
   // Filter agreements
   const filteredAgreements = agreements.filter((agreement: any) => {
     const residentName = agreement.guestId?.userId.fullName || "";
     const matchesSearch =
-      residentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      agreement.notes.toLowerCase().includes(searchTerm.toLowerCase());
+      residentName?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+      agreement.notes?.toLowerCase().includes(searchTerm?.toLowerCase());
 
     const matchesStatus =
       selectedStatus === "all" ||
       agreement.status.toLowerCase() === selectedStatus;
 
     const matchesBranch =
-      selectedBranch === "All Branches" ||
-      agreement.branchId.name === selectedBranch;
+      selectedBranch === "all" || agreement.branchId._id === selectedBranch;
 
     return matchesSearch && matchesStatus && matchesBranch;
   });
@@ -79,7 +98,7 @@ export default function OccupancyAgreementsPage() {
   // Pagination logic
   const totalPages = Math.ceil(filteredAgreements.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedAgreements = filteredAgreements.slice(
+  const paginatedAgreements = filteredAgreements?.slice(
     startIndex,
     startIndex + itemsPerPage
   );
@@ -159,7 +178,13 @@ export default function OccupancyAgreementsPage() {
             <>
               <CardContent>
                 {/* Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                <div
+                  className={`grid gap-4 mb-6 ${
+                    selectedCompany !== "all"
+                      ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+                      : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+                  }`}
+                >
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -186,21 +211,43 @@ export default function OccupancyAgreementsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                  {/* Company */}
                   <Select
-                    value={selectedBranch}
-                    onValueChange={setSelectedBranch}
+                    value={selectedCompany}
+                    onValueChange={setSelectedCompany}
                   >
-                    <SelectTrigger className="">
-                      <SelectValue placeholder="All Branches" />
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Companies" />
                     </SelectTrigger>
                     <SelectContent>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch} value={branch}>
-                          {branch}
+                      <SelectItem value="all">All Companies</SelectItem>
+                      {companyData?.map((company: any) => (
+                        <SelectItem key={company._id} value={company._id}>
+                          {company.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+
+                  {/* Branch (only if company selected) */}
+                  {selectedCompany !== "all" && (
+                    <Select
+                      value={selectedBranch}
+                      onValueChange={setSelectedBranch}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Branches" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Branches</SelectItem>
+                        {branches.map((branch) => (
+                          <SelectItem key={branch.id} value={branch.id}>
+                            {branch.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
                 {/* Table */}

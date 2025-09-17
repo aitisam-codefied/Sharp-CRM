@@ -102,12 +102,12 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
               <div key={index} className="flex items-start space-x-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs sm:text-sm font-medium">
-                    <Link
+                    {/* <Link
                       href={`/dashboard/admin/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
-                    >
-                      {log.notes}
-                    </Link>
+                    > */}
+                    {log.notes}
+                    {/* </Link> */}
                   </p>
                   <div className="flex items-center justify-between gap-4 mt-1">
                     <div className="flex items-start sm:items-center gap-1">

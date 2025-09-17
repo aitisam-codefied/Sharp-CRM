@@ -114,6 +114,10 @@ export default function RecentActivities() {
                       <span className="text-black text-xs">Type:</span>{" "}
                       {log.moduleType}
                     </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border border-yellow-300 w-fit mt-1">
+                      <span className="text-black text-xs">Severity:</span>{" "}
+                      {log.severity}
+                    </p>
                   </div>
                   <div className="flex items-center justify-between gap-4 mt-1">
                     <div className="flex items-start sm:items-center gap-1">

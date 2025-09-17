@@ -76,14 +76,14 @@ export default function UsersTable({
         </TableHeader>
         <TableBody>
           {filteredUsers.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow key={user?.id}>
               <TableCell>
                 <div className="flex items-center space-x-3">
                   <div>
-                    <div className="font-medium">{user.name}</div>
-                    <div className="font-medium">{user.language}</div>
+                    <div className="font-medium">{user?.name}</div>
+                    <div className="font-medium">{user?.language}</div>
                     <div className="text-sm text-muted-foreground">
-                      {user.nationality} • {user.gender} • Age {user.age}
+                      {user?.nationality} • {user?.gender} • Age {user?.age}
                     </div>
                   </div>
                 </div>
@@ -94,18 +94,21 @@ export default function UsersTable({
                     <Phone className="h-3 w-3 mr-1" />
                     {user.contactNumber}
                   </div>
-                  <div className="flex items-center text-xs">{user.email}</div>
+                  <div className="flex items-center text-xs">{user?.email}</div>
                 </div>
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
                   <div className="text-sm text-muted-foreground">
-                    Room {user.assignedRoom}
+                    Room: {user?.assignedRoom}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Location: {user?.assignedLocation}
                   </div>
                 </div>
               </TableCell>
               <TableCell>
-                {user.emergencyContact ? (
+                {user?.emergencyContact ? (
                   <div className="flex flex-col gap-2 mx-auto">
                     <div className="text-[11px] px-2 py-1">
                       Name:{" "}
@@ -226,7 +229,7 @@ export default function UsersTable({
                 >
                   <div className="flex items-center gap-1">
                     {getStatusIcon(user.status)}
-                    {user.status
+                    {user?.status
                       .replace("_", " ")
                       .replace(/\b\w/g, (l: any) => l.toUpperCase())}
                   </div>

@@ -85,7 +85,7 @@ export default function IncidentsTable({
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center justify-start gap-2">
+                <div className="flex items-center justify-start gap-2 capitalize">
                   <Badge
                     variant="outline"
                     className={getSeverityColor(incident.severity)}
@@ -103,7 +103,7 @@ export default function IncidentsTable({
               <TableCell>
                 <Badge
                   variant="outline"
-                  className={getStatusColor(incident.status)}
+                  className={getStatusColor(incident.status) + " capitalize"}
                 >
                   {incident.status}
                 </Badge>

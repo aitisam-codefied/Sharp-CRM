@@ -138,7 +138,7 @@ export default function MedicalStaffPage() {
               </div>
             ) : (
               <>
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -151,7 +151,7 @@ export default function MedicalStaffPage() {
                     </div>
                   </div>
                   <Select value={selectedType} onValueChange={setSelectedType}>
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
@@ -167,7 +167,7 @@ export default function MedicalStaffPage() {
                     value={selectedStatus}
                     onValueChange={setSelectedStatus}
                   >
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>

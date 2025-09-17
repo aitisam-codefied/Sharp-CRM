@@ -261,7 +261,7 @@ export default function RoomConfigStep({
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                    <div className="space-y-2">
+                                    <div className="hidden space-y-2">
                                       <Label>Room Capacity *</Label>
                                       <Select
                                         value={room.capacity}

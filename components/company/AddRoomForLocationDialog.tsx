@@ -200,7 +200,7 @@ export default function AddRoomForLocationDialog({
           Add Room
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
+      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
         <DialogHeader>
           <DialogTitle>Add New Room</DialogTitle>
           <DialogDescription>
@@ -245,7 +245,7 @@ export default function AddRoomForLocationDialog({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+          <div className="hidden space-y-2">
             <Label>Room Capacity *</Label>
             <Select value={room.capacity} disabled>
               <SelectTrigger className="text-sm sm:text-base">

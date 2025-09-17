@@ -79,6 +79,7 @@ export interface InTransitUser {
   dateOfBirth: any;
   language: string;
   assignedRoom: string;
+  assignedLocation: string;
   transportMethod: string;
   referringAgency: string;
   caseWorker: string;

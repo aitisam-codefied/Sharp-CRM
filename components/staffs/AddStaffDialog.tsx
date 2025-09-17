@@ -56,9 +56,7 @@ export default function AddStaffDialog() {
   const { toast } = useToast();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(
-    user?.companies?.[0]?._id || ""
-  );
+  const [selectedCompany, setSelectedCompany] = useState("");
   const [selectedRole, setSelectedRole] = useState<string>(""); // 🔹 Only one role
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
@@ -236,7 +234,7 @@ export default function AddStaffDialog() {
     setSelectedRole("");
     setSelectedBranches([]);
     setSelectedLocations([]);
-    setSelectedCompany(user?.companies?.[0]?._id || "");
+    setSelectedCompany("");
     setFormData({
       name: "",
       email: "",
@@ -468,8 +466,12 @@ export default function AddStaffDialog() {
                       : "Select branches"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
-                  <Command>
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  side="bottom"
+                  align="start"
+                >
+                  <Command className="">
                     <CommandInput placeholder="Search branches..." />
                     <CommandEmpty>No branch found.</CommandEmpty>
                     <CommandGroup>
@@ -522,7 +524,11 @@ export default function AddStaffDialog() {
                       : "Select locations"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  side="bottom"
+                  align="start"
+                >
                   <Command>
                     <CommandInput placeholder="Search locations..." />
                     <CommandEmpty>No location found.</CommandEmpty>

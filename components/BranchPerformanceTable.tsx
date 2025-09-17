@@ -28,6 +28,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
+  X,
 } from "lucide-react";
 import { useGetBranchList } from "@/hooks/useGetBranchList";
 
@@ -189,6 +190,12 @@ export default function BranchPerformanceTable() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
+
+  const isFilterApplied =
+    searchTerm !== "" ||
+    selectedBranch !== "all-branches" ||
+    selectedRole !== "all-roles" ||
+    selectedStatus !== "all-status";
 
   // Loading state
   if (isLoading) {
@@ -363,6 +370,7 @@ export default function BranchPerformanceTable() {
           <Button
             variant="outline"
             size="sm"
+            disabled={!isFilterApplied}
             onClick={() => {
               setSearchTerm("");
               setSelectedBranch("all-branches");
@@ -389,7 +397,7 @@ export default function BranchPerformanceTable() {
                     onClick={() => setSearchTerm("")}
                     className="ml-1 hover:text-destructive"
                   >
-                    ×
+                    <X className="h-4 w-4" />
                   </button>
                 </Badge>
               )}
@@ -400,7 +408,7 @@ export default function BranchPerformanceTable() {
                     onClick={() => setSelectedBranch("all-branches")}
                     className="ml-1 hover:text-destructive"
                   >
-                    ×
+                    <X className="h-4 w-4" />
                   </button>
                 </Badge>
               )}
@@ -411,7 +419,7 @@ export default function BranchPerformanceTable() {
                     onClick={() => setSelectedStatus("all-status")}
                     className="ml-1 hover:text-destructive"
                   >
-                    ×
+                    <X className="h-4 w-4" />
                   </button>
                 </Badge>
               )}
@@ -485,7 +493,7 @@ export default function BranchPerformanceTable() {
             </TableBody>
           </Table>
         </div>
-        {/* <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
             Rows per page: {itemsPerPage}
           </div>
@@ -513,7 +521,7 @@ export default function BranchPerformanceTable() {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div> */}
+        </div>
       </CardContent>
     </Card>
   );

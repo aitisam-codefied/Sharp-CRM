@@ -453,6 +453,7 @@ export default function EditStaffDialog({
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
+                readOnly
               />
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email}</p>
@@ -488,6 +489,7 @@ export default function EditStaffDialog({
                 min={getOneMonthAgoDate()}
                 value={formData.joinDate}
                 onChange={handleInputChange}
+                readOnly
               />
               {errors.joinDate && (
                 <p className="text-sm text-red-600">{errors.joinDate}</p>
@@ -529,7 +531,9 @@ export default function EditStaffDialog({
               <Select
                 onValueChange={handleRoleChange}
                 value={selectedRoles}
-                disabled={updateMutation.isPending}
+                disabled={
+                  updateMutation.isPending || staff.roles?.[0] === "Manager"
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select role" />
@@ -542,7 +546,13 @@ export default function EditStaffDialog({
                   ))}
                 </SelectContent>
               </Select>
+              {staff.roles?.[0] === "Manager" && (
+                <p className="text-xs text-muted-foreground">
+                  Manager role cannot be changed.
+                </p>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
               <Select
@@ -579,7 +589,11 @@ export default function EditStaffDialog({
                     : "Select branch(es)"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[300px] p-0">
+              <PopoverContent
+                className="w-[300px] p-0"
+                side="bottom"
+                align="start"
+              >
                 <Command>
                   <CommandInput placeholder="Search branches..." />
                   <CommandEmpty>No branch found.</CommandEmpty>
@@ -638,7 +652,11 @@ export default function EditStaffDialog({
                       : "Select location(s)"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0">
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  side="bottom"
+                  align="start"
+                >
                   <Command>
                     <CommandInput placeholder="Search locations..." />
                     <CommandEmpty>No location found.</CommandEmpty>

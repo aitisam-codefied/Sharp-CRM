@@ -188,7 +188,7 @@ export default function RoomStep({
                                 </Button>
                               </CardHeader>
                               <CardContent className="space-y-3 sm:space-y-4">
-                                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-3">
+                                <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                                   <div>
                                     <Label>Room Number *</Label>
                                     <Input
@@ -242,7 +242,7 @@ export default function RoomStep({
                                         }
                                       }}
                                     >
-                                      <SelectTrigger className="mt-1 text-sm sm:text-base">
+                                      <SelectTrigger className="mt-1 text-sm">
                                         <SelectValue placeholder="Select type" />
                                       </SelectTrigger>
                                       <SelectContent>
@@ -256,8 +256,8 @@ export default function RoomStep({
                                       </SelectContent>
                                     </Select>
                                   </div>
-                                  <div>
-                                    <Label>Room Capacity *</Label>
+                                  <div className="hidden">
+                                    <Label>Room Capacity</Label>
                                     <Select value={room.capacity} disabled>
                                       <SelectTrigger className="text-sm sm:text-base">
                                         <SelectValue placeholder="Auto-selected" />

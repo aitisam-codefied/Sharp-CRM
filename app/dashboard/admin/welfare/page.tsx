@@ -38,14 +38,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useGetWelfareChecks } from "@/hooks/useGetWelfareChecks";
 import { CustomPagination } from "@/components/CustomPagination";
 import { WelfareCheck } from "@/lib/types";
+import { DateRange } from "react-day-picker";
+import { DateRangePicker } from "@/components/DateRangePicker";
 
 export default function WelfarePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const itemsPerPage = 10; // ek page me 10 hi dikhayenge
   const { toast } = useToast();
+
+  const formatDate = (dateString: any) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   // Backend se saare data fetch (pagination remove kar diya)
   const { data: welfareData, isLoading, error } = useGetWelfareChecks({});
@@ -55,38 +66,35 @@ export default function WelfarePage() {
   const allWelfareChecks: WelfareCheck[] = welfareData?.data.data || [];
 
   // Filtering logic
-  // Filtering logic
   const filteredWelfareChecks = useMemo(() => {
     return allWelfareChecks.filter((check: WelfareCheck) => {
-      // Search match (guest name + observations + assessment)
       const fullName = check.guestId?.userId?.fullName || "";
       const matchesSearch = fullName
         ?.toLowerCase()
         .includes(searchTerm?.toLowerCase());
 
-      // Status match
       const matchesStatus =
         selectedStatus === "all" ||
-        check.status?.toLowerCase() === selectedStatus?.toLowerCase();
+        check?.details[0]?.status?.toLowerCase() ===
+          selectedStatus?.toLowerCase();
 
-      // Date filter (within weekStartDate - weekEndDate)
+      // Date range filter
       const matchesDate =
-        !selectedDate ||
-        (() => {
-          const selected = new Date(selectedDate);
-          const start = new Date(check.weekStartDate);
-          const end = new Date(check.weekEndDate);
+        !dateRange?.from && !dateRange?.to
+          ? true
+          : (() => {
+              const start = new Date(check?.details[0]?.weekStartDate);
+              const end = new Date(check?.details[0]?.weekEndDate);
 
-          // Clear time part for accurate comparison
-          selected.setHours(0, 0, 0, 0);
-          start.setHours(0, 0, 0, 0);
-          end.setHours(23, 59, 59, 999);
+              if (dateRange?.from && end < dateRange.from) return false;
+              if (dateRange?.to && start > dateRange.to) return false;
 
-          return selected >= start && selected <= end;
-        })();
+              return true;
+            })();
+
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [allWelfareChecks, searchTerm, selectedStatus, selectedDate]);
+  }, [allWelfareChecks, searchTerm, selectedStatus, dateRange]);
 
   // Sort latest first
   const sortedWelfareChecks = useMemo(() => {
@@ -191,7 +199,7 @@ export default function WelfarePage() {
             <>
               <CardContent>
                 {/* Filters */}
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                   <div className="flex-1">
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -204,18 +212,13 @@ export default function WelfarePage() {
                       />
                     </div>
                   </div>
-                  <Input
-                    placeholder="MM/DD/YYYY"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full md:w-48"
-                  />
+                  {/* Date Range Picker */}
+                  <DateRangePicker value={dateRange} onChange={setDateRange} />
                   <Select
                     value={selectedStatus}
                     onValueChange={setSelectedStatus}
                   >
-                    <SelectTrigger className="w-full md:w-48">
+                    <SelectTrigger className="">
                       <SelectValue placeholder="All Status" />
                     </SelectTrigger>
                     <SelectContent>

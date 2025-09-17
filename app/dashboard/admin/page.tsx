@@ -1,6 +1,5 @@
 "use client";
 
-
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { useAuth } from "@/components/providers/auth-provider";
 import AddBranchDialog from "@/components/AddBranchDialog";
@@ -19,7 +18,7 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">👋</span>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-md sm:text-2xl font-bold">
               Good Morning, {user?.fullName} !
             </h1>
           </div>

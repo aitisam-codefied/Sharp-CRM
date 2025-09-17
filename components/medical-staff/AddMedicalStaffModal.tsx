@@ -26,25 +26,25 @@ interface AddMedicalStaffModalProps {
 }
 
 const staffTypes = [
-  "Emergency",
-  "Medical",
-  "Surgery",
-  "Laboratory",
-  "Radiology",
-  "Pharmacy",
-  "Nursing",
+  // "Emergency",
+  // "Medical",
+  // "Surgery",
+  // "Laboratory",
+  // "Radiology",
+  // "Pharmacy",
+  // "Nursing",
   "Dental",
-  "Optical",
-  "Audiology",
-  "Psychology",
-  "Counselling",
-  "Dietitian",
-  "Physical Therapy",
-  "Occupational Therapy",
+  // "Optical",
+  // "Audiology",
+  // "Psychology",
+  // "Counselling",
+  // "Dietitian",
+  // "Physical Therapy",
+  // "Occupational Therapy",
   "General Practitioner",
-  "Nurse",
-  "Nurse Assistant",
-  "Other",
+  // "Nurse",
+  // "Nurse Assistant",
+  // "Other",
 ];
 
 export function AddMedicalStaffModal({
@@ -182,113 +182,122 @@ export function AddMedicalStaffModal({
           <DialogTitle>Add New Medical Staff</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Name */}
-          <div>
-            <label
-              htmlFor="fullName"
-              className="block text-sm font-medium mb-1"
-            >
-              Name
-            </label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => {
-                const value = e.target.value;
-                setName(value);
-                setErrors((prev) => ({
-                  ...prev,
-                  fullName:
-                    value.length > 32
-                      ? "Name must not exceed 32 characters."
-                      : "",
-                }));
-              }}
-              maxLength={40} // UI cap, but validation enforces 32
-            />
-            {errors.fullName && (
-              <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Name */}
+            <div>
+              <label
+                htmlFor="fullName"
+                className="block text-sm font-medium mb-1"
+              >
+                Name
+              </label>
+              <Input
+                id="fullName"
+                value={fullName}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setName(value);
+                  setErrors((prev) => ({
+                    ...prev,
+                    fullName:
+                      value.length > 32
+                        ? "Name must not exceed 32 characters."
+                        : "",
+                  }));
+                }}
+                maxLength={40} // UI cap, but validation enforces 32
+              />
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="emailAddress"
+                className="block text-sm font-medium mb-1"
+              >
+                Email
+              </label>
+              <Input
+                id="emailAddress"
+                type="email"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+              />
+              {errors.emailAddress && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.emailAddress}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="emailAddress"
-              className="block text-sm font-medium mb-1"
-            >
-              Email
-            </label>
-            <Input
-              id="emailAddress"
-              type="email"
-              value={emailAddress}
-              onChange={(e) => setEmailAddress(e.target.value)}
-            />
-            {errors.emailAddress && (
-              <p className="text-red-500 text-sm mt-1">{errors.emailAddress}</p>
-            )}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Phone */}
+            <div>
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium mb-1"
+              >
+                Phone
+              </label>
+              <StyledPhoneInput
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={(val) => {
+                  setPhoneNumber(val || "");
+                  setErrors((prev) => ({
+                    ...prev,
+                    phoneNumber: validatePhone(val || ""),
+                  }));
+                }}
+                error={errors.phoneNumber}
+                defaultCountry="GB"
+              />
+            </div>
 
-          {/* Phone */}
-          <div>
-            <label
-              htmlFor="phoneNumber"
-              className="block text-sm font-medium mb-1"
-            >
-              Phone
-            </label>
-            <StyledPhoneInput
-              id="phoneNumber"
-              value={phoneNumber}
-              onChange={(val) => {
-                setPhoneNumber(val || "");
-                setErrors((prev) => ({
-                  ...prev,
-                  phoneNumber: validatePhone(val || ""),
-                }));
-              }}
-              error={errors.phoneNumber}
-              defaultCountry="GB"
-            />
-          </div>
+            {/* Type */}
+            <div>
+              <label htmlFor="type" className="block text-sm font-medium mb-1">
+                Type
+              </label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {staffTypes.map((staffType) => (
+                    <SelectItem key={staffType} value={staffType}>
+                      {staffType}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.type && (
+                <p className="text-red-500 text-sm mt-1">{errors.type}</p>
+              )}
+            </div>
 
-          {/* Type */}
-          <div>
-            <label htmlFor="type" className="block text-sm font-medium mb-1">
-              Type
-            </label>
-            <Select value={type} onValueChange={setType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Type" />
-              </SelectTrigger>
-              <SelectContent>
-                {staffTypes.map((staffType) => (
-                  <SelectItem key={staffType} value={staffType}>
-                    {staffType}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.type && (
-              <p className="text-red-500 text-sm mt-1">{errors.type}</p>
-            )}
-          </div>
-
-          {/* Status */}
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium mb-1">
-              Status
-            </label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Status */}
+            <div>
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium mb-1"
+              >
+                Status
+              </label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Branch */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -17,15 +17,38 @@ import StatsCards from "@/components/in-transit/StatsCards";
 import Filters from "@/components/in-transit/Filters";
 import UsersTable from "@/components/in-transit/UsersTable";
 import UrgentArrivals from "@/components/in-transit/UrgentArrivals";
+import { useCompanies } from "@/hooks/useCompnay";
 
 export default function InTransitPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
+  const [selectedCompany, setSelectedCompany] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [selectedDate, setSelectedDate] = useState("");
 
   const { toast } = useToast();
   const { data: apiUsers, isLoading, error } = useInTransitUsers();
+
+  useEffect(() => {
+    console.log("apiUsers", apiUsers);
+  });
+
+  const { data: companyData } = useCompanies();
+
+  const companyBranches =
+    selectedCompany !== "all"
+      ? companyData?.find((c: any) => c._id === selectedCompany)?.branches || []
+      : [];
+
+  useEffect(() => {
+    setSelectedBranch("all");
+  }, [selectedCompany]);
+
+  // branch list
+  const branches = companyBranches.map((b: any) => ({
+    id: b._id,
+    name: b.name,
+  }));
 
   // Filter based on removal.status = "pending" or "requested"
   const filteredApiUsers = (apiUsers || []).filter((user) =>
@@ -35,25 +58,37 @@ export default function InTransitPage() {
   // Map to InTransitUser format
   const inTransitUsers: InTransitUser[] = filteredApiUsers.map(mapGuestToUser);
 
-  const branches = [
-    "Manchester",
-    "Birmingham",
-    "London Central",
-    "Liverpool",
-    "Leeds",
-  ];
   const statusOptions = ["requested", "pending"];
+
+  // const filteredUsers = inTransitUsers.filter((user) => {
+  //   const matchesSearch =
+  //     user?.name?.toLowerCase().includes(searchTerm?.toLowerCase())
+  //     // user.nationality?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
+  //     // user.assignedRoom?.toLowerCase().includes(searchTerm?.toLowerCase());
+
+  //   const matchesBranch =
+  //     selectedBranch === "all" ||
+  //     user?.familyRooms[0]?.branchId === selectedBranch;
+
+  //   const matchesStatus =
+  //     selectedStatus === "all" || user.status === selectedStatus;
+  //   const matchesDate = !selectedDate || user.expectedArrival === selectedDate;
+
+  //   return matchesSearch && matchesBranch && matchesStatus && matchesDate;
+  // });
 
   const filteredUsers = inTransitUsers.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.nationality.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.assignedRoom.toLowerCase().includes(searchTerm.toLowerCase());
+      !searchTerm ||
+      user?.name?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesBranch =
-      selectedBranch === "all" || user.destinationBranch === selectedBranch;
+      selectedBranch === "all" ||
+      user?.familyRooms[0]?.branchId === selectedBranch;
+
     const matchesStatus =
       selectedStatus === "all" || user.status === selectedStatus;
+
     const matchesDate = !selectedDate || user.expectedArrival === selectedDate;
 
     return matchesSearch && matchesBranch && matchesStatus && matchesDate;
@@ -110,10 +145,13 @@ export default function InTransitPage() {
                   selectedDate={selectedDate}
                   setSelectedDate={setSelectedDate}
                   selectedBranch={selectedBranch}
+                  selectedCompany={selectedCompany}
+                  setSelectedCompany={setSelectedCompany}
                   setSelectedBranch={setSelectedBranch}
                   selectedStatus={selectedStatus}
                   setSelectedStatus={setSelectedStatus}
                   branches={branches}
+                  companies={companyData || []}
                   statusOptions={statusOptions}
                 />
 
@@ -175,6 +213,7 @@ function mapGuestToUser(guest: Guest): InTransitUser {
     : "N/A";
   const destinationBranch = "Main Branch"; // Placeholder, as branchId is ID; adjust if mapping available
   const assignedRoom = guest.familyRooms[0]?.roomId.roomNumber || "N/A";
+  const assignedLocation = guest.familyRooms[0]?.locationId?.name || "N/A";
   const transportMethod = "N/A"; // Not in API
   const referringAgency = "N/A"; // Not in API
   const caseWorker = `ID: ${guest.caseWorker}`; // ID, not name; adjust if fetching names
@@ -208,6 +247,7 @@ function mapGuestToUser(guest: Guest): InTransitUser {
     expectedTime,
     destinationBranch,
     assignedRoom,
+    assignedLocation,
     transportMethod,
     referringAgency,
     caseWorker,

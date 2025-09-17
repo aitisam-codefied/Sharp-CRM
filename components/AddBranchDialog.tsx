@@ -84,9 +84,8 @@ interface Company {
 
 export default function AddBranchDialog() {
   const { user, updateUserBranchesManually } = useAuth();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState("");
-  const [branch, setBranch] = useState<Branch>({
+  // ek helper initialBranch bana lo
+  const initialBranch: Branch = {
     name: "",
     address: "",
     locations: [
@@ -102,7 +101,10 @@ export default function AddBranchDialog() {
         ],
       },
     ],
-  });
+  };
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [branch, setBranch] = useState<Branch>(initialBranch);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
   const { data } = useCompanies();
@@ -265,6 +267,8 @@ export default function AddBranchDialog() {
       onSuccess: () => {
         updateUserBranchesManually(branchData);
         setIsAddDialogOpen(false);
+        setBranch(initialBranch);
+        setSelectedCompanyId("");
       },
     });
   };
@@ -289,7 +293,16 @@ export default function AddBranchDialog() {
   };
 
   return (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+    <Dialog
+      open={isAddDialogOpen}
+      onOpenChange={(open) => {
+        setIsAddDialogOpen(open);
+        if (!open) {
+          setBranch(initialBranch);
+          setSelectedCompanyId("");
+        }
+      }}
+    >
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="h-4 w-4 mr-2" />
@@ -411,7 +424,7 @@ export default function AddBranchDialog() {
                         </Button>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Room Number */}
                         <div className="space-y-2">
                           <Label>Room Number *</Label>
@@ -474,8 +487,8 @@ export default function AddBranchDialog() {
                         </div>
 
                         {/* Room Capacity */}
-                        <div className="space-y-2">
-                          <Label>Room Capacity *</Label>
+                        <div className="hidden space-y-2">
+                          <Label>Room Capacity</Label>
                           <Select value={room.capacity} disabled>
                             <SelectTrigger className="text-sm sm:text-base">
                               <SelectValue placeholder="Auto-selected" />
