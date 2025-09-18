@@ -164,11 +164,11 @@ export default function FeedbackPage() {
         {/* Feedback Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Utensils className="h-5 w-5" />
               Feedback Records
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Detailed meal feedback and ratings
             </CardDescription>
           </CardHeader>

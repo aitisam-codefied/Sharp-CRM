@@ -30,25 +30,25 @@ interface EditMedicalStaffModalProps {
 }
 
 const staffTypes = [
-  "Emergency",
-  "Medical",
-  "Surgery",
-  "Laboratory",
-  "Radiology",
-  "Pharmacy",
-  "Nursing",
+  // "Emergency",
+  // "Medical",
+  // "Surgery",
+  // "Laboratory",
+  // "Radiology",
+  // "Pharmacy",
+  // "Nursing",
   "Dental",
-  "Optical",
-  "Audiology",
-  "Psychology",
-  "Counselling",
-  "Dietitian",
-  "Physical Therapy",
-  "Occupational Therapy",
+  // "Optical",
+  // "Audiology",
+  // "Psychology",
+  // "Counselling",
+  // "Dietitian",
+  // "Physical Therapy",
+  // "Occupational Therapy",
   "General Practitioner",
-  "Nurse",
-  "Nurse Assistant",
-  "Other",
+  // "Nurse",
+  // "Nurse Assistant",
+  // "Other",
 ];
 
 export function EditMedicalStaffModal({
@@ -140,7 +140,7 @@ export function EditMedicalStaffModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Staff Details</DialogTitle>
         </DialogHeader>

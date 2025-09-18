@@ -199,9 +199,9 @@ export default function ClockRecordsTable({
               <TableHead>Clock In</TableHead>
               <TableHead>Clock Out</TableHead>
               <TableHead>Total Hours</TableHead>
-              <TableHead>Late</TableHead>
-              <TableHead>Early</TableHead>
-              <TableHead>On Break</TableHead>
+              <TableHead>Arrived</TableHead>
+              {/* <TableHead>Early</TableHead> */}
+              {/* <TableHead>On Break</TableHead> */}
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -272,7 +272,7 @@ export default function ClockRecordsTable({
                       )
                     )}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {getStatusBadge(
                       record.isEarly,
                       "Early",
@@ -285,8 +285,8 @@ export default function ClockRecordsTable({
                         <Clock className="h-4 w-4" />
                       )
                     )}
-                  </TableCell>
-                  <TableCell>
+                  </TableCell> */}
+                  {/* <TableCell>
                     {getStatusBadge(
                       record.isOnBreak,
                       "On Break",
@@ -299,7 +299,7 @@ export default function ClockRecordsTable({
                         <CheckCircle className="h-4 w-4" />
                       )
                     )}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     {getStatusBadge(
                       record.isDisconnected,

@@ -130,11 +130,11 @@ export default function InTransitPage() {
           <>
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                   <Truck className="h-5 w-5" />
                   In-Transit Service Users
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Monitor incoming service users and prepare for arrivals
                 </CardDescription>
               </CardHeader>

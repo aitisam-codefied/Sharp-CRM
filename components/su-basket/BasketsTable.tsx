@@ -115,11 +115,11 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
           <Package className="h-5 w-5" />
           Service User Baskets
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm">
           Manage and track service user baskets across all branches
         </CardDescription>
       </CardHeader>

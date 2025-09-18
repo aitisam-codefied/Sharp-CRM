@@ -161,11 +161,11 @@ export default function OccupancyAgreementsPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <FileText className="h-5 w-5" />
               Occupancy Agreements
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               View and manage occupancy agreements for all residents
             </CardDescription>
           </CardHeader>

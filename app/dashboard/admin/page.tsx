@@ -18,8 +18,8 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="text-2xl">👋</span>
-            <h1 className="text-md sm:text-2xl font-bold">
-              Good Morning, {user?.fullName} !
+            <h1 className="text-xs sm:text-xl font-bold">
+              Hello, {user?.fullName} !
             </h1>
           </div>
           <AddBranchDialog />

@@ -30,6 +30,10 @@ import {
   User,
   ShoppingBasket,
   File,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -375,79 +379,133 @@ export function AppNavbar() {
 
       {/* Mobile nav section */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col items-start gap-2 px-4 py-3 xl:hidden bg-white overflow-y-auto">
-          {mainNavItems.map((item) => {
-            const isOpen = openMobileSection === item.key;
-            const toggleOpen = () =>
-              setOpenMobileSection(isOpen ? null : item.key);
-            const subItems = getSubNavItemsForSection(item.key);
+        <div className="fixed inset-0 z-50 xl:hidden">
+          {/* 🔥 Background overlay with blur */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-            return (
-              <div key={item.key} className="w-full">
-                <button
-                  onClick={() => {
-                    if (subItems.length) {
-                      toggleOpen();
-                    } else {
-                      router.push(item.href);
-                      setMobileMenuOpen(false);
-                    }
-                  }}
-                  className="w-full text-left text-sm py-2 text-gray-700 hover:bg-gray-100 rounded-md px-2 flex justify-between items-center"
-                >
-                  <span>{item.title}</span>
-                  {subItems.length > 0 && <span>{isOpen ? "▲" : "▼"}</span>}
-                </button>
-                {isOpen && subItems.length > 0 && (
-                  <div className="ml-4 mt-2 flex flex-col gap-2">
-                    {subItems.map((subItem) => (
-                      <Link
-                        key={subItem.title}
-                        href={subItem.href}
-                        className="text-sm text-gray-600 hover:text-black"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          setOpenMobileSection(null);
-                        }}
-                      >
-                        {subItem.title}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {/* 🔥 Sidebar */}
+          <div className="relative h-full w-72 bg-white shadow-2xl rounded-r-2xl p-5 flex flex-col overflow-y-auto animate-in slide-in-from-left">
+            {/* Header with close button */}
+            <div className="flex items-center justify-between mb-6">
+              <Link
+                href="/dashboard/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2"
+              >
+                <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <span className="font-bold text-lg text-red-600">Sharp MS</span>
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+              >
+                <X className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
 
-          {/* ✅ Mobile logout & settings */}
-          <div className="w-full border-t pt-3 mt-3">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                router.push("/dashboard/admin/company");
-              }}
-              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
-            >
-              <Building className="mr-2 h-4 w-4" /> Companies
-            </button>
+            {/* 🔥 User profile card */}
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 router.push("/dashboard/admin/profile");
               }}
-              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
+              className="flex items-center gap-3 p-3 mb-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-left"
             >
-              <User className="mr-2 h-4 w-4" /> Profile
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-red-100 text-red-600 font-medium">
+                  {user?.fullName?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.fullName || "Guest User"}
+                </p>
+                <p className="text-xs text-gray-500">View Profile</p>
+              </div>
+              <User className="h-4 w-4 text-gray-400" />
             </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleLogout();
-              }}
-              className="text-sm w-full text-left text-red-600 hover:bg-red-50 rounded-md px-2 py-2 flex items-center"
-            >
-              <LogOutIcon className="mr-2 h-4 w-4" /> Sign Out
-            </button>
+
+            {/* Main nav items */}
+            <div className="flex flex-col gap-2 flex-1 border-t">
+              {mainNavItems.map((item) => {
+                const isOpen = openMobileSection === item.key;
+                const toggleOpen = () =>
+                  setOpenMobileSection(isOpen ? null : item.key);
+                const subItems = getSubNavItemsForSection(item.key);
+
+                return (
+                  <div key={item.key}>
+                    <button
+                      onClick={() => {
+                        if (subItems.length) {
+                          toggleOpen();
+                        } else {
+                          router.push(item.href);
+                          setMobileMenuOpen(false);
+                        }
+                      }}
+                      className="w-full flex justify-between items-center px-3 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <span className="text-gray-800">{item.title}</span>
+                      {subItems.length > 0 && (
+                        <span className="text-black text-xs">
+                          {isOpen ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </span>
+                      )}
+                    </button>
+
+                    {isOpen && subItems.length > 0 && (
+                      <div className="ml-4 mt-2 flex flex-col gap-1 border-l pl-3">
+                        {subItems.map((subItem) => (
+                          <Link
+                            key={subItem.title}
+                            href={subItem.href}
+                            className="px-2 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-100"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setOpenMobileSection(null);
+                            }}
+                          >
+                            {subItem.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer actions */}
+            <div className="mt-6 border-t pt-4 space-y-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/dashboard/admin/company");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                <Building className="h-4 w-4" /> Companies
+              </button>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50"
+              >
+                <LogOutIcon className="h-4 w-4" /> Sign Out
+              </button>
+            </div>
           </div>
         </div>
       )}

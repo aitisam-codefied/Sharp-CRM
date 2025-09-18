@@ -103,7 +103,9 @@ export default function IncidentsTable({
               <TableCell>
                 <Badge
                   variant="outline"
-                  className={getStatusColor(incident.status) + " capitalize"}
+                  className={
+                    getStatusColor(incident.status) + "capitalize w-fit"
+                  }
                 >
                   {incident.status}
                 </Badge>

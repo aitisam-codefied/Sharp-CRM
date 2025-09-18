@@ -272,11 +272,11 @@ export default function IncidentsPage() {
         {/* Incidents Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <AlertTriangle className="h-5 w-5" />
               Incident Reports
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Track and manage all reported incidents
             </CardDescription>
           </CardHeader>

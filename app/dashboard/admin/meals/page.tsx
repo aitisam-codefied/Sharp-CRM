@@ -118,11 +118,11 @@ export default function MealsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Utensils className="h-5 w-5" />
               Meal Attendance Tracking
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Mark meal attendance for residents across all branches
             </CardDescription>
           </CardHeader>

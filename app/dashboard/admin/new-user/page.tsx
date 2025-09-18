@@ -765,7 +765,7 @@ export default function NewUserPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <UserPlus className="h-5 w-5" />
               Registration Progress
             </CardTitle>
@@ -811,8 +811,10 @@ export default function NewUserPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sm sm:text-base">
+              {steps[currentStep - 1].title}
+            </CardTitle>
+            <CardDescription className="text-sm">
               {steps[currentStep - 1].description}
             </CardDescription>
           </CardHeader>

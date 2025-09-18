@@ -289,11 +289,11 @@ export default function DocumentsPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                   <FileText className="h-5 w-5" />
                   Document Library
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Centralized repository of all organizational documents and
                   procedures
                 </CardDescription>

@@ -183,10 +183,10 @@ export default function WelfarePage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               Welfare Records
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Monitor and manage resident welfare checks across all branches
             </CardDescription>
           </CardHeader>

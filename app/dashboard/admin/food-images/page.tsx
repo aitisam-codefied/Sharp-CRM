@@ -501,16 +501,16 @@ export default function FoodImagesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Food Management</h1>
+            <h1 className="text-sm sm:text-2xl font-bold">Food Management</h1>
           </div>
           <div className="flex gap-2">
             <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
               <DialogTrigger asChild>
                 <Button
                   size="sm"
-                  className="bg-red-500 hover:bg-red-600 text-white"
+                  className="bg-[#F87D7D] text-white text-xs sm:text-sm"
                 >
-                  <Upload className="h-4 w-4 mr-2" /> Add Food
+                  <Upload className="h-4 w-4" /> Add Food
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">

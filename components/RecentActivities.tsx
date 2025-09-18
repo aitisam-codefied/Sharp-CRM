@@ -87,7 +87,7 @@ export default function RecentActivities() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-md sm:text-base">
           <Activity className="h-5 w-5" />
           Recent Activities
         </CardTitle>
@@ -107,7 +107,7 @@ export default function RecentActivities() {
                     {log.notes}
                     {/* </Link> */}
                   </p>
-                  <div className="flex items-center justify-start gap-2">
+                  <div className="flex flex-wrap items-center justify-start gap-2">
                     <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit mt-1">
                       <span className="text-black text-xs">Action:</span>{" "}
                       {log.actionType}

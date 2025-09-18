@@ -167,11 +167,11 @@ export default function ClockSystemPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Clock className="h-5 w-5" />
               Attendance Records
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Real-time staff clock in/out monitoring
             </CardDescription>
           </CardHeader>

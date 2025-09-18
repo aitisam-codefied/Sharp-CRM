@@ -141,9 +141,10 @@ export default function ServiceUsersPage() {
         <Button
           onClick={() => router.push("/dashboard/admin/new-user")}
           size="sm"
+          className="text-xs sm:text-sm"
         >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Service User
+          <Plus className="h-4 w-4" />
+          Add User
         </Button>
       }
     >
@@ -151,10 +152,10 @@ export default function ServiceUsersPage() {
         <UserStats users={filteredUsers} />{" "}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               Service User Management
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm">
               Manage resident profiles and information across all branches
             </CardDescription>
           </CardHeader>

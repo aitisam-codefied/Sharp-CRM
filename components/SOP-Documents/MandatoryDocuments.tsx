@@ -56,7 +56,7 @@ export default function MandatoryDocuments({
     <>
       <Card className="border-orange-200 bg-orange-50">
         <CardHeader>
-          <CardTitle className="text-orange-800 flex items-center gap-2">
+          <CardTitle className="text-orange-800 flex items-center gap-2 text-sm sm:text-base">
             <Lock className="h-5 w-5" />
             Mandatory Reading Documents
           </CardTitle>

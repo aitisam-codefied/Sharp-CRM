@@ -304,12 +304,12 @@ export default function AddBranchDialog() {
       }}
     >
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button className="text-xs sm:text-sm" size="sm">
+          <Plus className="h-4 w-4" />
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="">
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -471,10 +471,10 @@ export default function AddBranchDialog() {
                               }
                             }}
                           >
-                            <SelectTrigger className="mt-1">
+                            <SelectTrigger className="mt-1 text-xs sm:text-sm">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="text-xs sm:text-sm">
                               {Object.values(ROOM_PREFERENCE_TYPES).map(
                                 (type) => (
                                   <SelectItem key={type} value={type}>
@@ -507,7 +507,7 @@ export default function AddBranchDialog() {
                       {/* Amenities */}
                       <div className="space-y-2">
                         <Label>Amenities</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                           {ROOM_AMENITIES.map((amenity) => (
                             <div
                               key={amenity}

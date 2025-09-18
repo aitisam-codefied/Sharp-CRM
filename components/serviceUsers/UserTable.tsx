@@ -73,7 +73,7 @@ export function UserTable({
 
   return (
     <>
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -83,7 +83,7 @@ export function UserTable({
             Comprehensive list of all service users and their information
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent> */}
           <div className="rounded-md border">
             <Table>
               <TableHeader>
@@ -213,8 +213,8 @@ export function UserTable({
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        {/* </CardContent>
+      </Card> */}
 
       {/* Modals */}
       <UserDetailsModal

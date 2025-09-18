@@ -156,12 +156,12 @@ export default function NewDocumentDialog({
   return (
     <Dialog open={isNewDocumentOpen} onOpenChange={setIsNewDocumentOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
+        <Button className="text-xs sm:text-sm" size="sm">
           <Plus className="h-4 w-4" />
           Upload
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Upload New Document</DialogTitle>
           <DialogDescription>

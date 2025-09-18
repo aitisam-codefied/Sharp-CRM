@@ -112,9 +112,13 @@ export default function MedicalStaffPage() {
       description="Manage and monitor medical staff across all branches"
       actions={
         <div className="flex gap-2">
-          <Button size="sm" onClick={handleNewStaff}>
+          <Button
+            className="text-xs sm:text-sm"
+            size="sm"
+            onClick={handleNewStaff}
+          >
             <Plus className="h-4 w-4" />
-            Add Medical Staff
+            Add Medic
           </Button>
         </div>
       }
@@ -125,7 +129,7 @@ export default function MedicalStaffPage() {
         {/* Medical Staff Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
               <Stethoscope className="h-5 w-5" />
               Medical Staff Records
             </CardTitle>

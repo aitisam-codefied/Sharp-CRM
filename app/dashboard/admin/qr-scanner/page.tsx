@@ -90,8 +90,10 @@ export default function QRScannerPage() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>QR Codes List</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sm sm:text-base">
+              QR Codes List
+            </CardTitle>
+            <CardDescription className="text-sm">
               {selectedBranch === "all"
                 ? "All available QR codes from the system"
                 : `QR codes for selected branch`}

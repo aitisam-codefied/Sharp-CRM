@@ -89,7 +89,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
           <Activity className="h-5 w-5" />
           {title || `${moduleType} Logs`}
         </CardTitle>
@@ -101,7 +101,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
             return (
               <div key={index} className="flex items-start space-x-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium">
+                  <p className="text-xs font-medium mb-1">
                     {/* <Link
                       href={`/dashboard/admin/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
@@ -109,6 +109,20 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                     {log.notes}
                     {/* </Link> */}
                   </p>
+                  <div className="flex flex-wrap items-center justify-start gap-2">
+                    <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit mt-1">
+                      <span className="text-black text-xs">Action:</span>{" "}
+                      {log.actionType}
+                    </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border border-green-300 w-fit mt-1">
+                      <span className="text-black text-xs">Type:</span>{" "}
+                      {log.moduleType}
+                    </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border border-yellow-300 w-fit mt-1">
+                      <span className="text-black text-xs">Severity:</span>{" "}
+                      {log.severity}
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between gap-4 mt-1">
                     <div className="flex items-start sm:items-center gap-1">
                       <Clock className="h-3 w-3 text-muted-foreground" />
@@ -116,25 +130,15 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                         {time}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-4">
-                      <Badge
-                        variant="outline"
-                        className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border-green-300"
-                      >
-                        {log.moduleType}
-                      </Badge>
+                    {/* <div className="flex flex-wrap items-center gap-4">
                       <Badge
                         variant="outline"
                         className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
                       >
                         {log.severity}
                       </Badge>
-                    </div>
+                    </div> */}
                   </div>
-                  <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit">
-                    <span className="text-black text-xs">Action:</span>{" "}
-                    {log.actionType}
-                  </p>
                 </div>
               </div>
             );

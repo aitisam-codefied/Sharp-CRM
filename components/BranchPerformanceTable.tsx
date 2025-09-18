@@ -175,7 +175,7 @@ export default function BranchPerformanceTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
           <Building2 className="h-5 w-5" />
           Branch Performance
         </CardTitle>
@@ -235,12 +235,15 @@ export default function BranchPerformanceTable() {
                   <TableCell>
                     <div>
                       <div className="font-medium">{branch.branch}</div>
-                      <div className="text-sm text-muted-foreground">
+                      {/* <div className="text-sm text-muted-foreground">
                         {branch.branchCode}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
+                      </div> */}
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-100 text-blue-700 border border-blue-200 text-xs"
+                      >
                         {branch.companyName}
-                      </div>
+                      </Badge>
                     </div>
                   </TableCell>
                   <TableCell>{branch.totalStaff}</TableCell>
