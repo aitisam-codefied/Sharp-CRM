@@ -26,42 +26,40 @@ export default function RootLayout({
 }) {
   const [isNative, setIsNative] = useState(false);
 
-  useEffect(() => {
-    const p = Capacitor.getPlatform();
-    const native = p === "ios" || p === "android";
-    setIsNative(native);
+  // useEffect(() => {
+  //   const p = Capacitor.getPlatform();
+  //   const native = p === "ios" || p === "android";
+  //   setIsNative(native);
 
-    if (native) {
-      // ✅ Only run on mobile builds
-      StatusBar.setStyle({ style: Style.Dark });
-      StatusBar.setBackgroundColor({ color: "#0f172a" });
-      SplashScreen.hide();
+  //   if (native) {
+  //     // ✅ Only run on mobile builds
+  //     StatusBar.setStyle({ style: Style.Dark });
+  //     StatusBar.setBackgroundColor({ color: "#0f172a" });
+  //     SplashScreen.hide();
 
-      App.addListener("backButton", ({ canGoBack }) => {
-        if (canGoBack) window.history.back();
-        else App.exitApp();
-      });
+  //     App.addListener("backButton", ({ canGoBack }) => {
+  //       if (canGoBack) window.history.back();
+  //       else App.exitApp();
+  //     });
 
-      Keyboard.setScroll({ isDisabled: false });
-    }
+  //     Keyboard.setScroll({ isDisabled: false });
+  //   }
 
-    return () => {
-      if (native) {
-        App.removeAllListeners();
-      }
-    };
-  }, []);
+  //   return () => {
+  //     if (native) {
+  //       App.removeAllListeners();
+  //     }
+  //   };
+  // }, []);
 
   return (
     <html lang="en">
-      <body
-        className={`${inter.className} ${isNative ? "has-bottom-nav" : ""}`}
-      >
+      <body className={`${inter.className}`}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             {children}
             <Toaster />
-            <MobileBottomNav />
+            {/* <MobileBottomNav /> */}
             {/* ✅ always mounted, internally hides on web */}
           </AuthProvider>
         </QueryClientProvider>

@@ -46,8 +46,8 @@ import Image from "next/image";
 import { Capacitor } from "@capacitor/core";
 
 export function AppNavbar() {
-  const platform = Capacitor.getPlatform();
-  if (platform === "ios" || platform === "android") return null; // ✅ hide on native
+  // const platform = Capacitor.getPlatform();
+  // if (platform === "ios" || platform === "android") return null;
 
   const pathname = usePathname();
   const router = useRouter();
