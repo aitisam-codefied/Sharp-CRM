@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,6 @@ export default function CompanyStep({
           Add your company details
         </p>
       </div>
-
       <div className="space-y-4">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
@@ -83,7 +83,6 @@ export default function CompanyStep({
             </CardContent>
           </Card>
         ))}
-
         <Button
           variant="outline"
           onClick={addCompany}

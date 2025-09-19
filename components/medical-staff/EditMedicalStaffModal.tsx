@@ -163,6 +163,7 @@ export function EditMedicalStaffModal({
               id="emailAddress"
               value={emailAddress}
               onChange={(e) => setEmailAddress(e.target.value)}
+              readOnly
             />
             {!isValidEmail && emailAddress && (
               <p className="text-red-500 text-sm">Invalid email format</p>
@@ -188,7 +189,7 @@ export function EditMedicalStaffModal({
             <label htmlFor="type" className="block text-sm font-medium">
               Type
             </label>
-            <Select value={type} onValueChange={setType}>
+            <Select value={type} onValueChange={setType} disabled>
               <SelectTrigger id="type">
                 <SelectValue placeholder="Select staff type" />
               </SelectTrigger>

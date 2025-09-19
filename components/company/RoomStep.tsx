@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,7 +134,6 @@ export default function RoomStep({
           Set up rooms for each location with details and amenities
         </p>
       </div>
-
       <div className="space-y-4 sm:space-y-6">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
@@ -143,31 +143,37 @@ export default function RoomStep({
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 sm:space-y-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-0 sm:p-6">
               {company.branches.map((branch, branchIndex) => (
-                <Card key={branch._id} className="border-l-4 border-l-red-500">
-                  <CardHeader>
+                <Card
+                  key={branch._id}
+                  className="border-0 sm:border sm:border-l-4 sm:border-l-red-500"
+                >
+                  <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       {branch.name}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="sm:p-6 space-y-4 p-0">
                     {branch.locations.map((location, locationIndex) => (
                       <Card
                         key={location._id}
-                        className="border-l-4 border-l-blue-500"
+                        className="border-0 sm:border sm:border-l-4 sm:border-l-blue-500"
                       >
-                        <CardHeader>
+                        <CardHeader className="p-3 sm:p-6">
                           <CardTitle className="text-sm flex items-center gap-2">
                             <Home className="h-4 w-4" />
                             {location.name}
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="p-3 sm:p-6 space-y-4">
                           {location.rooms.map((room, roomIndex) => (
-                            <Card key={room._id} className="bg-gray-50">
-                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
+                            <Card
+                              key={room._id}
+                              className="bg-gray-50 border-0 sm:border"
+                            >
+                              <CardHeader className="p-3 sm:p-6 flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
                                 <CardTitle className="text-sm">
                                   Room {roomIndex + 1}
                                 </CardTitle>
@@ -187,7 +193,7 @@ export default function RoomStep({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </CardHeader>
-                              <CardContent className="space-y-3 sm:space-y-4">
+                              <CardContent className="p-3 sm:p-6 space-y-3 sm:space-y-4">
                                 <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                                   <div>
                                     <Label>Room Number *</Label>
@@ -226,7 +232,6 @@ export default function RoomStep({
                                           "type",
                                           value
                                         );
-
                                         // Auto-update capacity if mapping exists
                                         const autoCapacity =
                                           ROOM_TYPE_CAPACITY[value];
@@ -275,7 +280,6 @@ export default function RoomStep({
                                     </Select>
                                   </div>
                                 </div>
-
                                 <div>
                                   <Label className="text-sm font-medium mb-2 sm:mb-3 block">
                                     Amenities

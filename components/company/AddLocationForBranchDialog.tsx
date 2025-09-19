@@ -282,12 +282,12 @@ export default function AddLocationForBranchDialog({
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4" />
+        <Button className="text-xs sm:text-sm" size="sm">
+          {/* <Plus className="h-4 w-4" /> */}
           Add Location
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Location</DialogTitle>
           <DialogDescription>
@@ -388,7 +388,7 @@ export default function AddLocationForBranchDialog({
 
                 <div className="space-y-2">
                   <Label>Amenities</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {ROOM_AMENITIES.map((amenity) => (
                       <div
                         key={amenity}

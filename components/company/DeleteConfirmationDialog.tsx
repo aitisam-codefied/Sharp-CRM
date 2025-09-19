@@ -32,7 +32,7 @@ export default function DeleteConfirmationDialog({
 }: DeleteConfirmationDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="bg-gradient-to-br from-white to-red-50 border-red-200 max-w-[95vw] sm:max-w-md">
+      <AlertDialogContent className="bg-gradient-to-br from-white to-red-50 border-red-200 max-w-[90vw] sm:max-w-md">
         <AlertDialogHeader>
           <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
             <Trash2 className="h-10 w-10 text-red-600" />

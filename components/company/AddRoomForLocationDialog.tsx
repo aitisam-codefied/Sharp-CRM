@@ -195,12 +195,15 @@ export default function AddRoomForLocationDialog({
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-[#F87D7D] hover:bg-[#F87D7D]/90">
-          <Plus className="h-4 w-4" />
+        <Button
+          size="sm"
+          className="bg-[#F87D7D] hover:bg-[#F87D7D]/90 text-xs sm:text-sm"
+        >
+          {/* <Plus className="h-4 w-4" /> */}
           Add Room
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[80vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
         <DialogHeader>
           <DialogTitle>Add New Room</DialogTitle>
           <DialogDescription>
@@ -262,7 +265,7 @@ export default function AddRoomForLocationDialog({
           </div>
           <div className="space-y-2">
             <Label>Amenities</Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {ROOM_AMENITIES.map((amenity) => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox

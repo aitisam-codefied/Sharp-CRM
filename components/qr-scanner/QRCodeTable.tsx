@@ -197,9 +197,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {visibleCodes[qr._id] ? (
-                        // ✅ Reveal state - show full code
+                        // ✅ Reveal state - show full code with wrapping
                         <>
-                          <span className="font-mono">{qr.code}</span>
+                          <span className="font-mono break-all max-w-[200px] whitespace-pre-wrap">
+                            {qr.code}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"

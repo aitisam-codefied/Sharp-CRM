@@ -222,7 +222,7 @@ export default function ViewCompanyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-0 shadow-2xl">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-0 shadow-2xl">
         <DialogHeader className="p-6 -m-6 mb-2 rounded-t-lg">
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -283,9 +283,6 @@ export default function ViewCompanyModal({
                   )}
                 </div>
               )}
-              <div className="text-gray-500 text-sm font-normal capitalize">
-                {companyData.type} Company
-              </div>
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -338,48 +335,43 @@ export default function ViewCompanyModal({
 
           <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold flex items-center gap-3 text-gray-800">
-                Branches Overview
-                <Badge
-                  variant="outline"
-                  className="border-[#F87D7D]/50 text-[#F87D7D] bg-[#F87D7D]/10 font-semibold"
-                >
-                  {companyData.branches?.length || 0} Total
-                </Badge>
-              </h3>
-            </div>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-md sm:text-xl font-bold flex items-center gap-3 text-gray-800">
+              Branches Overview
+              <Badge
+                variant="outline"
+                className="border-[#F87D7D]/50 text-[#F87D7D] bg-[#F87D7D]/10 font-semibold"
+              >
+                {companyData.branches?.length || 0} Total
+              </Badge>
+            </h3>
+          </div>
 
-            <div className="space-y-6">
-              {companyData.branches && companyData.branches.length > 0 ? (
-                companyData.branches.map((branch) => (
-                  <div
-                    key={branch._id}
-                    className="transform transition-all duration-300 hover:scale-[1.02]"
-                  >
-                    <BranchCard
-                      branch={branch}
-                      companyId={companyData._id}
-                      onBranchUpdate={handleBranchUpdate}
-                      isEditable={isEditable}
-                      onClose={onClose}
-                      onBranchDelete={handleBranchDelete}
-                    />
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 bg-white rounded-xl shadow-lg border border-gray-100">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MapPin className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-500 text-lg">No branches available</p>
-                  <p className="text-gray-400 text-sm mt-1">
-                    Add your first branch to get started
-                  </p>
+          <div className="space-y-6">
+            {companyData.branches && companyData.branches.length > 0 ? (
+              companyData.branches.map((branch) => (
+                <div key={branch._id} className="">
+                  <BranchCard
+                    branch={branch}
+                    companyId={companyData._id}
+                    onBranchUpdate={handleBranchUpdate}
+                    isEditable={isEditable}
+                    onClose={onClose}
+                    onBranchDelete={handleBranchDelete}
+                  />
                 </div>
-              )}
-            </div>
+              ))
+            ) : (
+              <div className="text-center py-12 bg-white rounded-xl shadow-lg border border-gray-100">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MapPin className="h-8 w-8 text-gray-400" />
+                </div>
+                <p className="text-gray-500 text-lg">No branches available</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Add your first branch to get started
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

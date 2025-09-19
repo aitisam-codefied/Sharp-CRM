@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -327,7 +328,6 @@ export default function AddCompanyModal({
         return newCompanies.every(
           (company) => company.name.trim() !== "" && company.name.length <= 50
         );
-
       case 2:
         return newCompanies.every(
           (company) =>
@@ -427,7 +427,7 @@ export default function AddCompanyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[85vh] overflow-y-auto px-4 sm:px-6">
+      <DialogContent className="w-[90vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />

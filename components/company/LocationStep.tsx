@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +62,6 @@ export default function LocationStep({
           Add locations within each branch (e.g., Floor 1, East Wing)
         </p>
       </div>
-
       <div className="space-y-4 sm:space-y-6">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
@@ -71,16 +71,19 @@ export default function LocationStep({
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-0 sm:p-6">
               {company.branches.map((branch, branchIndex) => (
-                <Card key={branch._id} className="border-l-4 border-l-red-500">
-                  <CardHeader>
+                <Card
+                  key={branch._id}
+                  className="border-0 sm:border sm:border-l-4 sm:border-l-red-500"
+                >
+                  <CardHeader className="p-3 sm:p-6">
                     <CardTitle className="text-sm sm:text-base flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       {branch.name}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 sm:space-y-4">
+                  <CardContent className="p-3 sm:p-6 space-y-3 sm:space-y-4">
                     {branch.locations.map((location, locationIndex) => (
                       <div
                         key={location._id}

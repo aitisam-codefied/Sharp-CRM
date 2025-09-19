@@ -1,4 +1,5 @@
 "use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,7 +54,6 @@ export default function BranchStep({
           Add branches for your companies
         </p>
       </div>
-
       <div className="space-y-4 sm:space-y-6">
         {newCompanies.map((company, companyIndex) => (
           <Card key={company._id}>
@@ -63,10 +63,13 @@ export default function BranchStep({
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-0 sm:p-6">
               {company.branches.map((branch, branchIndex) => (
-                <Card key={branch._id} className="border-l-4 border-l-red-500">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
+                <Card
+                  key={branch._id}
+                  className="border-0 sm:border sm:border-l-4 sm:border-l-red-500"
+                >
+                  <CardHeader className="p-3 sm:p-6 flex flex-row items-center justify-between space-y-0 pb-3 sm:pb-4">
                     <CardTitle className="text-sm sm:text-base">
                       Branch {branchIndex + 1}
                     </CardTitle>
@@ -81,7 +84,7 @@ export default function BranchStep({
                       </Button>
                     )}
                   </CardHeader>
-                  <CardContent className="space-y-3 sm:space-y-4">
+                  <CardContent className="p-3 sm:p-6 space-y-3 sm:space-y-4">
                     <div>
                       <Label
                         htmlFor={`branch-name-${companyIndex}-${branchIndex}`}

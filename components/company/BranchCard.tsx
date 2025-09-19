@@ -98,16 +98,16 @@ export default function BranchCard({
           setEditingBranchId(null);
         },
         onError: (error: any) => {
-        const message =
-          error.response?.data?.error ||
-          error.message ||
-          "Failed to update branch.";
-        toast({
-          title: "Error",
-          description: message,
-          variant: "destructive",
-        });
-      },
+          const message =
+            error.response?.data?.error ||
+            error.message ||
+            "Failed to update branch.";
+          toast({
+            title: "Error",
+            description: message,
+            variant: "destructive",
+          });
+        },
       }
     );
   };
@@ -223,7 +223,7 @@ export default function BranchCard({
           <div className="relative z-10">
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-4 flex-1">
-                <div className="w-14 h-14 bg-[#F87D7D]/50 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="hidden sm:flex w-14 h-14 bg-[#F87D7D]/50 rounded-xl items-center justify-center shadow-lg">
                   <Building2 className="h-7 w-7 text-white" />
                 </div>
                 <div className="flex-1">
@@ -343,18 +343,12 @@ export default function BranchCard({
 
         <CardContent className="p-6">
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <h4 className="text-md sm:text-xl font-bold flex items-center gap-3 text-gray-800">
-                <div className="w-10 h-10 bg-gradient-to-br from-[#F87D7D] to-[#F87D7D]/80 rounded-xl flex items-center justify-center shadow-lg">
-                  <Home className="h-5 w-5 text-white" />
+                <div className="w-7 h-7 bg-gradient-to-br from-[#F87D7D] to-[#F87D7D]/80 rounded-xl hidden sm:flex items-center justify-center shadow-lg">
+                  <Home className="h-3 w-3 text-white" />
                 </div>
                 Locations
-                {/* <Badge
-                  variant="outline"
-                  className="border-[#F87D7D]/50 text-[#F87D7D] bg-[#F87D7D]/10 font-semibold"
-                >
-                  {branch.locations?.length} Total
-                </Badge> */}
               </h4>
               {isEditable && (
                 <AddLocationForBranchDialog

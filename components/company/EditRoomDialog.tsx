@@ -121,7 +121,7 @@ export default function EditRoomDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Room</DialogTitle>
           <DialogDescription>Modify the details of this room</DialogDescription>
@@ -159,7 +159,7 @@ export default function EditRoomDialog({
           {/* Amenities */}
           <div className="space-y-2">
             <Label>Amenities</Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {ROOM_AMENITIES.map((amenity) => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox

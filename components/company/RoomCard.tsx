@@ -55,41 +55,36 @@ export default function RoomCard({
   return (
     <Card className="bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-200  overflow-hidden">
       <div className="p-5">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col items-start justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div>
-              <h6 className="font-bold text-gray-900 text-lg">
-                Room {room.roomNumber}
-              </h6>
-              <Badge
-                variant="outline"
-                className={`${roomTypeColor} text-xs font-medium mt-1`}
-              >
-                {room.type}
-              </Badge>
-            </div>
+            <h6 className="font-bold text-gray-900 text-sm sm:text-lg">
+              Room {room.roomNumber}
+            </h6>
+            {isEditable && (
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onEditRoom}
+                  className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onDeleteRoom}
+                  className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
-          {isEditable && (
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onEditRoom}
-                className="h-8 w-8 hover:bg-amber-100 hover:text-amber-600"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDeleteRoom}
-                className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+          <div className={`${roomTypeColor} text-xs font-medium mt-1 w-full`}>
+            {room.type}
+          </div>
         </div>
 
         {room.amenities?.length > 0 && (
@@ -106,7 +101,7 @@ export default function RoomCard({
                   <Badge
                     key={amenity}
                     variant="outline"
-                    className="bg-blue-100 text-blue-700 border-blue-200  text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
+                    className="bg-blue-100 text-blue-700 border-blue-200 w-fit text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 shadow-sm"
                   >
                     <IconComponent className="h-3 w-3" />
                     {amenity}
