@@ -1,4 +1,6 @@
 // src/components/in-transit/UrgentArrivals.tsx
+"use client";
+
 import {
   Card,
   CardContent,

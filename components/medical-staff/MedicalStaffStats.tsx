@@ -1,3 +1,6 @@
+
+"use client"
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Stethoscope, UserCheck, UserPlus } from "lucide-react";
 

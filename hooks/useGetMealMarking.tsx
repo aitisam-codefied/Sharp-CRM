@@ -1,4 +1,7 @@
 // hooks/useGetMealMarkings.js (Separate hook file)
+
+"use client";
+
 import api from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";

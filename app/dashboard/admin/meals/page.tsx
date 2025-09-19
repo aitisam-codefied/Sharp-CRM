@@ -32,7 +32,35 @@ export default function MealsPage() {
   const [selectedCompany, setSelectedCompany] = useState("all");
   const [selectedMeal, setSelectedMeal] = useState("all");
   const [selectedDate, setSelectedDate] = useState("");
-  const [residents, setResidents] = useState([]);
+  type Resident = {
+    id: string;
+    name: string;
+    room: string;
+    branch: string;
+    branchId: string;
+    meals: {
+      breakfast: {
+        marked: boolean;
+        time: string | null;
+        staff: string | null;
+      };
+      lunch: {
+        marked: boolean;
+        time: string | null;
+        staff: string | null;
+      };
+      dinner: {
+        marked: boolean;
+        time: string | null;
+        staff: string | null;
+      };
+    };
+    dietary: any[];
+    lastMeal: string;
+    markingId: string;
+  };
+
+  const [residents, setResidents] = useState<Resident[]>([]);
   // const [branches, setBranches] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Pagination state
   const { toast } = useToast();

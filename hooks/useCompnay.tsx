@@ -1,4 +1,6 @@
 // hooks/useCompanies.ts
+"use client"
+
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 

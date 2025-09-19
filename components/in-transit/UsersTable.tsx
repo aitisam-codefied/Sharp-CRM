@@ -1,4 +1,6 @@
 // src/components/in-transit/UsersTable.tsx
+"use client";
+
 import {
   Table,
   TableBody,

@@ -34,12 +34,12 @@ export default function LoginPage() {
     try {
       const userResponse = await login(emailAddress, password);
 
-      if (!userResponse) {
+      if (!userResponse || typeof userResponse !== "object" || !("roles" in userResponse)) {
         setError("Invalid email or password");
         return;
       }
 
-      const roles = userResponse?.roles || [];
+      const roles = (userResponse as any).roles || [];
       const isAdmin = roles.some((role: any) => role.name === "Admin");
 
       if (!isAdmin) {
@@ -48,7 +48,7 @@ export default function LoginPage() {
       }
 
       // If admin, proceed based on onboarding status
-      if (!userResponse?.isOnboarded) {
+      if (!(userResponse as any)?.isOnboarded) {
         router.push("/dashboard/admin/on-boarding");
       } else {
         router.push("/dashboard/admin");

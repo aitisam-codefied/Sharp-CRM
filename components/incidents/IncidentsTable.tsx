@@ -1,4 +1,6 @@
 // IncidentsTable.tsx
+"use client";
+
 import {
   Table,
   TableBody,

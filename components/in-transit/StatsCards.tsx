@@ -1,4 +1,6 @@
 // src/components/in-transit/StatsCards.tsx
+"use client";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Truck, Calendar, Clock, AlertTriangle } from "lucide-react";
 import { InTransitUser } from "@/hooks/useGetInTransitUsers";

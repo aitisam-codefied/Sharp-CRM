@@ -1,3 +1,5 @@
+"use client";
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { CreateFoodData } from "./useCreateFood"; // Import from your create hook file

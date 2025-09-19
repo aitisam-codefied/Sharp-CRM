@@ -1,4 +1,6 @@
 // hooks/useMedicalStaff.ts
+"use client";
+
 import api from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
