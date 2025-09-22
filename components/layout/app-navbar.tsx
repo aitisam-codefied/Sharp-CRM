@@ -289,7 +289,7 @@ export function AppNavbar() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="border-b bg-white">
+    <div className="border-b bg-white has-top-nav">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
         <Link href="/dashboard/admin" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">

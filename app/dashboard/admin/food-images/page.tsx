@@ -1206,7 +1206,7 @@ export default function FoodImagesPage() {
                   {!searchTerm && activeFilter === "All" && (
                     <Button
                       onClick={() => setIsUploadOpen(true)}
-                      className="bg-red-500 hover:bg-red-600 text-white"
+                      className="bg-[#F87D7D] text-white"
                     >
                       <Upload className="h-4 w-4 mr-2" /> Add First Food
                     </Button>
