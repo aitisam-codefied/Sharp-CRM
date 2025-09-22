@@ -289,7 +289,7 @@ export function AppNavbar() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="border-b bg-white has-top-nav">
+    <div className="border-b bg-white pt-6">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
         <Link href="/dashboard/admin" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
@@ -387,7 +387,7 @@ export function AppNavbar() {
           />
 
           {/* 🔥 Sidebar */}
-          <div className="relative h-full w-72 bg-white shadow-2xl rounded-r-2xl p-5 flex flex-col overflow-y-auto animate-in slide-in-from-left">
+          <div className="relative h-full w-72 bg-white py-10 shadow-2xl rounded-r-2xl p-5 flex flex-col overflow-y-auto animate-in slide-in-from-left">
             {/* Header with close button */}
             <div className="flex items-center justify-between mb-6">
               <Link
@@ -486,7 +486,7 @@ export function AppNavbar() {
             </div>
 
             {/* Footer actions */}
-            <div className="mt-6 border-t pt-4 space-y-2">
+            <div className="border-t relative top-[-100px] pt-4 space-y-2">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
