@@ -43,6 +43,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
 
   const { toast } = useToast();
 
+  useEffect(() => {
+    console.log("baskets", baskets);
+  });
+
   const branches = [
     "All Branches",
     ...new Set(
@@ -222,14 +226,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
           </Table>
         </div>
 
-        {/* 🔹 Pagination */}
-        <CustomPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={(page: any) => setCurrentPage(page)}
-        />
-
-        {filteredBaskets?.length === 0 && (
+        {currentData?.length === 0 && (
           <div className="text-center py-8">
             <Package className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">No baskets found</h3>
@@ -238,6 +235,13 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
             </p>
           </div>
         )}
+
+        {/* 🔹 Pagination */}
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page: any) => setCurrentPage(page)}
+        />
       </CardContent>
     </Card>
   );

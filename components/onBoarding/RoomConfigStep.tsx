@@ -138,46 +138,52 @@ export default function RoomConfigStep({
         </p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {companies.map((company, companyIndex) => (
           <Card key={companyIndex}>
-            <CardHeader>
+            <CardHeader className="pb-2 md:pb-4">
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 p-4 md:p-6">
               {company.branches.map((branch, branchIndex) => (
-                <Card key={branch.id} className="border-l-4 border-l-red-500">
-                  <CardHeader>
-                    <CardTitle className="text-base flex items-center gap-2">
+                <div
+                  key={branch.id}
+                  className="md:card md:border-l-4 md:border-l-red-500"
+                >
+                  <div className="pb-2 md:pb-4 px-4 md:px-6">
+                    <h3 className="text-base font-semibold flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
                       {branch.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+                    </h3>
+                  </div>
+                  <div className="space-y-4 p-4 md:p-6">
                     {branch.locations.map((location, locationIndex) => (
-                      <Card
+                      <div
                         key={location.id}
-                        className="border-l-4 border-l-blue-500"
+                        className="md:card md:border-l-4 md:border-l-blue-500"
                       >
-                        <CardHeader>
-                          <CardTitle className="text-sm flex items-center gap-2">
+                        <div className="pb-2 md:pb-4 px-4 md:px-6">
+                          <h4 className="text-sm font-semibold flex items-center gap-2">
                             <Home className="h-4 w-4" />
                             {location.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                          </h4>
+                        </div>
+                        <div className="space-y-4 p-4 md:p-6">
                           {location.rooms.map((room, roomIndex) => {
                             const errorKey = `${companyIndex}-${branchIndex}-${locationIndex}-${roomIndex}`;
                             const error = roomNumberErrors[errorKey];
                             return (
-                              <Card key={room.id} className="bg-gray-50">
-                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                                  <CardTitle className="text-sm">
+                              <div
+                                key={room.id}
+                                className="md:card md:bg-gray-50"
+                              >
+                                <div className="flex flex-row items-center justify-between space-y-0 pb-2 md:pb-4 px-4 md:px-6">
+                                  <h5 className="text-sm font-semibold">
                                     Room {roomIndex + 1}
-                                  </CardTitle>
+                                  </h5>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -193,8 +199,8 @@ export default function RoomConfigStep({
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
+                                </div>
+                                <div className="space-y-4 p-4 md:p-6">
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                       <Label>Room Number *</Label>
@@ -232,7 +238,6 @@ export default function RoomConfigStep({
                                             value
                                           );
 
-                                          // Auto-update capacity if mapping exists
                                           const autoCapacity =
                                             ROOM_TYPE_CAPACITY[value];
                                           if (autoCapacity) {
@@ -297,7 +302,7 @@ export default function RoomConfigStep({
                                     <Label className="text-sm font-medium mb-3 block">
                                       Amenities
                                     </Label>
-                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                                       {ROOM_AMENITIES.map((amenity) => (
                                         <div
                                           key={amenity}
@@ -328,8 +333,8 @@ export default function RoomConfigStep({
                                       ))}
                                     </div>
                                   </div>
-                                </CardContent>
-                              </Card>
+                                </div>
+                              </div>
                             );
                           })}
 
@@ -344,11 +349,11 @@ export default function RoomConfigStep({
                             <Plus className="h-4 w-4 mr-2" />
                             Add Room
                           </Button>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </CardContent>
           </Card>

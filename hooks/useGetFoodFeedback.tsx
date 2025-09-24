@@ -80,7 +80,7 @@ export interface DisplayFeedback {
 const fetchFoodFeedbacks = async (): Promise<FoodFeedback[]> => {
   const url = "/food-feedback/list?limit=50"; // Increased limit to fetch more/all results in one go
   const response = await api.get<ApiResponse>(url);
-  return response.data.data.data;
+  return response?.data?.data?.results ?? [];
 };
 
 export const useFoodFeedbacks = () => {

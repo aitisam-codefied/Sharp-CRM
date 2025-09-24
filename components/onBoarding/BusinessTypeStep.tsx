@@ -26,7 +26,10 @@ export default function BusinessTypeStep({
         </p>
       </div>
       <div className="flex justify-center">
-        <Badge variant="destructive" className="text-sm px-4 py-1 rounded-full text-center">
+        <Badge
+          variant="destructive"
+          className="text-sm px-4 py-1 rounded-full text-center"
+        >
           This is a one-time process and can't be changed later
         </Badge>
       </div>
@@ -42,7 +45,7 @@ export default function BusinessTypeStep({
             }`}
             onClick={() => setSelectedBusinessType(value)}
           >
-            <CardContent className="p-6 text-center">
+            <CardContent className="p-4 md:p-6 text-center">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Building2 className="h-6 w-6 text-red-500" />
               </div>

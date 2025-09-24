@@ -33,7 +33,7 @@ export default function ServiceUserBasketsPage() {
     );
   }
 
-  const baskets = data.data.data;
+  const baskets = data?.data?.data ?? [];
 
   return (
     <DashboardLayout
