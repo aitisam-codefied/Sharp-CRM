@@ -63,6 +63,7 @@ interface Guest {
   gender?: "Male" | "Female" | "Other" | string;
   nationality?: string;
   language?: string;
+  portNumber?: string;
   numberOfDependents?: any;
   medic?: string; // objectId
   address?: string;
@@ -125,6 +126,7 @@ export default function NewUserPage() {
         gender: "",
         nationality: "",
         language: "",
+        portNumber: "",
         numberOfDependents: "",
         medic: "",
         address: "",
@@ -204,6 +206,9 @@ export default function NewUserPage() {
       formData.guests[0].nationality?.trim() &&
       (!formData.guests[0].address ||
         formData.guests[0].address.length <= 150) &&
+      formData.guests[0].portNumber?.trim() && // portNumber required
+      formData.guests[0].portNumber.length >= 12 && // min 12 characters
+      formData.guests[0].portNumber.length <= 55 && // max 55 characters
       // formData.guests[0].additionalNotes?.trim() &&
       // formData.guests[0].additionalNotes.length <= 150 &&
       isDependantValid && // ✅ yahan enforce hoga
@@ -227,6 +232,9 @@ export default function NewUserPage() {
           !dep?.emailAddress?.trim() ||
           !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
           !dep?.dateOfBirth ||
+          !dep?.portNumber?.trim() ||
+          dep.portNumber.length < 12 ||
+          dep.portNumber.length > 55 ||
           !dep?.nationality?.trim() ||
           (dep.address && dep.address.length > 150) ||
           (dep.additionalNotes && dep.additionalNotes.length > 150)
@@ -626,6 +634,11 @@ export default function NewUserPage() {
             guest.language || ""
           );
         }
+
+        apiFormData.append(
+          `guests[${index}][portNumber]`,
+          guest.portNumber || ""
+        );
 
         apiFormData.append(
           `guests[${index}][numberOfDependents]`,

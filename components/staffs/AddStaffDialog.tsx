@@ -132,6 +132,7 @@ export default function AddStaffDialog() {
         title: "Error Adding Staff",
         description:
           error.response?.data?.error ||
+          error.response?.data?.details ||
           error.message ||
           "Failed to add staff member.",
         variant: "destructive",
@@ -308,31 +309,31 @@ export default function AddStaffDialog() {
 
         <div className="grid gap-4 py-4">
           {/* Company dropdown */}
-          {companies?.length > 1 && (
-            <div className="space-y-2">
-              <Label>Company</Label>
-              <Select
-                onValueChange={(val) => {
-                  setSelectedCompany(val);
-                  setSelectedBranches([]);
-                  setSelectedLocations([]);
-                }}
-                value={selectedCompany}
-                disabled={createMutation.isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies?.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+          {/* {companies?.length > 1 && ( */}
+          <div className="space-y-2">
+            <Label>Company</Label>
+            <Select
+              onValueChange={(val) => {
+                setSelectedCompany(val);
+                setSelectedBranches([]);
+                setSelectedLocations([]);
+              }}
+              value={selectedCompany}
+              disabled={createMutation.isPending}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select company" />
+              </SelectTrigger>
+              <SelectContent>
+                {companies?.map((c) => (
+                  <SelectItem key={c._id} value={c._id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* )} */}
 
           {/* Name & Email */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

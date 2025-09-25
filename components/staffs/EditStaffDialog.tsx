@@ -144,9 +144,9 @@ export default function EditStaffDialog({
     shiftEnd: staff.shiftTimes?.[0]?.end || "",
   });
 
-  const statusOptions = ["active", "inactive", "suspended"];
+  const statusOptions = ["Active", "Inactive", "Suspended"];
   const [selectedStatus, setSelectedStatus] = useState(
-    staff.status || "active"
+    staff.status || "Active"
   );
 
   const handleStatusChange = (value: string) => {
@@ -202,6 +202,7 @@ export default function EditStaffDialog({
     onError: (error: any) => {
       const message =
         error.response?.data?.error ||
+        error.response?.data?.details ||
         error.message ||
         "Failed to update staff member. Please try again.";
       toast({
@@ -539,16 +540,35 @@ export default function EditStaffDialog({
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
+                  {roles
+                    ?.filter((role) => {
+                      if (staff.roles?.[0] === "Manager") {
+                        // Manager role is locked
+                        return role === "Manager";
+                      }
+                      if (staff.roles?.[0] === "AssistantManager") {
+                        // Assistant Manager can only stay as AM or become Manager
+                        return role !== "Staff";
+                      }
+                      // Staff can change freely
+                      return true;
+                    })
+                    .map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
+
               {staff.roles?.[0] === "Manager" && (
                 <p className="text-xs text-muted-foreground">
                   Manager role cannot be changed.
+                </p>
+              )}
+              {staff.roles?.[0] === "AssistantManager" && (
+                <p className="text-xs text-muted-foreground">
+                  Assistant Manager can only be promoted to Manager.
                 </p>
               )}
             </div>

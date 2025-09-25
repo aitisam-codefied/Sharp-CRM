@@ -234,13 +234,15 @@ export default function BranchPerformanceTable() {
                 <TableRow key={branch.id}>
                   <TableCell>
                     <div>
-                      <div className="font-medium">{branch.branch}</div>
+                      <div className="font-medium capitalize">
+                        {branch.branch}
+                      </div>
                       {/* <div className="text-sm text-muted-foreground">
                         {branch.branchCode}
                       </div> */}
                       <Badge
                         variant="outline"
-                        className="bg-blue-100 text-blue-700 border border-blue-200 text-xs"
+                        className="bg-blue-100 text-blue-700 border border-blue-200 text-xs capitalize mt-1"
                       >
                         {branch.companyName}
                       </Badge>

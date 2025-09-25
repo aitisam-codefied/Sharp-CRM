@@ -41,10 +41,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       additionalNotes?: string;
       fullName?: string;
       address?: string;
+      portNumber?: string;
     };
   }>({});
 
-  // ✅ Compute min date for DOB based on whether all dependents are kids
+  // Compute min date for DOB based on whether all dependents are kids
   const today = new Date();
   const eighteenYearsAgo = new Date(
     today.getFullYear() - 18,
@@ -53,23 +54,22 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
   );
   const minDate =
     Number(formData.numKids || 0) === dependants && dependants > 0
-      ? eighteenYearsAgo.toISOString().split("T")[0] // Kids: min DOB 18 years ago (e.g., 2007-09-16)
-      : undefined; // No min for adults or mixed
-  const maxDate = today.toISOString().split("T")[0]; // Always max today
+      ? eighteenYearsAgo.toISOString().split("T")[0]
+      : undefined;
+  const maxDate = today.toISOString().split("T")[0];
 
-  // ✅ Auto-check kids if all dependants are kids
+  // Auto-check kids if all dependants are kids
   useEffect(() => {
     const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
     const numKids = Number(formData.numKids || 0);
 
     if (totalDependents > 0 && totalDependents === numKids) {
       setFormData((prev: any) => {
-        // Guests array ko ensure karo ke enough dependants bane huye hain
         let updatedGuests = [...prev.guests];
 
         for (let i = 1; i <= totalDependents; i++) {
           if (!updatedGuests[i]) {
-            updatedGuests[i] = {}; // agar dependant object missing hai to create karo
+            updatedGuests[i] = {};
           }
           updatedGuests[i] = { ...updatedGuests[i], isKid: true };
         }
@@ -79,7 +79,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     }
   }, [formData.guests[0]?.numberOfDependents, formData.numKids, setFormData]);
 
-  // ✅ New useEffect: Auto-set isKid=false for all dependants when no kids
+  // Auto-set isKid=false for all dependants when no kids
   useEffect(() => {
     const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
     const numKids = Number(formData.numKids || 0);
@@ -90,7 +90,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
 
         for (let i = 1; i <= totalDependents; i++) {
           if (!updatedGuests[i]) {
-            updatedGuests[i] = {}; // Ensure object exists
+            updatedGuests[i] = {};
           }
           updatedGuests[i] = { ...updatedGuests[i], isKid: false };
         }
@@ -116,7 +116,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     setErrors((prev) => {
       const newErrors = { ...prev };
 
-      // ✅ Name validation
+      // Name validation
       if (field === "fullName") {
         if (!value.trim()) {
           newErrors[index] = {
@@ -133,9 +133,9 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         }
       }
 
-      // ✅ Email validation
+      // Email validation
       if (field === "emailAddress") {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/; // .c ya 1 char TLD reject karega
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
         if (!value.trim()) {
           newErrors[index] = {
             ...newErrors[index],
@@ -151,7 +151,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         }
       }
 
-      // ✅ DOB validation
+      // DOB validation
       if (field === "dateOfBirth") {
         const today = new Date();
         const selected = new Date(value);
@@ -179,7 +179,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         }
       }
 
-      // ✅ Address validation
+      // Address validation
       if (field === "address") {
         if (value.length > 150) {
           newErrors[index] = {
@@ -191,7 +191,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         }
       }
 
-      // ✅ Additional Notes validation
+      // Additional Notes validation
       if (field === "additionalNotes") {
         if (value.length > 150) {
           newErrors[index] = {
@@ -200,6 +200,34 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
           };
         } else {
           if (newErrors[index]) delete newErrors[index].additionalNotes;
+        }
+      }
+
+      // Port Number validation
+      if (field === "portNumber") {
+        const portNumberRegex = /^[a-zA-Z0-9]*$/;
+        if (!value.trim()) {
+          newErrors[index] = {
+            ...newErrors[index],
+            portNumber: "Port number is required.",
+          };
+        // } else if (!portNumberRegex.test(value)) {
+        //   newErrors[index] = {
+        //     ...newErrors[index],
+        //     portNumber: "Port number must be alphanumeric.",
+        //   };
+        } else if (value.length < 12) {
+          newErrors[index] = {
+            ...newErrors[index],
+            portNumber: "Port number must be at least 12 characters.",
+          };
+        } else if (value.length > 55) {
+          newErrors[index] = {
+            ...newErrors[index],
+            portNumber: "Port number cannot exceed 55 characters.",
+          };
+        } else {
+          if (newErrors[index]) delete newErrors[index].portNumber;
         }
       }
 
@@ -216,7 +244,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       if (num > 0) {
         updated[roomId] = num;
       } else {
-        delete updated[roomId]; // ✅ remove room if count is 0
+        delete updated[roomId];
       }
 
       return {
@@ -225,12 +253,12 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       };
     });
   };
+
   let totalAssigned = 0;
   let hasError = false;
   const roomErrors: { [key: string]: string } = {};
   for (const roomId in formData.assignedRooms || {}) {
     const assigned = parseInt(formData.assignedRooms[roomId] || 0);
-    // console.log("assigned", assigned);
     const room = rooms.find((r: any) => r.id === roomId);
     if (room) {
       if (assigned > room.totalAvailableSpace) {
@@ -252,7 +280,6 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
         <h3 className="font-semibold text-lg text-gray-800">Room Assignment</h3>
         <Alert className="bg-blue-50 border-blue-200 text-blue-800 flex items-center">
           <Info className="h-4 w-4" />
-          {/* <AlertTitle>Heads up!</AlertTitle> */}
           <AlertDescription>
             Total people to assign: {totalPeople} (including primary user).
             Assign people to rooms without exceeding vacancies.
@@ -322,18 +349,6 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Label htmlFor={`assign-${room.id}`} className="text-black">
                     Assign people
                   </Label>
-                  {/* <Input
-                    id={`assign-${room.id}`}
-                    type="number"
-                    min="0"
-                    max={room.totalAvailableSpace}
-                    value={formData.assignedRooms?.[room.id] || ""}
-                    onChange={(e) =>
-                      handleRoomAssignmentChange(room.id, e.target.value)
-                    }
-                    placeholder="0"
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                  /> */}
                   <Input
                     id={`assign-${room.id}`}
                     type="number"
@@ -349,14 +364,12 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     placeholder="0"
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
-
                   {touchedRooms[room.id] && roomErrors[room.id] && (
                     <Alert variant="destructive" className="mt-2">
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>{roomErrors[room.id]}</AlertDescription>
                     </Alert>
                   )}
-
                   {touchedRooms[room.id] && totalAssigned !== totalPeople && (
                     <Alert variant="destructive" className="mt-2">
                       <AlertCircle className="h-4 w-4" />
@@ -378,7 +391,6 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
             No rooms available for current number of people.
           </div>
         )}
-
         <div className="mt-4 flex flex-col sm:flex-row items-center gap-4">
           <p className="text-sm font-medium text-gray-800">
             Total assigned: {totalAssigned} / {totalPeople}
@@ -454,7 +466,6 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     defaultCountry="GB"
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor={`dob-${i}`} className="text-gray-600">
                     Date of Birth *
@@ -462,8 +473,8 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`dob-${i}`}
                     type="date"
-                    min={minDate} // ✅ Restrict DOBs before 18 years ago for all-kids
-                    max={maxDate} // Always max today
+                    min={minDate}
+                    max={maxDate}
                     value={formData.guests?.[i]?.dateOfBirth || ""}
                     onChange={(e) =>
                       handleDependantChange(i, "dateOfBirth", e.target.value)
@@ -524,58 +535,26 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   </Select>
                 </div>
               </div>
-
-              {/* New fields for each dependant: Address and Language */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
-                  <Label htmlFor={`address-${i}`} className="text-gray-600">
-                    Address
+                  <Label htmlFor={`portNumber-${i}`} className="text-gray-600">
+                    Port Number *
                   </Label>
-                  <Textarea
-                    id={`address-${i}`}
-                    placeholder="Enter address"
-                    value={formData.guests?.[i]?.address || ""}
+                  <Input
+                    id={`portNumber-${i}`}
+                    placeholder="Enter port number"
+                    value={formData.guests?.[i]?.portNumber || ""}
                     onChange={(e) =>
-                      handleDependantChange(i, "address", e.target.value)
+                      handleDependantChange(i, "portNumber", e.target.value)
                     }
                     className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
                   />
-                  {errors[i]?.address && (
+                  {errors[i]?.portNumber && (
                     <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" /> {errors[i].address}
+                      <AlertCircle className="h-3 w-3" /> {errors[i].portNumber}
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor={`additional-notes-${i}`}
-                    className="text-gray-600"
-                  >
-                    Additional Notes
-                  </Label>
-                  <Textarea
-                    id={`additional-notes-${i}`}
-                    placeholder="Enter additional notes"
-                    value={formData.guests?.[i]?.additionalNotes || ""}
-                    onChange={(e) =>
-                      handleDependantChange(
-                        i,
-                        "additionalNotes",
-                        e.target.value
-                      )
-                    }
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                  />
-                  {errors[i]?.additionalNotes && (
-                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" />{" "}
-                      {errors[i].additionalNotes}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`language-${i}`} className="text-gray-600">
                     Language
@@ -603,8 +582,54 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   </Select>
                 </div>
               </div>
-
-              {/* //kids - Only show if numKids > 0 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor={`additional-notes-${i}`}
+                    className="text-gray-600"
+                  >
+                    Additional Notes
+                  </Label>
+                  <Textarea
+                    id={`additional-notes-${i}`}
+                    placeholder="Enter additional notes"
+                    value={formData.guests?.[i]?.additionalNotes || ""}
+                    onChange={(e) =>
+                      handleDependantChange(
+                        i,
+                        "additionalNotes",
+                        e.target.value
+                      )
+                    }
+                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                  />
+                  {errors[i]?.additionalNotes && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" />{" "}
+                      {errors[i].additionalNotes}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor={`address-${i}`} className="text-gray-600">
+                    Address
+                  </Label>
+                  <Textarea
+                    id={`address-${i}`}
+                    placeholder="Enter address"
+                    value={formData.guests?.[i]?.address || ""}
+                    onChange={(e) =>
+                      handleDependantChange(i, "address", e.target.value)
+                    }
+                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
+                  />
+                  {errors[i]?.address && (
+                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
+                      <AlertCircle className="h-3 w-3" /> {errors[i].address}
+                    </p>
+                  )}
+                </div>
+              </div>
               {Number(formData.numKids || 0) > 0 && (
                 <div className="mt-4">
                   <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">

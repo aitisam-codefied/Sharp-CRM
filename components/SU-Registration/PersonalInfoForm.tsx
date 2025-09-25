@@ -37,6 +37,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
     dateOfBirth: "",
     address: "",
     additionalNotes: "",
+    portNumber: "",
   });
 
   const allBranches =
@@ -100,6 +101,17 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         }));
       } else {
         setErrors((prev) => ({ ...prev, additionalNotes: "" }));
+      }
+    }
+
+    if (id === "portNumber") {
+      if (value && (value.length < 12 || value.length > 55)) {
+        setErrors((prev) => ({
+          ...prev,
+          portNumber: "Port number must be between 12 and 55 characters",
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, portNumber: "" }));
       }
     }
 
@@ -279,7 +291,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      {/* Address + Notes + Language */}
+      {/* Address + Notes  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <Label className="text-gray-700 font-medium">Address</Label>
@@ -312,31 +324,49 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      <div>
-        <Label className="text-gray-700 font-medium">Language</Label>
-        <Select
-          value={formData.guests[0].language || ""}
-          onValueChange={(value) =>
-            setFormData((prev: any) => ({
-              ...prev,
-              guests: prev.guests.map((guest: any, index: number) =>
-                index === 0 ? { ...guest, language: value } : guest
-              ),
-            }))
-          }
-        >
-          <SelectTrigger className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]">
-            <SelectValue placeholder="Select preferred language" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="English">English</SelectItem>
-            <SelectItem value="Spanish">Spanish</SelectItem>
-            <SelectItem value="French">French</SelectItem>
-            <SelectItem value="German">German</SelectItem>
-            <SelectItem value="Chinese">Chinese</SelectItem>
-            <SelectItem value="Urdu">Urdu</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <Label className="text-gray-700 font-medium">Language</Label>
+          <Select
+            value={formData.guests[0].language || ""}
+            onValueChange={(value) =>
+              setFormData((prev: any) => ({
+                ...prev,
+                guests: prev.guests.map((guest: any, index: number) =>
+                  index === 0 ? { ...guest, language: value } : guest
+                ),
+              }))
+            }
+          >
+            <SelectTrigger className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]">
+              <SelectValue placeholder="Select preferred language" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="English">English</SelectItem>
+              <SelectItem value="Spanish">Spanish</SelectItem>
+              <SelectItem value="French">French</SelectItem>
+              <SelectItem value="German">German</SelectItem>
+              <SelectItem value="Chinese">Chinese</SelectItem>
+              <SelectItem value="Urdu">Urdu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="portNumber" className="text-gray-700 font-medium">
+            Port Number *
+          </Label>
+          <Input
+            id="portNumber"
+            type="text"
+            placeholder="Enter port number"
+            value={formData.guests[0].portNumber || ""}
+            onChange={(e) => handleInputChange(e, 0)}
+            className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
+          />
+          {errors.portNumber && (
+            <p className="text-red-500 text-sm mt-1">{errors.portNumber}</p>
+          )}
+        </div>
       </div>
 
       {/* Branch + Dependants */}

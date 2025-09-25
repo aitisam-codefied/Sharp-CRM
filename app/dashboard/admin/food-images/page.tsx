@@ -51,6 +51,7 @@ import {
 import { useCreateFoodCategory } from "@/hooks/useCreateFoodCategory";
 import { useBranches } from "@/hooks/useGetBranches";
 import { API_HOST } from "@/lib/axios";
+import ModuleLogs from "@/components/ModuleLogs";
 
 const fallbackImages = [
   "/food1.jpg",
@@ -834,13 +835,43 @@ export default function FoodImagesPage() {
                     <Label>Allergens</Label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        "Nuts",
-                        "Dairy",
-                        "Eggs",
-                        "Soy",
-                        "Wheat",
-                        "Fish",
-                        "Shellfish",
+                        "High Blood Pressure (Hypertension)",
+                        "Diabetes",
+                        "High Cholesterol",
+                        "Kidney Disease",
+                        "Liver Disease",
+                        "Gastrointestinal Issues (ulcer, reflux, IBS, etc.)",
+                        "Obesity / Weight Management",
+                        "Thyroid Conditions (mainly hypothyroidism)",
+                        "Gout",
+                        "PCOS / Hormonal Disorders",
+                        "Anemia",
+                        "Celiac Disease",
+                        "IBS / FODMAP Sensitivity",
+                        "Histamine Intolerance",
+                        "Gallbladder Issues",
+                        "Nut Allergy",
+                        "Lactose Intolerance",
+                        "Shellfish Allergy",
+                        "Fish Allergy",
+                        "Egg Allergy",
+                        "Gluten Allergy / Sensitivity",
+                        "Sesame Seed Allergy",
+                        "Sulphite Sensitivity",
+                        "Mustard Allergy",
+                        "Corn Allergy",
+                        "Legume Allergies",
+                        "Fungal Sensitivity (rare)",
+                        "Fruit Allergies",
+                        "Nightshade Sensitivity",
+                        "MSG Sensitivity",
+                        "Caffeine Sensitivity",
+                        "Vegetarians",
+                        "Vegans",
+                        "Halal",
+                        "Jain Diet",
+                        "Kosher",
+                        "Pescatarian",
                       ].map((allergen) => (
                         <label
                           key={allergen}
@@ -959,6 +990,7 @@ export default function FoodImagesPage() {
             </Card>
           ))}
         </div>
+
         {/* Food Gallery */}
         <Card>
           <CardContent className="p-6">
@@ -1216,6 +1248,12 @@ export default function FoodImagesPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* logs */}
+        <ModuleLogs
+          moduleType="MEAL_AND_MEAL_IMAGES"
+          title="Meal And Meal Images Activity Logs"
+        />
 
         {/* Edit Modal (Separate Component Logic) */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>

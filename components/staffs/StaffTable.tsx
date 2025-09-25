@@ -192,7 +192,7 @@ export default function StaffTable() {
         Array.isArray(staff.companies) && staff.companies.length > 0
           ? staff.companies.map((b: any) => b.name).join(", ")
           : "Unknown",
-      status: staff.status.toLowerCase(),
+      status: staff.status,
       joinDate: formatDate(staff.joinDate),
       registration: staff.createdAt ? formatDate(staff.createdAt) : "N/A",
       shiftTimes:
@@ -235,11 +235,11 @@ export default function StaffTable() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case "Active":
         return "bg-green-100 text-green-800";
-      case "inactive":
+      case "Inactive":
         return "bg-red-100 text-red-800";
-      case "suspended":
+      case "Suspended":
         return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
