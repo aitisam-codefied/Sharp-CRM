@@ -202,35 +202,6 @@ export default function AddStaffDialog() {
     setSelectedLocations([]);
   };
 
-  const handleBranchChange = (value: string) => {
-    if (isManager) {
-      // Manager → multi-select branches
-      setSelectedBranches((prev) =>
-        prev.includes(value)
-          ? prev.filter((b) => b !== value)
-          : [...prev, value]
-      );
-    } else {
-      // Assistant Manager or Staff → only one branch
-      setSelectedBranches([value]);
-    }
-    setSelectedLocations([]);
-  };
-
-  const handleLocationChange = (value: string) => {
-    if (isStaff || isAssistantManager) {
-      // ✅ Staff & Assistant Manager → multi-select
-      setSelectedLocations((prev) =>
-        prev.includes(value)
-          ? prev.filter((loc) => loc !== value)
-          : [...prev, value]
-      );
-    } else {
-      // ✅ Manager → single location (if needed later)
-      setSelectedLocations([value]);
-    }
-  };
-
   const resetForm = () => {
     setSelectedRole("");
     setSelectedBranches([]);
@@ -257,12 +228,24 @@ export default function AddStaffDialog() {
       })
       .filter(Boolean);
 
-    const locationIds = selectedLocations
-      .map((locName) => {
-        const loc = filteredLocations.find((l) => l.name === locName);
-        return loc ? loc._id : null;
-      })
-      .filter(Boolean);
+    let locationIds: string[] = [];
+
+    if (isManager || isAssistantManager) {
+      // Manager → multiple branches ki sari locations
+      // Assistant Manager → single branch ki sari locations
+      locationIds = branchIds.flatMap((branchId) => {
+        const branch = filteredBranches.find((b) => b._id === branchId);
+        return branch?.locations.map((loc) => loc._id) || [];
+      });
+    } else {
+      // Staff → manually selected locations
+      locationIds = selectedLocations
+        .map((locName) => {
+          const loc = filteredLocations.find((l) => l.name === locName);
+          return loc ? loc._id : null;
+        })
+        .filter(Boolean) as string[];
+    }
 
     const backendData = {
       companyId: selectedCompany,
@@ -274,7 +257,7 @@ export default function AddStaffDialog() {
       end: formData.shiftEnd,
       roles: [selectedRole],
       branches: branchIds,
-      locations: locationIds,
+      locations: locationIds, // ✅ Manager ke liye auto filled
     };
 
     createMutation.mutate(backendData);
@@ -510,7 +493,7 @@ export default function AddStaffDialog() {
           )}
 
           {/* Location selection (only Staff) */}
-          {(isStaff || isAssistantManager) && selectedBranches.length > 0 && (
+          {isStaff && selectedBranches.length > 0 && (
             <div>
               <Label>Location(s)</Label>
               <Popover>

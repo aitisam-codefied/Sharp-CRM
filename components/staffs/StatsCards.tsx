@@ -14,7 +14,7 @@ export default function StatsCards() {
     queryFn: fetchStaffMembers,
   });
 
-  // console.log("data", data);
+  console.log("data", data);
 
   return (
     <div className="grid gap-4 md:grid-cols-4">
@@ -35,9 +35,13 @@ export default function StatsCards() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active Today</p>
+              <p className="text-sm text-muted-foreground">Active Staff</p>
               <p className="text-2xl font-bold">
-                {isLoading ? "..." : data?.totalCount || 0}
+                {isLoading
+                  ? "..."
+                  : data?.users?.filter(
+                      (user: any) => user?.status === "Active"
+                    ).length || 0}
               </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
@@ -46,12 +50,15 @@ export default function StatsCards() {
       </Card>
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">On Leave</p>
-              <p className="text-2xl font-bold">0</p>
-            </div>
-            <Calendar className="h-8 w-8 text-orange-600" />
+          <div>
+            <p className="text-sm text-muted-foreground">Inactive Staff</p>
+            <p className="text-2xl font-bold">
+              {isLoading
+                ? "..."
+                : data?.users?.filter(
+                    (user: any) => user?.status === "Inactive"
+                  ).length || 0}
+            </p>
           </div>
         </CardContent>
       </Card>
