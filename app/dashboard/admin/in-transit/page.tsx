@@ -52,30 +52,13 @@ export default function InTransitPage() {
 
   // Filter based on removal.status = "pending" or "requested"
   const filteredApiUsers = (apiUsers || []).filter((user) =>
-    ["pending", "requested"].includes(user.removal.status)
+    ["Transfer", "Approved", "Transfered"].includes(user.removal.status)
   );
 
   // Map to InTransitUser format
   const inTransitUsers: InTransitUser[] = filteredApiUsers.map(mapGuestToUser);
 
   const statusOptions = ["requested", "pending"];
-
-  // const filteredUsers = inTransitUsers.filter((user) => {
-  //   const matchesSearch =
-  //     user?.name?.toLowerCase().includes(searchTerm?.toLowerCase())
-  //     // user.nationality?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-  //     // user.assignedRoom?.toLowerCase().includes(searchTerm?.toLowerCase());
-
-  //   const matchesBranch =
-  //     selectedBranch === "all" ||
-  //     user?.familyRooms[0]?.branchId === selectedBranch;
-
-  //   const matchesStatus =
-  //     selectedStatus === "all" || user.status === selectedStatus;
-  //   const matchesDate = !selectedDate || user.expectedArrival === selectedDate;
-
-  //   return matchesSearch && matchesBranch && matchesStatus && matchesDate;
-  // });
 
   const filteredUsers = inTransitUsers.filter((user) => {
     const matchesSearch =

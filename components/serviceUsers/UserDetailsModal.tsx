@@ -8,6 +8,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ServiceUser } from "@/lib/types";
 import {
   MapPin,
@@ -20,20 +28,96 @@ import {
   Stethoscope,
   FileSignature,
   Users as UsersIcon,
+  UserIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import api from "@/lib/axios";
 
 interface UserDetailsModalProps {
   user: ServiceUser | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  forceAssignDropdown?: boolean;
 }
 
 export function UserDetailsModal({
   user,
   isOpen,
   onOpenChange,
+  forceAssignDropdown = false,
 }: UserDetailsModalProps) {
   if (!user) return null;
+
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+  const [selectedMedicId, setSelectedMedicId] = useState<string | null>(null);
+
+  const { data } = useMedicalStaff(500);
+  const medicalStaff: any[] = Array.isArray(data?.results)
+    ? data.results.filter((staff: any) => staff.status === "Active")
+    : [];
+
+  const medicalRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handler = () => {
+      if (medicalRef.current) {
+        medicalRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    };
+
+    document.addEventListener("scrollToMedical", handler);
+    return () => {
+      document.removeEventListener("scrollToMedical", handler);
+    };
+  }, []);
+
+  // const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && forceAssignDropdown) {
+      setShowAssignDropdown(true);
+    }
+  }, [isOpen, forceAssignDropdown]);
+
+  const assignMedicMutation = useMutation({
+    mutationFn: (medicId: string) => {
+      return api.patch(`/guest/${user._id}/medic`, { medicId });
+    },
+    onSuccess: () => {
+      // ✅ Refresh list + this user
+      queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", user._id] });
+
+      // ✅ Reset states
+      setShowAssignDropdown(false);
+      setSelectedMedicId(null);
+
+      // ✅ Close modal
+      onOpenChange(false);
+    },
+    onError: (error) => {
+      console.error("Error assigning medic:", error);
+    },
+  });
+
+  const handleAssignClick = () => {
+    if (selectedMedicId) {
+      assignMedicMutation.mutate(selectedMedicId);
+    }
+  };
+
+  useEffect(() => {
+    console.log("user in modal", user);
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -135,20 +219,13 @@ export function UserDetailsModal({
                   No room information available
                 </p>
               )}
-              <p>
-                <strong>Is Primary Guest:</strong>{" "}
-                {user.isPrimaryGuest ? "Yes" : "No"}
-              </p>
-              {/* <p>
-                <strong>Family ID:</strong> {user.familyId || "N/A"}
-              </p> */}
             </CardContent>
           </Card>
 
           <Separator className="my-4" />
 
           {/* Medical Information */}
-          <Card className="shadow-sm">
+          <Card className="shadow-sm" ref={medicalRef}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Stethoscope className="h-5 w-5 text-primary" />
@@ -187,9 +264,77 @@ export function UserDetailsModal({
                   )}
                 </div>
               </p>
-              {/* <p>
-                <strong>Medic ID:</strong> {user.medic || "N/A"}
-              </p> */}
+
+              <div
+                className={`space-y-2 rounded-md p-3 text-sm ${
+                  user?.medic?.status === "Inactive"
+                    ? "bg-red-50 text-gray-600"
+                    : "bg-green-50 text-gray-800"
+                }`}
+              >
+                <p className="mb-2">
+                  <strong>Assigned Medical Staff:</strong>
+                </p>
+                <div className="flex items-center gap-2">
+                  <UserIcon className="h-4 w-4 text-primary" />
+                  <span>{user?.medic?.fullName || "N/A"}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-primary" />
+                  <span>{user?.medic?.phoneNumber || "N/A"}</span>
+                </div>
+                {user?.medic?.status === "Inactive" && (
+                  <p className="text-red-500 text-xs mt-2">
+                    This medic is <strong>Inactive</strong>. Kindly{" "}
+                    <span
+                      onClick={() =>
+                        router.push("/dashboard/admin/medical-staff")
+                      }
+                      className="text-red-500 underline cursor-pointer"
+                    >
+                      activate
+                    </span>{" "}
+                    or{" "}
+                    <span
+                      onClick={() => setShowAssignDropdown(true)}
+                      className="text-red-500 underline cursor-pointer"
+                    >
+                      assign another
+                    </span>
+                    .
+                    {showAssignDropdown && (
+                      <div className="mt-3 space-y-2">
+                        <Select
+                          onValueChange={(value) => setSelectedMedicId(value)}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select medical staff" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {medicalStaff.map((staff) => (
+                              <SelectItem key={staff._id} value={staff._id}>
+                                {staff.fullName} ({staff.type})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          onClick={handleAssignClick}
+                          disabled={
+                            !selectedMedicId || assignMedicMutation.isPending
+                          }
+                          size="sm"
+                          variant="destructive"
+                        >
+                          {assignMedicMutation.isPending
+                            ? "Assigning..."
+                            : "Assign"}
+                        </Button>
+                      </div>
+                    )}
+                  </p>
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -263,22 +408,11 @@ export function UserDetailsModal({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <FileSignature className="h-5 w-5 text-primary" />
-                  Additional Information
+                  Additional Notes
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <p>
-                  <strong>Additional Notes:</strong>{" "}
-                  {user.additionalNotes || "N/A"}
-                </p>
-                <p>
-                  <strong>Consent - Accuracy:</strong>{" "}
-                  {user.consentAccuracy ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Consent - Data Processing:</strong>{" "}
-                  {user.consentDataProcessing ? "Yes" : "No"}
-                </p>
+                <p>{user.additionalNotes || "N/A"}</p>
               </CardContent>
             </Card>
           </div>
@@ -292,67 +426,21 @@ export function UserDetailsModal({
                 Removal Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <p>
-                <strong>Status:</strong>{" "}
-                <Badge
-                  className={getStatusColor(user.removal?.status || "Unknown")}
-                >
-                  {user.removal?.status || "N/A"}
-                </Badge>
-              </p>
-              <p>
-                <strong>Reason:</strong> {user.removal?.reason || "N/A"}
-              </p>
-              <p>
-                <strong>Scheduled At:</strong>{" "}
-                {user.removal?.scheduledAt
-                  ? new Date(user.removal.scheduledAt).toLocaleDateString()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Scheduled By:</strong>{" "}
-                {user.removal?.scheduledBy || "N/A"}
-              </p>
-              <p>
-                <strong>Notes:</strong> {user.removal?.notes || "N/A"}
-              </p>
-              <p>
-                <strong>Executed At:</strong>{" "}
-                {user.removal?.executedAt
-                  ? new Date(user.removal.executedAt).toLocaleDateString()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Executed By:</strong>{" "}
-                {user.removal?.executedBy || "N/A"}
-              </p>
-              <p>
-                <strong>Last Error:</strong> {user.removal?.lastError || "N/A"}
-              </p>
-              <p>
-                <strong>Transfer:</strong> {user.removal?.transfer || "N/A"}
-              </p>
+            <CardContent className="text-sm">
+              {user.removal?.status === "none" || !user.removal?.status ? (
+                <p className="text-muted-foreground">
+                  No removal or transfer request has been made for this guest
+                  yet.
+                </p>
+              ) : (
+                <p className="text-muted-foreground">
+                  A transfer is currently in process.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
-
-// Helper function to reuse status color logic
-function getStatusColor(status: string) {
-  switch (status) {
-    case "none":
-      return "bg-gray-100 text-gray-800";
-    case "scheduled":
-      return "bg-yellow-100 text-yellow-800";
-    case "executed":
-      return "bg-green-100 text-green-800";
-    case "error":
-      return "bg-red-100 text-red-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 }

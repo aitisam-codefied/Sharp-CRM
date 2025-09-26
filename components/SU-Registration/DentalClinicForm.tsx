@@ -17,7 +17,7 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
 
   const { data } = useMedicalStaff(500);
   const medicalStaff: any[] = Array.isArray(data?.results)
-    ? data.results.filter((staff: any) => staff.status === "active")
+    ? data.results.filter((staff: any) => staff.status === "Active")
     : [];
 
   const [sameMedic, setSameMedic] = useState(formData.sameMedic || false);

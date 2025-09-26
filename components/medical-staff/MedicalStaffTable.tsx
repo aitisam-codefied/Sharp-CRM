@@ -60,7 +60,7 @@ export function MedicalStaffTable({
   };
 
   const handleChangeStatus = (staff: Staff) => {
-    if (staff.status !== "active" && staff.status !== "inactive") return;
+    if (staff.status !== "Active" && staff.status !== "Inactive") return;
     setSelectedStaff(staff);
     setStatusModalOpen(true);
   };
@@ -123,8 +123,8 @@ export function MedicalStaffTable({
                     >
                       {staffItem.status}
                     </Badge>
-                    {(staffItem.status === "active" ||
-                      staffItem.status === "inactive") && (
+                    {(staffItem.status === "Active" ||
+                      staffItem.status === "Inactive") && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -176,7 +176,7 @@ export function MedicalStaffTable({
               isOpen={statusModalOpen}
               onClose={() => setStatusModalOpen(false)}
               staffId={selectedStaff._id}
-              currentStatus={selectedStaff.status as "active" | "inactive"}
+              currentStatus={selectedStaff.status as "Active" | "Inactive"}
             />
             <DeleteMedicalStaffModal
               isOpen={deleteModalOpen}

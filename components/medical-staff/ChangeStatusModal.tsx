@@ -16,7 +16,7 @@ interface ChangeStatusModalProps {
   isOpen: boolean;
   onClose: () => void;
   staffId: string;
-  currentStatus: "active" | "inactive";
+  currentStatus: "Active" | "Inactive";
 }
 
 export function ChangeStatusModal({
@@ -25,7 +25,7 @@ export function ChangeStatusModal({
   staffId,
   currentStatus,
 }: ChangeStatusModalProps) {
-  const newStatus = currentStatus === "active" ? "inactive" : "active";
+  const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
   const { mutate: updateStatus, isPending } = useUpdateMedicalStaffStatus();
   const { toast } = useToast();
 

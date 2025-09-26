@@ -1,5 +1,4 @@
-
-"use client"
+"use client";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Stethoscope, UserCheck, UserPlus } from "lucide-react";
@@ -12,10 +11,10 @@ export function MedicalStaffStats({ filteredStaff }: MedicalStaffStatsProps) {
   const getStats = () => {
     const totalStaff = filteredStaff.length;
     const activeStaff = filteredStaff.filter(
-      (s) => s.status === "active"
+      (s) => s.status === "Active"
     ).length;
     const inactiveStaff = filteredStaff.filter(
-      (s) => s.status === "inactive"
+      (s) => s.status === "Inactive"
     ).length;
     return { totalStaff, activeStaff, inactiveStaff };
   };
