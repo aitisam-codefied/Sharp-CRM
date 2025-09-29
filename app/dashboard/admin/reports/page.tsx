@@ -29,12 +29,16 @@ import {
   Download,
   Eye,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useGetReports } from "@/hooks/useGetReports";
 import { Tree } from "antd";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import api from "@/lib/axios";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CustomPagination } from "@/components/CustomPagination";
 
 export const moduleName = (module: string) => {
   const name = module
@@ -47,11 +51,36 @@ export const moduleName = (module: string) => {
 export default function ReportsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("All Branches");
-  const [selectedPeriod, setSelectedPeriod] = useState("monthly");
+  const [currentPage, setCurrentPage] = useState(1);
+  const reportsPerPage = 5;
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch data using the hook
   const { data: reports = [], isLoading, error } = useGetReports();
+
+  // Mutation for generating report
+  const generateReportMutation = useMutation({
+    mutationFn: async () => {
+      return api.post("/report/generate", {});
+    },
+    onSuccess: () => {
+      toast({ title: "Reports generated successfully ✅" });
+      // Refetch reports so table updates instantly
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Failed to generate report ❌",
+        description: err?.response?.data?.message || "Something went wrong",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleGenerateReport = () => {
+    generateReportMutation.mutate();
+  };
 
   useEffect(() => {
     console.log("reportss", reports);
@@ -79,6 +108,17 @@ export default function ReportsPage() {
       report?.branchId?.name === selectedBranch;
     return matchesSearch && matchesBranch;
   });
+
+  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+  const startIndex = (currentPage - 1) * reportsPerPage;
+  const paginatedReports = filteredReports.slice(
+    startIndex,
+    startIndex + reportsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedBranch]);
 
   const handleDownloadReport = (report: any) => {
     const doc = new jsPDF("p", "mm", "a4");
@@ -208,12 +248,21 @@ export default function ReportsPage() {
       title="Reports"
       description="Comprehensive reports and analytics across all operational areas"
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
+        <Button
+          size="sm"
+          className="text-xs sm:text-sm"
+          onClick={handleGenerateReport}
+          disabled={generateReportMutation.isPending}
+        >
+          {generateReportMutation.isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
             <Plus className="h-4 w-4" />
-            Generate Report
-          </Button>
-        </div>
+          )}
+          {generateReportMutation.isPending
+            ? "Generating..."
+            : "Generate Report"}
+        </Button>
       }
     >
       <div className="space-y-6">
@@ -263,68 +312,75 @@ export default function ReportsPage() {
                 </p>
               </div>
             ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Branch & Period</TableHead>
-                      <TableHead>Key Metrics</TableHead>
-                      <TableHead>Generation Details</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredReports.map((report: any) => (
-                      <TableRow key={report?._id}>
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="font-medium">
-                              {report?.branchId?.name}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {report?.branchId?.address}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Period: {report?.month}/{report?.year}
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="max-h-40 overflow-y-auto">
-                            <Tree
-                              treeData={convertToTreeData(report?.data)}
-                              defaultExpandAll={false}
-                              showLine
-                            />
-                          </div>
-                        </TableCell>
-
-                        <TableCell>
-                          <div className="space-y-1">
-                            <div className="flex items-center text-xs">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {formatDate(report?.generatedAt)}
-                            </div>
-                          </div>
-                        </TableCell>
-
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDownloadReport(report)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
+              <>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Branch & Period</TableHead>
+                        <TableHead>Key Metrics</TableHead>
+                        <TableHead>Generation Details</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedReports.map((report: any) => (
+                        <TableRow key={report?._id}>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="font-medium">
+                                {report?.branchId?.name}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {report?.branchId?.address}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Period: {report?.month}/{report?.year}
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <div className="max-h-40 overflow-y-auto">
+                              <Tree
+                                treeData={convertToTreeData(report?.data)}
+                                defaultExpandAll={false}
+                                showLine
+                              />
+                            </div>
+                          </TableCell>
+
+                          <TableCell>
+                            <div className="space-y-1">
+                              <div className="flex items-center text-xs">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {formatDate(report?.generatedAt)}
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDownloadReport(report)}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <CustomPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </>
             )}
           </CardContent>
         </Card>
