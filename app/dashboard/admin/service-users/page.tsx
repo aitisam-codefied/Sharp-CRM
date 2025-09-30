@@ -76,19 +76,25 @@ export default function ServiceUsersPage() {
 
   // 🚨 Filter first
   const filteredUsers = useMemo(() => {
-    return guests.filter((guest: any) => {
-      const fullName = guest.userId?.fullName?.toLowerCase() || "";
-      const branchId = guest.familyRooms[0]?.roomId?.locationId?.branchId?.name;
-      const nationality = guest.nationality || "";
-      const status = guest.priorityLevel || "";
+    return guests?.filter((guest: any) => {
+      const fullName = guest?.user?.fullName?.toLowerCase() || "";
+      const portNumber = guest?.portNumber?.toLowerCase() || "";
+      const branchName = guest?.branch?.name || "";
+      const nationality = guest?.profile?.nationality || "";
+      const status = guest?.profile?.priorityLevel || "";
 
-      const matchesSearch = fullName.includes(searchTerm?.toLowerCase());
+      const search = searchTerm?.toLowerCase() || "";
+
+      // ✅ search on both fullName + portNumber
+      const matchesSearch =
+        fullName.includes(search) || portNumber.includes(search);
 
       const matchesBranch =
-        selectedBranch === "all" || branchId === selectedBranch;
+        selectedBranch === "all" || branchName === selectedBranch;
 
       const matchesStatus =
         selectedStatus === "all" || status === selectedStatus;
+
       const matchesNationality =
         selectedNationality === "all" ||
         nationality.trim()?.toLowerCase() ===
@@ -98,14 +104,7 @@ export default function ServiceUsersPage() {
         matchesSearch && matchesBranch && matchesStatus && matchesNationality
       );
     });
-  }, [
-    guests,
-    searchTerm,
-    selectedBranch,
-    selectedStatus,
-    selectedNationality,
-    branches,
-  ]);
+  }, [guests, searchTerm, selectedBranch, selectedStatus, selectedNationality]);
 
   // 🚨 Then paginate
   const itemsPerPage = 10;

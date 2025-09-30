@@ -36,6 +36,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import api from "@/lib/axios";
+import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserDetailsModalProps {
   user: ServiceUser | null;
@@ -53,9 +55,16 @@ export function UserDetailsModal({
   if (!user) return null;
 
   const router = useRouter();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [showAssignDropdown, setShowAssignDropdown] = useState(false);
+  const [showAssignDropdownForMedic, setShowAssignDropdownForMedic] =
+    useState(false);
+  const [showAssignDropdownForDentist, setShowAssignDropdownForDentist] =
+    useState(false);
   const [selectedMedicId, setSelectedMedicId] = useState<string | null>(null);
+  const [selectedDentistId, setSelectedDentistId] = useState<string | null>(
+    null
+  );
 
   const { data } = useMedicalStaff(500);
   const medicalStaff: any[] = Array.isArray(data?.results)
@@ -80,11 +89,10 @@ export function UserDetailsModal({
     };
   }, []);
 
-  // const [showAssignDropdown, setShowAssignDropdown] = useState(false);
-
   useEffect(() => {
     if (isOpen && forceAssignDropdown) {
-      setShowAssignDropdown(true);
+      setShowAssignDropdownForMedic(true);
+      setShowAssignDropdownForDentist(true);
     }
   }, [isOpen, forceAssignDropdown]);
 
@@ -98,20 +106,63 @@ export function UserDetailsModal({
       queryClient.invalidateQueries({ queryKey: ["guests", user._id] });
 
       // ✅ Reset states
-      setShowAssignDropdown(false);
+      setShowAssignDropdownForMedic(false);
       setSelectedMedicId(null);
 
       // ✅ Close modal
       onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Medic assigned successfully.",
+      });
     },
     onError: (error) => {
-      console.error("Error assigning medic:", error);
+      toast({
+        title: "Error",
+        description: "Failed to assign medic. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
-  const handleAssignClick = () => {
+  const assignDentistMutation = useMutation({
+    mutationFn: (dentistId: string) => {
+      return api.patch(`/guest/${user._id}/dentist`, { dentistId });
+    },
+    onSuccess: () => {
+      // ✅ Refresh list + this user
+      queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", user._id] });
+
+      // ✅ Reset states
+      setShowAssignDropdownForDentist(false);
+      setSelectedDentistId(null);
+
+      // ✅ Close modal
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Dentist assigned successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to assign dentist. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAssignClickForMedic = () => {
     if (selectedMedicId) {
       assignMedicMutation.mutate(selectedMedicId);
+    }
+  };
+
+  const handleAssignClickForDentist = () => {
+    if (selectedDentistId) {
+      assignDentistMutation.mutate(selectedDentistId);
     }
   };
 
@@ -125,7 +176,7 @@ export function UserDetailsModal({
         <DialogHeader className="mb-6">
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-primary capitalize">
             <User className="h-6 w-6 text-primary" />
-            {user.userId?.fullName || "N/A"}'s Profile
+            {user.user?.fullName || "N/A"}'s Profile
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Detailed information about the service user
@@ -133,7 +184,7 @@ export function UserDetailsModal({
         </DialogHeader>
 
         <div className="space-y-8">
-          {/* Personal and Contact Information */}
+          {/* Personal & Contact */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
@@ -144,26 +195,27 @@ export function UserDetailsModal({
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  <strong>Full Name:</strong> {user.userId?.fullName || "N/A"}
+                  <strong>Full Name:</strong> {user.user?.fullName || "N/A"}
                 </p>
                 <p>
                   <strong>Date of Birth:</strong>{" "}
-                  {user.dateOfBirth
-                    ? new Date(user.dateOfBirth).toLocaleDateString()
+                  {user.profile?.dateOfBirth
+                    ? new Date(user.profile.dateOfBirth).toLocaleDateString()
                     : "N/A"}
                 </p>
                 <p>
-                  <strong>Gender:</strong> {user.gender || "N/A"}
+                  <strong>Gender:</strong> {user.profile?.gender || "N/A"}
                 </p>
                 <p>
-                  <strong>Nationality:</strong> {user.nationality || "N/A"}
+                  <strong>Nationality:</strong>{" "}
+                  {user.profile?.nationality || "N/A"}
                 </p>
                 <p>
-                  <strong>Language:</strong> {user.language || "N/A"}
+                  <strong>Language:</strong> {user.profile?.language || "N/A"}
                 </p>
                 <p>
                   <strong>Number of Dependents:</strong>{" "}
-                  {user.numberOfDependents || 0}
+                  {user.profile?.numberOfDependents ?? 0}
                 </p>
               </CardContent>
             </Card>
@@ -178,14 +230,14 @@ export function UserDetailsModal({
               <CardContent className="space-y-3 text-sm">
                 <p className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  {user.userId?.emailAddress || "N/A"}
+                  {user.user?.emailAddress || "N/A"}
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  {user.userId?.phoneNumber || "N/A"}
+                  {user.user?.phoneNumber || "N/A"}
                 </p>
                 <p>
-                  <strong>Address:</strong> {user.address || "N/A"}
+                  <strong>Address:</strong> {user.profile?.address || "N/A"}
                 </p>
               </CardContent>
             </Card>
@@ -193,7 +245,7 @@ export function UserDetailsModal({
 
           <Separator className="my-4" />
 
-          {/* Room Information */}
+          {/* Room */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -202,15 +254,17 @@ export function UserDetailsModal({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              {user.familyRooms?.length > 0 ? (
-                user.familyRooms.map((room, index) => (
+              {user.assignedRooms?.length > 0 ? (
+                user.assignedRooms.map((room, index) => (
                   <div key={index} className="mb-3 last:mb-0">
                     <p>
-                      <strong>Room Number:</strong>{" "}
-                      {room.roomId?.roomNumber || "N/A"}
+                      <strong>Room Number:</strong> {room.roomNumber || "N/A"}
                     </p>
                     <p>
-                      <strong>Room Type:</strong> {room.roomId?.type || "N/A"}
+                      <strong>Room Type:</strong> {room.type || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {room.status || "N/A"}
                     </p>
                   </div>
                 ))
@@ -224,7 +278,7 @@ export function UserDetailsModal({
 
           <Separator className="my-4" />
 
-          {/* Medical Information */}
+          {/* Medical */}
           <Card className="shadow-sm" ref={medicalRef}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -235,20 +289,20 @@ export function UserDetailsModal({
             <CardContent className="space-y-3 text-sm">
               <p>
                 <strong>Medical Conditions:</strong>{" "}
-                {user.medicalCondition || "N/A"}
+                {user.profile?.medicalCondition || "N/A"}
               </p>
               <p>
                 <strong>Current Medications:</strong>{" "}
-                {user.currentMedications || "N/A"}
+                {user.profile?.currentMedications || "N/A"}
               </p>
               <p>
-                <strong>Allergies:</strong> {user.allergies || "N/A"}
+                <strong>Allergies:</strong> {user.profile?.allergies || "N/A"}
               </p>
               <p className="flex items-center gap-3">
                 <strong>Dietary Requirements:</strong>{" "}
                 <div className="flex flex-wrap gap-2">
-                  {user.dietaryRequirements?.length > 0 ? (
-                    user.dietaryRequirements.map((diet, index) => (
+                  {user.profile?.dietaryRequirements?.length > 0 ? (
+                    user.profile.dietaryRequirements.map((diet, index) => (
                       <Badge
                         key={index}
                         variant="secondary"
@@ -265,82 +319,169 @@ export function UserDetailsModal({
                 </div>
               </p>
 
-              <div
-                className={`space-y-2 rounded-md p-3 text-sm ${
-                  user?.medic?.status === "Inactive"
-                    ? "bg-red-50 text-gray-600"
-                    : "bg-green-50 text-gray-800"
-                }`}
-              >
-                <p className="mb-2">
-                  <strong>Assigned Medical Staff:</strong>
-                </p>
-                <div className="flex items-center gap-2">
-                  <UserIcon className="h-4 w-4 text-primary" />
-                  <span>{user?.medic?.fullName || "N/A"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <span>{user?.medic?.phoneNumber || "N/A"}</span>
-                </div>
-                {user?.medic?.status === "Inactive" && (
-                  <p className="text-red-500 text-xs mt-2">
-                    This medic is <strong>Inactive</strong>. Kindly{" "}
-                    <span
-                      onClick={() =>
-                        router.push("/dashboard/admin/medical-staff")
-                      }
-                      className="text-red-500 underline cursor-pointer"
-                    >
-                      activate
-                    </span>{" "}
-                    or{" "}
-                    <span
-                      onClick={() => setShowAssignDropdown(true)}
-                      className="text-red-500 underline cursor-pointer"
-                    >
-                      assign another
-                    </span>
-                    .
-                    {showAssignDropdown && (
-                      <div className="mt-3 space-y-2">
-                        <Select
-                          onValueChange={(value) => setSelectedMedicId(value)}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select medical staff" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {medicalStaff.map((staff) => (
-                              <SelectItem key={staff._id} value={staff._id}>
-                                {staff.fullName} ({staff.type})
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          onClick={handleAssignClick}
-                          disabled={
-                            !selectedMedicId || assignMedicMutation.isPending
-                          }
-                          size="sm"
-                          variant="destructive"
-                        >
-                          {assignMedicMutation.isPending
-                            ? "Assigning..."
-                            : "Assign"}
-                        </Button>
-                      </div>
-                    )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Medic */}
+                <div
+                  className={`space-y-2 rounded-md p-3 text-sm ${
+                    user?.medic?.status === "Inactive"
+                      ? "bg-red-50 text-gray-600"
+                      : "bg-green-50 text-gray-800"
+                  }`}
+                >
+                  <p className="mb-2">
+                    <strong>Assigned Medical Staff:</strong>
                   </p>
-                )}
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    <span>{user?.medic?.name || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>{user?.medic?.phoneNumber || "N/A"}</span>
+                  </div>
+
+                  {user?.medic?.status === "Inactive" && (
+                    <p className="text-red-500 text-xs mt-2">
+                      This medic is <strong>Inactive</strong>. Kindly{" "}
+                      <span
+                        onClick={() =>
+                          router.push("/dashboard/admin/medical-staff")
+                        }
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        activate
+                      </span>{" "}
+                      or{" "}
+                      <span
+                        onClick={() => setShowAssignDropdownForMedic(true)}
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        assign another
+                      </span>
+                      .
+                      {showAssignDropdownForMedic && (
+                        <div className="mt-3 space-y-2">
+                          <Select
+                            onValueChange={(value) => setSelectedMedicId(value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select medical staff" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {medicalStaff
+                                .filter(
+                                  (staff) =>
+                                    staff.type === "General Practitioner"
+                                ) // ✅ filter
+                                .map((staff) => (
+                                  <SelectItem key={staff._id} value={staff._id}>
+                                    {staff.fullName}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={handleAssignClickForMedic}
+                            disabled={
+                              !selectedMedicId || assignMedicMutation.isPending
+                            }
+                            size="sm"
+                            variant="destructive"
+                          >
+                            {assignMedicMutation.isPending
+                              ? "Assigning..."
+                              : "Assign"}
+                          </Button>
+                        </div>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Dentist */}
+                <div
+                  className={`space-y-2 rounded-md p-3 text-sm ${
+                    user?.dentist?.status === "Inactive"
+                      ? "bg-red-50 text-gray-600"
+                      : "bg-green-50 text-gray-800"
+                  }`}
+                >
+                  <p className="mb-2">
+                    <strong>Assigned Dentist:</strong>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    <span>{user?.dentist?.name || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>{user?.dentist?.phoneNumber || "N/A"}</span>
+                  </div>
+
+                  {user?.dentist?.status === "Inactive" && (
+                    <p className="text-red-500 text-xs mt-2">
+                      This dentist is <strong>Inactive</strong>. Kindly{" "}
+                      <span
+                        onClick={() =>
+                          router.push("/dashboard/admin/medical-staff")
+                        }
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        activate
+                      </span>{" "}
+                      or{" "}
+                      <span
+                        onClick={() => setShowAssignDropdownForDentist(true)}
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        assign another
+                      </span>
+                      .
+                      {showAssignDropdownForDentist && (
+                        <div className="mt-3 space-y-2">
+                          <Select
+                            onValueChange={(value) =>
+                              setSelectedDentistId(value)
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select dentist" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {medicalStaff
+                                .filter((staff) => staff.type === "Dental") // ✅ filter
+                                .map((staff) => (
+                                  <SelectItem key={staff._id} value={staff._id}>
+                                    {staff.fullName}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={handleAssignClickForDentist}
+                            disabled={
+                              !selectedDentistId ||
+                              assignDentistMutation.isPending
+                            }
+                            size="sm"
+                            variant="destructive"
+                          >
+                            {assignDentistMutation.isPending
+                              ? "Assigning..."
+                              : "Assign"}
+                          </Button>
+                        </div>
+                      )}
+                    </p>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
 
           <Separator className="my-4" />
 
-          {/* Case Worker and Emergency Contacts */}
+          {/* Case Worker + Emergency */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
@@ -372,8 +513,8 @@ export function UserDetailsModal({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.emergencyContacts?.length > 0 ? (
-                  user.emergencyContacts.map((contact, index) => (
+                {user.profile?.emergencyContacts?.length > 0 ? (
+                  user.profile.emergencyContacts.map((contact, index) => (
                     <div
                       key={index}
                       className="text-sm mb-3 flex flex-col gap-2 last:mb-0"
@@ -402,22 +543,20 @@ export function UserDetailsModal({
 
           <Separator className="my-4" />
 
-          {/* Documents and Additional Information */}
-          <div className="grid grid-cols-1 gap-6">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileSignature className="h-5 w-5 text-primary" />
-                  Additional Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <p>{user.additionalNotes || "N/A"}</p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Additional Notes */}
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileSignature className="h-5 w-5 text-primary" />
+                Additional Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p>{user.profile?.additionalNotes || "N/A"}</p>
+            </CardContent>
+          </Card>
 
-          {/* Removal Information */}
+          {/* Removal */}
           <Separator className="my-4" />
           <Card className="shadow-sm">
             <CardHeader>

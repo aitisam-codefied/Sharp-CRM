@@ -66,6 +66,7 @@ interface Guest {
   portNumber?: string;
   numberOfDependents?: any;
   medic?: string; // objectId
+  dentist?: string;
   address?: string;
   emergencyContact?: EmergencyContact;
   medicalCondition?: string;
@@ -81,6 +82,7 @@ export interface CreateGuestForm {
   locations: string[]; // objectId[]
   assignedRooms: string[]; // objectId[]
   medic?: string; // objectId
+  dentist?: string; // objectId
   emergencyContact?: EmergencyContact;
   occupancyAgreement: any;
   signature: any;
@@ -93,6 +95,7 @@ export interface CreateGuestForm {
   sameEmergencyContact?: boolean;
   occupancy?: boolean;
   sameMedic?: boolean;
+  sameDentist?: boolean;
   roomRequirement?: number;
 }
 
@@ -104,6 +107,7 @@ export default function NewUserPage() {
     locations: [],
     assignedRooms: [],
     medic: "",
+    dentist: "",
     emergencyContact: {
       fullName: "",
       relationship: "",
@@ -116,6 +120,8 @@ export default function NewUserPage() {
     consentDataProcessing: false,
     sameEmergencyContact: false,
     occupancy: false,
+    sameDentist: false,
+    sameMedic: false,
     guests: [
       {
         fullName: "",
@@ -129,6 +135,7 @@ export default function NewUserPage() {
         portNumber: "",
         numberOfDependents: "",
         medic: "",
+        dentist: "",
         address: "",
         emergencyContact: {
           fullName: "",
@@ -173,8 +180,8 @@ export default function NewUserPage() {
     },
     {
       id: 5,
-      title: "Assigning Medical Staff",
-      description: "Assigning medical staff",
+      title: "Assign Medical & Dental Staff",
+      description: "Assign medical and dental staff",
     },
     {
       id: 6,
@@ -323,17 +330,28 @@ export default function NewUserPage() {
     const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
     const totalPeople = numDependants + 1;
     const hasDependants = numDependants > 0;
-    // Case 1: same medic for all OR only primary user
+
+    // Validate Medic
+    let isMedicValid = false;
     if (!hasDependants || formData.sameMedic) {
-      return !!formData.medic?.trim();
+      isMedicValid = !!formData.medic?.trim();
+    } else {
+      isMedicValid =
+        Array.isArray(formData.guests) &&
+        formData.guests.every((guest: any) => guest.medic?.trim());
     }
 
-    // Case 2: separate medic for each guest (including primary)
-    if (Array.isArray(formData.guests) && formData.guests.length > 0) {
-      return formData.guests.every((guest: any) => guest.medic?.trim());
+    // Validate Dentist
+    let isDentistValid = false;
+    if (!hasDependants || formData.sameDentist) {
+      isDentistValid = !!formData.dentist?.trim();
+    } else {
+      isDentistValid =
+        Array.isArray(formData.guests) &&
+        formData.guests.every((guest: any) => guest.dentist?.trim());
     }
 
-    return false;
+    return isMedicValid && isDentistValid;
   };
 
   const isStep6Valid = () => {
@@ -447,6 +465,7 @@ export default function NewUserPage() {
       delete cleanedData?.occupancy;
       delete cleanedData?.sameEmergencyContact;
       delete cleanedData?.sameMedic;
+      delete cleanedData?.sameDentist;
       delete cleanedData?.roomRequirement;
 
       // 3. Remove empty objects (recursive)
@@ -533,6 +552,10 @@ export default function NewUserPage() {
         apiFormData.append("medic", cleanedData.medic || "");
       }
 
+      if (cleanedData.dentist) {
+        apiFormData.append("dentist", cleanedData.dentist || ""); // new field
+      }
+
       apiFormData.append(
         "consentAccuracy",
         String(cleanedData.consentAccuracy || false)
@@ -545,29 +568,6 @@ export default function NewUserPage() {
         "areThereMultipleGuests",
         String(cleanedData.areThereMultipleGuests || false)
       );
-
-      // // Append assignedRooms as an array
-      // (cleanedData.assignedRooms || []).forEach(
-      //   (roomId: string, index: number) => {
-      //     apiFormData.append(`assignedRooms[${index}]`, roomId);
-      //   }
-      // );
-
-      // apiFormData.append(
-      //   "assignedRooms",
-      //   JSON.stringify(cleanedData.assignedRooms)
-      // );
-
-      // // ✅ Sirf assignedRooms ke locationIds lo
-      // const selectedLocationIds = (rooms || [])
-      //   .filter((room: any) => cleanedData.assignedRooms.includes(room.id))
-      //   .map((room: any) => room.locationId);
-
-      // // selectedLocationIds.forEach((locId: string, index: number) => {
-      // //   apiFormData.append(`locations[${index}]`, locId);
-      // // });
-
-      // apiFormData.append("locations", JSON.stringify(selectedLocationIds));
 
       // assignedRooms ko comma-separated string me convert karke bhejo
       apiFormData.append("assignedRooms", cleanedData.assignedRooms.join(","));
@@ -647,6 +647,10 @@ export default function NewUserPage() {
 
         if (guest.medic) {
           apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
+        }
+
+        if (guest.dentist) {
+          apiFormData.append(`guests[${index}][dentist]`, guest.dentist || ""); // new field
         }
 
         if (guest.address) {

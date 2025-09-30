@@ -10,7 +10,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
 
-export default function AssignedMedicalStaff({ formData, setFormData }: any) {
+export default function MedicalAndDentalForm({ formData, setFormData }: any) {
   const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
   const totalPeople = numDependants + 1;
   const hasDependants = numDependants > 0;
@@ -19,26 +19,29 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
   const medicalStaff: any[] = Array.isArray(data?.results)
     ? data.results.filter((staff: any) => staff.status === "Active")
     : [];
+  const generalPractitioners = medicalStaff.filter(
+    (staff: any) => staff.type === "General Practitioner"
+  );
+  const dentists = medicalStaff.filter((staff: any) => staff.type === "Dental");
 
   const [sameMedic, setSameMedic] = useState(formData.sameMedic || false);
+  const [sameDentist, setSameDentist] = useState(formData.sameDentist || false);
 
   useEffect(() => {
     setFormData((prev: any) => ({
       ...prev,
       sameMedic,
+      sameDentist,
     }));
-  }, [sameMedic]);
+  }, [sameMedic, sameDentist, setFormData]);
 
-  const handleSameChange = (checked: boolean) => {
+  const handleSameMedicChange = (checked: boolean) => {
     setSameMedic(checked);
     setFormData((prev: any) => {
       const newData = { ...prev, sameMedic: checked };
-
       if (checked) {
-        // common medic (reset)
         newData.medic = "";
         delete newData.assignedStaff;
-
         if (prev.guests) {
           newData.guests = prev.guests.map((g: any) => ({
             ...g,
@@ -46,10 +49,8 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
           }));
         }
       } else {
-        // separate medic (reset)
         newData.assignedStaff = Array(totalPeople).fill("");
         delete newData.medic;
-
         if (prev.guests) {
           newData.guests = prev.guests.map((g: any) => ({
             ...g,
@@ -61,7 +62,30 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
     });
   };
 
-  // update single common medic
+  const handleSameDentistChange = (checked: boolean) => {
+    setSameDentist(checked);
+    setFormData((prev: any) => {
+      const newData = { ...prev, sameDentist: checked };
+      if (checked) {
+        newData.dentist = "";
+        if (prev.guests) {
+          newData.guests = prev.guests.map((g: any) => ({
+            ...g,
+            dentist: "",
+          }));
+        }
+      } else {
+        if (prev.guests) {
+          newData.guests = prev.guests.map((g: any) => ({
+            ...g,
+            dentist: "",
+          }));
+        }
+      }
+      return newData;
+    });
+  };
+
   const handleMedicChange = (value: string) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -69,7 +93,13 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
     }));
   };
 
-  // update guest medic individually
+  const handleDentistChange = (value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      dentist: value,
+    }));
+  };
+
   const handleMedicChangeGuest = (guestIndex: number, value: string) => {
     setFormData((prev: any) => {
       const guests = [...prev.guests];
@@ -81,48 +111,92 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
     });
   };
 
+  const handleDentistChangeGuest = (guestIndex: number, value: string) => {
+    setFormData((prev: any) => {
+      const guests = [...prev.guests];
+      guests[guestIndex] = {
+        ...guests[guestIndex],
+        dentist: value,
+      };
+      return { ...prev, guests };
+    });
+  };
+
   return (
     <div className="space-y-6">
       {hasDependants && (
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="same-medic"
-            checked={sameMedic}
-            onCheckedChange={handleSameChange}
-          />
-          <Label htmlFor="same-medic">
-            Same assigned medical staff for all dependants?
-          </Label>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="same-medic"
+              checked={sameMedic}
+              onCheckedChange={handleSameMedicChange}
+            />
+            <Label htmlFor="same-medic">
+              Same assigned medical staff for all dependants?
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="same-dentist"
+              checked={sameDentist}
+              onCheckedChange={handleSameDentistChange}
+            />
+            <Label htmlFor="same-dentist">
+              Same assigned dentist for all dependants?
+            </Label>
+          </div>
         </div>
       )}
 
-      {!hasDependants || sameMedic ? (
-        // Single medic for primary/all
-        <div className="space-y-4">
-          <h3 className="font-semibold text-lg text-gray-800">
-            Assigned Medical Staff
-          </h3>
-          <Select
-            value={formData?.medic || ""}
-            onValueChange={(value) => handleMedicChange(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select medical staff" />
-            </SelectTrigger>
-            <SelectContent>
-              {medicalStaff.map((staff: any) => (
-                <SelectItem key={staff._id} value={String(staff._id)}>
-                  {staff.fullName}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      ) : (
-        // Separate medic for each guest
+      {!hasDependants || sameMedic || sameDentist ? (
         <div className="space-y-6">
           <h3 className="font-semibold text-lg text-gray-800">
-            Assigned Medical Staff
+            Assigned Medical & Dental Staff
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Select Medical Staff *</Label>
+              <Select
+                value={formData?.medic || ""}
+                onValueChange={(value) => handleMedicChange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select medical staff" />
+                </SelectTrigger>
+                <SelectContent>
+                  {generalPractitioners.map((staff: any) => (
+                    <SelectItem key={staff._id} value={String(staff._id)}>
+                      {staff.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Select Dentist *</Label>
+              <Select
+                value={formData?.dentist || ""}
+                onValueChange={(value) => handleDentistChange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select dentist" />
+                </SelectTrigger>
+                <SelectContent>
+                  {dentists.map((staff: any) => (
+                    <SelectItem key={staff._id} value={String(staff._id)}>
+                      {staff.fullName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <h3 className="font-semibold text-lg text-gray-800">
+            Assigned Medical & Dental Staff
           </h3>
           {[...Array(totalPeople)].map((_, i) => (
             <div
@@ -132,23 +206,45 @@ export default function AssignedMedicalStaff({ formData, setFormData }: any) {
               <h4 className="font-semibold text-md mb-4 text-gray-800">
                 {i === 0 ? "Primary User" : `Dependant ${i}`}
               </h4>
-              <div className="space-y-2">
-                <Label>Select Medical Staff *</Label>
-                <Select
-                  value={formData?.guests[i]?.medic || ""}
-                  onValueChange={(value) => handleMedicChangeGuest(i, value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a medical staff" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {medicalStaff.map((staff: any) => (
-                      <SelectItem key={staff._id} value={String(staff._id)}>
-                        {staff.fullName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label>Select Medical Staff *</Label>
+                  <Select
+                    value={formData?.guests[i]?.medic || ""}
+                    onValueChange={(value) => handleMedicChangeGuest(i, value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a medical staff" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {generalPractitioners.map((staff: any) => (
+                        <SelectItem key={staff._id} value={String(staff._id)}>
+                          {staff.fullName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Select Dentist *</Label>
+                  <Select
+                    value={formData?.guests[i]?.dentist || ""}
+                    onValueChange={(value) =>
+                      handleDentistChangeGuest(i, value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a dentist" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dentists.map((staff: any) => (
+                        <SelectItem key={staff._id} value={String(staff._id)}>
+                          {staff.fullName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           ))}

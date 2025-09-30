@@ -36,11 +36,11 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
   });
 
   useEffect(() => {
-    if (user?.userId) {
+    if (user?.user) {
       reset({
-        fullName: user.userId.fullName,
-        emailAddress: user.userId.emailAddress,
-        phoneNumber: user.userId.phoneNumber,
+        fullName: user.user.fullName,
+        emailAddress: user.user.emailAddress,
+        phoneNumber: user.user.phoneNumber,
       });
     }
   }, [user, reset]);
@@ -50,10 +50,9 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
     emailAddress: string;
     phoneNumber: string;
   }) => {
-    if (!user?.userId?._id) return;
+    if (!user?.user?._id) return;
 
     const changedData: Partial<ServiceUser> = {};
-
     if (dirtyFields.fullName) changedData.fullName = data.fullName;
     if (dirtyFields.emailAddress) changedData.emailAddress = data.emailAddress;
     if (dirtyFields.phoneNumber) changedData.phoneNumber = data.phoneNumber;
@@ -67,7 +66,7 @@ export function BasicInfoSection({ user, onClose }: BasicInfoSectionProps) {
     }
 
     updateStaff.mutate(
-      { id: user.userId._id, staffData: changedData },
+      { id: user.user._id, staffData: changedData },
       {
         onSuccess: () => {
           toast({

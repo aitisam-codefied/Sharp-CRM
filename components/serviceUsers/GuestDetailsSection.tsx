@@ -60,11 +60,9 @@ export function GuestDetailsSection({
     defaultValues: {
       _id: "",
       dateOfBirth: "",
-      gender: user?.gender || "",
-      nationality: user?.nationality || "",
-      language: user?.language || "",
-      numberOfDependents: 0,
-      dental: { name: "", phoneNumber: "", emailAddress: "" },
+      gender: "",
+      nationality: "",
+      language: "",
       address: "",
       emergencyContacts: [],
       medicalCondition: "",
@@ -73,43 +71,22 @@ export function GuestDetailsSection({
       additionalNotes: "",
       dietaryRequirements: [],
       supportServices: [],
-      priorityLevel: user?.priorityLevel || "",
-      documents: [],
+      priorityLevel: "",
       branch: {
-        _id: user?.branch?._id || "",
+        _id: "",
         companyId: { _id: "", name: "" },
         name: "",
         address: "",
       },
-      roomTypePreference: user?.roomTypePreference || "",
+      roomTypePreference: "",
       assignedRoom: { _id: "", roomNumber: "", type: "" },
       checkInDate: "",
       consentAccuracy: false,
       consentDataProcessing: false,
       consentDataRetention: false,
       signature: "",
-      removal: {
-        transfer: {
-          requestedBy: null,
-          approvedBy: null,
-          approvalStatus: null,
-          approvalNotes: null,
-          targetCompanyId: null,
-          targetBranchId: null,
-          targetLocationId: null,
-          targetRoomId: null,
-        },
-        status: "",
-        scheduledAt: null,
-        scheduledBy: null,
-        notes: null,
-        executedAt: null,
-        executedBy: null,
-        lastError: null,
-      },
-      createdAt: "",
-      updatedAt: "",
-      location: { _id: "" },
+      documents: [],
+      removal: { status: "" },
     },
   });
 
@@ -118,22 +95,47 @@ export function GuestDetailsSection({
   useEffect(() => {
     if (user) {
       reset({
-        ...user,
-        nationality: user.nationality?.toLowerCase() || "",
-        language: user.language
-          ? user.language.charAt(0).toUpperCase() +
-            user.language.slice(1).toLowerCase()
+        _id: user._id,
+        dateOfBirth: user.profile?.dateOfBirth
+          ? new Date(user.profile.dateOfBirth).toISOString().split("T")[0]
           : "",
-        dateOfBirth: user.dateOfBirth
-          ? new Date(user.dateOfBirth).toISOString().split("T")[0]
+        gender: user.profile?.gender?.toLowerCase() || "",
+        nationality: user.profile?.nationality?.toLowerCase() || "",
+        language: user.profile?.language?.toLowerCase() || "",
+        address: user.profile?.address || "",
+        emergencyContacts: user.profile?.emergencyContacts || [],
+        medicalCondition: user.profile?.medicalCondition || "",
+        allergies: user.profile?.allergies || "",
+        currentMedications: user.profile?.currentMedications || "",
+        additionalNotes: user.profile?.additionalNotes || "",
+        dietaryRequirements: user.profile?.dietaryRequirements || [],
+        supportServices: user.profile?.supportServices || [],
+        priorityLevel: user.priorityLevel || "",
+        branch: user.branch || {
+          _id: "",
+          companyId: { _id: "", name: "" },
+          name: "",
+          address: "",
+        },
+        assignedRoom: user.assignedRooms?.[0] || {
+          _id: "",
+          roomNumber: "",
+          type: "",
+        },
+        roomTypePreference: user.profile?.roomTypePreference || "",
+        checkInDate: user.checkInDate
+          ? new Date(user.checkInDate).toISOString().split("T")[0]
           : "",
-        location: { _id: "" },
+        consentAccuracy: user.profile?.consentAccuracy || false,
+        consentDataProcessing: user.profile?.consentDataProcessing || false,
+        consentDataRetention: user.profile?.consentDataRetention || false,
+        signature: user.profile?.signature || "",
       });
       setBranchChanged(false);
     }
-  }, [user, reset, nationalities]);
+  }, [user, reset]);
 
-  console.log("User nationality:", user?.nationality);
+  console.log("User nationality:", user?.profile?.nationality);
   console.log("Nationalities list:", nationalities);
 
   const selectedBranch = watch("branch._id");
@@ -153,31 +155,22 @@ export function GuestDetailsSection({
   const onSubmit = (data: ServiceUser) => {
     if (!user || !user._id) return;
 
-    const changedData: Partial<ServiceUser> = {};
+    const changedData: Record<string, any> = {};
 
-    if (dirtyFields.dateOfBirth) changedData.dateOfBirth = data.dateOfBirth;
-    if (dirtyFields.gender) changedData.gender = data.gender;
-    if (dirtyFields.nationality) changedData.nationality = data.nationality;
-    if (dirtyFields.language) changedData.language = data.language;
-    if (dirtyFields.numberOfDependents)
-      changedData.numberOfDependents = data.numberOfDependents;
-
+    // Date of birth, gender, nationality, language
     if (
-      dirtyFields.dental?.name ||
-      dirtyFields.dental?.phoneNumber ||
-      dirtyFields.dental?.emailAddress
+      dirtyFields.dateOfBirth ||
+      dirtyFields.gender ||
+      dirtyFields.nationality ||
+      dirtyFields.language
     ) {
-      changedData.dental = {};
-      if (dirtyFields.dental?.name) changedData.dental.name = data.dental.name;
-      if (dirtyFields.dental?.phoneNumber)
-        changedData.dental.phoneNumber = data.dental.phoneNumber;
-      if (dirtyFields.dental?.emailAddress)
-        changedData.dental.emailAddress = data.dental.emailAddress;
+      changedData.dateOfBirth = data.dateOfBirth;
+      changedData.gender = data.gender;
+      changedData.nationality = data.nationality;
+      changedData.language = data.language;
     }
 
     if (dirtyFields.address) changedData.address = data.address;
-    if (dirtyFields.emergencyContacts)
-      changedData.emergencyContacts = data.emergencyContacts;
     if (dirtyFields.medicalCondition)
       changedData.medicalCondition = data.medicalCondition;
     if (dirtyFields.allergies) changedData.allergies = data.allergies;
@@ -185,22 +178,14 @@ export function GuestDetailsSection({
       changedData.currentMedications = data.currentMedications;
     if (dirtyFields.additionalNotes)
       changedData.additionalNotes = data.additionalNotes;
+
     if (dirtyFields.dietaryRequirements)
       changedData.dietaryRequirements = data.dietaryRequirements;
 
-    if (dirtyFields.branch?._id) changedData.branch = data.branch._id;
+    if (dirtyFields.branch?._id) changedData.branch = data.branch;
     if (dirtyFields.assignedRoom?._id)
-      changedData.assignedRoom = data.assignedRoom._id;
-    if (dirtyFields.roomTypePreference)
-      changedData.roomTypePreference = data.roomTypePreference;
+      changedData.assignedRooms = [data.assignedRoom];
     if (dirtyFields.checkInDate) changedData.checkInDate = data.checkInDate;
-    if (dirtyFields.consentAccuracy)
-      changedData.consentAccuracy = data.consentAccuracy;
-    if (dirtyFields.consentDataProcessing)
-      changedData.consentDataProcessing = data.consentDataProcessing;
-    if (dirtyFields.consentDataRetention)
-      changedData.consentDataRetention = data.consentDataRetention;
-    if (dirtyFields.signature) changedData.signature = data.signature;
 
     if (Object.keys(changedData).length === 0) {
       toast({
@@ -239,121 +224,6 @@ export function GuestDetailsSection({
     <div className="border p-4 rounded-md mt-4">
       <h3 className="text-lg font-semibold mb-4">Details</h3>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-1 gap-4">
-          {/* <div className="space-y-2">
-            <Label htmlFor="branch._id">Branch</Label>
-            <Controller
-              name="branch._id"
-              control={control}
-              rules={{ required: "Branch is required" }}
-              render={({ field }) => (
-                <Select
-                  onValueChange={(val) => {
-                    field.onChange(val);
-                    if (val !== initialBranch) {
-                      setBranchChanged(true);
-                      setValue("assignedRoom._id", "");
-                      setValue("location._id", "");
-                    } else {
-                      setBranchChanged(false);
-                    }
-                  }}
-                  value={field.value}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select branch" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches?.map((branch: Branch) => (
-                      <SelectItem key={branch._id} value={branch._id}>
-                        {branch.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            {errors.branch?._id && (
-              <p className="text-red-500 text-xs">
-                {errors.branch._id.message}
-              </p>
-            )}
-          </div> */}
-        </div>
-        {/* <div className="grid grid-cols-2 gap-4 mt-4">
-          {branchChanged && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="location._id">Location</Label>
-                <Controller
-                  name="location._id"
-                  control={control}
-                  rules={{ required: "Location is required" }}
-                  render={({ field }) => {
-                    const branchObj = branches.find(
-                      (b) => b._id === selectedBranch
-                    );
-                    const locations = branchObj?.locations || [];
-                    return (
-                      <Select
-                        onValueChange={(val) => {
-                          field.onChange(val);
-                          setValue("assignedRoom._id", "");
-                        }}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select location" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {locations.map((loc: any) => (
-                            <SelectItem key={loc._id} value={loc._id}>
-                              {loc.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    );
-                  }}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="assignedRoom._id">Room</Label>
-                <Controller
-                  name="assignedRoom._id"
-                  control={control}
-                  rules={{ required: "Room is required" }}
-                  render={({ field }) => {
-                    const branchObj = branches.find(
-                      (b) => b._id === selectedBranch
-                    );
-                    const locationObj = branchObj?.locations.find(
-                      (l: any) => l._id === watch("location._id")
-                    );
-                    const rooms = locationObj?.rooms || [];
-                    return (
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select room" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {rooms.map((room: any) => (
-                            <SelectItem key={room._id} value={room._id}>
-                              {room.roomNumber} ({room.type})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    );
-                  }}
-                />
-              </div>
-            </>
-          )}
-        </div> */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="dateOfBirth">Date of Birth</Label>
@@ -379,8 +249,16 @@ export function GuestDetailsSection({
               </p>
             )}
           </div>
-
           <div className="space-y-2">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              placeholder="123 Main Street"
+              {...register("address")}
+            />
+          </div>
+
+          {/* <div className="space-y-2">
             <Label htmlFor="gender">Gender</Label>
             <Controller
               name="gender"
@@ -392,9 +270,9 @@ export function GuestDetailsSection({
                     <SelectValue placeholder="Select gender" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Male">Male</SelectItem>
-                    <SelectItem value="Female">Female</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -402,10 +280,10 @@ export function GuestDetailsSection({
             {errors.gender && (
               <p className="text-red-500 text-xs">{errors.gender.message}</p>
             )}
-          </div>
+          </div> */}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label htmlFor="nationality">Nationality</Label>
             <Controller
               name="nationality"
@@ -444,12 +322,12 @@ export function GuestDetailsSection({
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Spanish">Spanish</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="German">German</SelectItem>
-                    <SelectItem value="Chinese">Chinese</SelectItem>
-                    <SelectItem value="Urdu">Urdu</SelectItem>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="spanish">Spanish</SelectItem>
+                    <SelectItem value="french">French</SelectItem>
+                    <SelectItem value="german">German</SelectItem>
+                    <SelectItem value="chinese">Chinese</SelectItem>
+                    <SelectItem value="urdu">Urdu</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -457,26 +335,7 @@ export function GuestDetailsSection({
             {errors.language && (
               <p className="text-red-500 text-xs">{errors.language.message}</p>
             )}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 mt-4">
-          {/* <div className="space-y-2">
-            <Label htmlFor="numberOfDependents">Number of Dependents</Label>
-            <Input
-              id="numberOfDependents"
-              type="number"
-              placeholder="0"
-              {...register("numberOfDependents", { valueAsNumber: true })}
-            />
           </div> */}
-          <div className="space-y-2">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              placeholder="123 Main Street"
-              {...register("address")}
-            />
-          </div>
         </div>
 
         <ContactFields2 control={control} register={register} />
@@ -509,59 +368,6 @@ export function GuestDetailsSection({
           </div>
           <div className="space-y-2">
             <Label htmlFor="dietaryRequirements">Dietary Requirements</Label>
-            {/* <Controller
-              name="dietaryRequirements"
-              control={control}
-              render={({ field }) => {
-                const selectedValues: string[] = field.value || [];
-                return (
-                  <div className="space-y-2">
-                    <Select
-                      onValueChange={(value) => {
-                        let updatedValues = [...selectedValues];
-                        if (updatedValues.includes(value)) {
-                          updatedValues = updatedValues.filter(
-                            (v) => v !== value
-                          );
-                        } else {
-                          updatedValues.push(value);
-                        }
-                        field.onChange(updatedValues);
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select dietary requirements" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.values(DIETARY_REQUIREMENT_TYPES)?.map(
-                          (type) => (
-                            <SelectItem key={type} value={type}>
-                              {type}
-                            </SelectItem>
-                          )
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedValues?.map((type) => (
-                        <Badge
-                          key={type}
-                          variant="secondary"
-                          className="cursor-pointer"
-                          onClick={() =>
-                            field.onChange(
-                              selectedValues.filter((v) => v !== type)
-                            )
-                          }
-                        >
-                          {type} ✕
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }}
-            /> */}
             <Controller
               name="dietaryRequirements"
               control={control}
@@ -644,9 +450,6 @@ export function GuestDetailsSection({
             {...register("additionalNotes")}
           />
         </div>
-
-        {/* <DocumentFields2 index={0} control={control} register={register} /> */}
-        {/* <ConsentFields2 register={register} /> */}
 
         <div className="mt-4 flex justify-end">
           <Button type="submit" disabled={updateGuest.isPending || !isDirty}>

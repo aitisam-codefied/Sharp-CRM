@@ -103,7 +103,7 @@ export default function CompanyPerformanceTable() {
                 <TableHead>Information</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Residents</TableHead>
-                <TableHead>Health</TableHead>
+                <TableHead>Staff Assignment</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -162,8 +162,8 @@ export default function CompanyPerformanceTable() {
                         <div
                           className={
                             company?.health === "OK"
-                              ? "bg-green-100 text-green-700 border-green-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs sm:text-sm"
-                              : "bg-orange-100 text-orange-700 border-orange-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs sm:text-sm"
+                              ? "bg-green-100 text-green-700 border-green-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs"
+                              : "bg-orange-100 text-orange-700 border-orange-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs"
                           }
                         >
                           {company?.health}

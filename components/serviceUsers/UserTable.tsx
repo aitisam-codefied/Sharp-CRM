@@ -14,7 +14,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Users, Eye, Edit, MapPin, Phone, Mail, Trash2 } from "lucide-react";
+import {
+  Users,
+  Eye,
+  Edit,
+  MapPin,
+  Phone,
+  Mail,
+  Trash2,
+  Copy,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { Branch, Room, Guest, Location } from "@/lib/types";
 import { useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
@@ -22,6 +33,8 @@ import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
 import { UserDetailsModal } from "./UserDetailsModal";
 import { EditUserModal } from "./EditUserModal";
 import { useRouter } from "next/navigation";
+import { Tree } from "antd";
+import { PlusSquareOutlined, MinusSquareOutlined } from "@ant-design/icons";
 
 interface UserTableProps {
   users: Guest[]; // 🚨 Already filtered + paginated
@@ -50,33 +63,59 @@ export function UserTable({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedEditUser, setSelectedEditUser] = useState<Guest | null>(null);
   const [forceAssignDropdown, setForceAssignDropdown] = useState(false);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
+  const [assigningUserId, setAssigningUserId] = useState<string | null>(null);
   const router = useRouter();
 
-  // Flatten data for display only
+  // Flatten data for display only (new API response structure)
   const flattenedUsers = users.map((guest, index) => ({
     id: guest._id || `${index}`,
-    fullName: guest.userId?.fullName || "",
-    medicFullName: guest.medic?.fullName || "",
+    fullName: guest.user?.fullName || "",
+    portNumber: guest.portNumber || guest.user?.portNumber || "",
+    email: guest.user?.emailAddress || "",
+    phone: guest.user?.phoneNumber || "",
+
+    // Dependants only if isPrimary true
+    dependants: guest?.family?.isPrimary ? guest.family?.dependants || [] : [],
+    isPrimary: guest?.family?.isPrimary || false,
+
+    medicFullName: guest.medic?.name || "",
     medicPhone: guest.medic?.phoneNumber || "",
     medicEmail: guest.medic?.emailAddress || "",
     medicStatus: guest.medic?.status || "",
-    email: guest.userId?.emailAddress || "",
-    phone: guest.userId?.phoneNumber || "",
-    branch: guest.familyRooms[0]?.roomId?.locationId?.branchId?.name || "",
-    location:
-      branches.find((b) => b._id === guest.familyRooms[0]?.branchId)?.address ||
-      "",
-    dateOfBirth: guest.dateOfBirth
-      ? new Date(guest.dateOfBirth).toLocaleDateString()
+
+    dentistFullName: guest.dentist?.name || "",
+    dentistPhone: guest.dentist?.phoneNumber || "",
+    dentistEmail: guest.dentist?.emailAddress || "",
+    dentistStatus: guest.dentist?.status || "",
+
+    branch: guest.branch?.name || "",
+    location: guest.branch?.address || "",
+    company: guest.branch?.company?.name || "",
+
+    dateOfBirth: guest.profile?.dateOfBirth
+      ? new Date(guest.profile.dateOfBirth).toLocaleDateString()
       : "",
-    gender: guest.gender || "",
-    nationality: guest.nationality || "",
-    languages: guest.language ? [guest.language] : [],
-    arrivalDate: "", // not in structure, keeping for compatibility
+    gender: guest.profile?.gender || "",
+    nationality: guest.profile?.nationality || "",
+    languages: guest.profile?.language ? [guest.profile.language] : [],
+
     caseWorker: guest.caseWorker?.fullName || "",
 
-    room: guest.familyRooms[0]?.roomId?.roomNumber || "",
+    room: guest.assignedRooms?.[0]?.roomNumber || "",
+
+    arrivalDate: guest.checkInDate
+      ? new Date(guest.checkInDate).toLocaleDateString()
+      : "",
+    departureDate: guest.checkOutDate
+      ? new Date(guest.checkOutDate).toLocaleDateString()
+      : "",
   }));
+
+  // Callback to handle assignment completion
+  const handleAssignmentComplete = (userId: string) => {
+    setAssigningUserId(null); // Clear assigning state
+  };
 
   return (
     <>
@@ -96,10 +135,12 @@ export function UserTable({
           <TableHeader>
             <TableRow>
               <TableHead>Service User</TableHead>
-              <TableHead>Personal Details</TableHead>
+              <TableHead>Port Number</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Contact Info</TableHead>
+              <TableHead>Dependants</TableHead>
               <TableHead>Medic</TableHead>
+              <TableHead>Dentist</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -107,31 +148,55 @@ export function UserTable({
             {flattenedUsers.map((user, idx) => (
               <TableRow key={user.id}>
                 <TableCell>
-                  <div className="flex items-center space-x-3">
-                    <div className="font-medium capitalize">
+                  <div className="flex flex-col items-start gap-2">
+                    <div className="font-medium capitalize bg-green-100 text-green-800 px-2 py-1 rounded-xl text-sm">
                       {user.fullName}
                     </div>
+                    <div className="space-y-1 text-xs">
+                      <div>
+                        <strong>DOB:</strong> {user.dateOfBirth || "N/A"}
+                      </div>
+                      <div>
+                        <strong>Nationality:</strong>{" "}
+                        {user.nationality || "N/A"}
+                      </div>
+                      <div>
+                        <strong>Gender:</strong> {user.gender || "N/A"}
+                      </div>
+                      <div>
+                        <strong>Languages:</strong>{" "}
+                        {user.languages.length > 0
+                          ? user.languages.join(", ")
+                          : "N/A"}
+                      </div>
+                    </div>
                   </div>
                 </TableCell>
+
                 <TableCell>
-                  <div className="space-y-1 text-xs">
-                    <div>
-                      <strong>DOB:</strong> {user.dateOfBirth || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Nationality:</strong> {user.nationality || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Gender:</strong> {user.gender || "N/A"}
-                    </div>
-                    <div>
-                      <strong>Languages:</strong>{" "}
-                      {user.languages.length > 0
-                        ? user.languages.join(", ")
-                        : "N/A"}
-                    </div>
+                  <div className="text-xs flex items-center gap-2">
+                    <span className="w-[100px] break-all whitespace-normal">
+                      {user.portNumber || "N/A"}
+                    </span>
+                    {user.portNumber && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(user.portNumber);
+                          setCopiedPortId(user.id); // jis user ka copy kiya uska id set
+                          setTimeout(() => setCopiedPortId(null), 2000); // 2 sec baad reset
+                        }}
+                        className="text-gray-500 hover:text-black transition-colors"
+                      >
+                        {copiedPortId === user.id ? (
+                          <Check size={14} className="text-green-600" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </TableCell>
+
                 <TableCell>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center">
@@ -141,6 +206,7 @@ export function UserTable({
                     <div className="">Room {user.room || "N/A"}</div>
                   </div>
                 </TableCell>
+
                 <TableCell>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center">
@@ -153,6 +219,44 @@ export function UserTable({
                     </div>
                   </div>
                 </TableCell>
+
+                <TableCell>
+                  {user?.isPrimary && user.dependants.length > 0 ? (
+                    <Tree
+                      showLine
+                      switcherIcon={(props: any) =>
+                        props.expanded ? (
+                          <MinusSquareOutlined style={{ fontSize: "14px" }} />
+                        ) : (
+                          <PlusSquareOutlined style={{ fontSize: "14px" }} />
+                        )
+                      }
+                      treeData={[
+                        {
+                          title: "Dependants",
+                          key: "dependants-root",
+                          children: user.dependants.map((dep, depIdx) => ({
+                            key: `dep-${user.id}-${depIdx}`,
+                            title: (
+                              <div className="text-xs">
+                                <div className="capitalize">{dep.fullName}</div>
+                                <div>
+                                  <strong> Port Number :</strong>{" "}
+                                  {dep.portNumber || "N/A"}
+                                </div>
+                              </div>
+                            ),
+                          })),
+                        },
+                      ]}
+                    />
+                  ) : (
+                    <div className="text-xs text-muted-foreground">
+                      No dependants for this user
+                    </div>
+                  )}
+                </TableCell>
+
                 <TableCell>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center">
@@ -167,37 +271,103 @@ export function UserTable({
                       {user?.medicEmail || "N/A"}
                     </div>
                   </div>
-
                   {user.medicStatus === "Inactive" && (
                     <div className="mt-2 text-xs bg-red-50 text-red-600 p-2 rounded-md w-fit">
-                      This medic is currently <strong>inactive</strong>.<br />{" "}
-                      Kindly{" "}
-                      <span
-                        onClick={() =>
-                          router.push("/dashboard/admin/medical-staff")
-                        }
-                        className="underline cursor-pointer"
-                      >
-                        activate
-                      </span>{" "}
-                      or{" "}
-                      <span
-                        onClick={() => {
-                          setSelectedViewUser(users[idx]);
-                          setViewModalOpen(true);
-                          setForceAssignDropdown(true);
-                          // pass flag to scroll
-                          setTimeout(() => {
-                            document.dispatchEvent(
-                              new CustomEvent("scrollToMedical")
-                            );
-                          }, 300);
-                        }}
-                        className="underline cursor-pointer"
-                      >
-                        assign a new one
-                      </span>
-                      .
+                      This medic is currently <strong>inactive</strong>.<br />
+                      {assigningUserId === user.id ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Assigning...
+                        </div>
+                      ) : (
+                        <>
+                          Kindly{" "}
+                          <span
+                            onClick={() =>
+                              router.push("/dashboard/admin/medical-staff")
+                            }
+                            className="underline cursor-pointer"
+                          >
+                            activate
+                          </span>{" "}
+                          or{" "}
+                          <span
+                            onClick={() => {
+                              setSelectedViewUser(users[idx]);
+                              setViewModalOpen(true);
+                              setForceAssignDropdown(true);
+                              setAssigningUserId(user.id); // Set assigning state
+                              setTimeout(() => {
+                                document.dispatchEvent(
+                                  new CustomEvent("scrollToMedical")
+                                );
+                              }, 300);
+                            }}
+                            className="underline cursor-pointer"
+                          >
+                            assign a new one
+                          </span>
+                          .
+                        </>
+                      )}
+                    </div>
+                  )}
+                </TableCell>
+
+                <TableCell>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex items-center">
+                      {user?.dentistFullName || "N/A"}
+                    </div>
+                    <div className="flex items-center">
+                      <Phone className="h-3 w-3 mr-1" />
+                      {user?.dentistPhone || "N/A"}
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="h-3 w-3 mr-1" />
+                      {user?.dentistEmail || "N/A"}
+                    </div>
+                  </div>
+
+                  {user.dentistStatus === "Inactive" && (
+                    <div className="mt-2 text-xs bg-red-50 text-red-600 p-2 rounded-md w-fit">
+                      This dentist is currently <strong>inactive</strong>.<br />
+                      {assigningUserId === user.id ? (
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Assigning...
+                        </div>
+                      ) : (
+                        <>
+                          Kindly{" "}
+                          <span
+                            onClick={() =>
+                              router.push("/dashboard/admin/medical-staff")
+                            }
+                            className="underline cursor-pointer"
+                          >
+                            activate
+                          </span>{" "}
+                          or{" "}
+                          <span
+                            onClick={() => {
+                              setSelectedViewUser(users[idx]);
+                              setViewModalOpen(true);
+                              setForceAssignDropdown(true);
+                              setAssigningUserId(user.id); // Set assigning state
+                              setTimeout(() => {
+                                document.dispatchEvent(
+                                  new CustomEvent("scrollToMedical")
+                                );
+                              }, 300);
+                            }}
+                            className="underline cursor-pointer"
+                          >
+                            assign a new one
+                          </span>
+                          .
+                        </>
+                      )}
                     </div>
                   )}
                 </TableCell>
