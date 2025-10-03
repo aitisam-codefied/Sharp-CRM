@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,8 +48,8 @@ export default function DocumentFilters({
     <div
       className={`grid gap-4 mb-6 ${
         selectedCompany !== "all"
-          ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-5"
-          : "grid-cols-1 sm:grid-cols-2 md:grid-cols-4"
+          ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
+          : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3"
       }`}
     >
       {/* Search */}
@@ -81,7 +81,7 @@ export default function DocumentFilters({
       </Select>
 
       {/* Company */}
-      <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+      {/* <Select value={selectedCompany} onValueChange={setSelectedCompany}>
         <SelectTrigger>
           <SelectValue placeholder="All Companies" />
         </SelectTrigger>
@@ -93,10 +93,10 @@ export default function DocumentFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
 
       {/* Branch (only if company selected) */}
-      {selectedCompany !== "all" && (
+      {/* {selectedCompany !== "all" && (
         <Select value={selectedBranch} onValueChange={setSelectedBranch}>
           <SelectTrigger>
             <SelectValue placeholder="All Branches" />
@@ -110,7 +110,7 @@ export default function DocumentFilters({
             ))}
           </SelectContent>
         </Select>
-      )}
+      )} */}
 
       {/* Status */}
       <Select value={selectedStatus} onValueChange={setSelectedStatus}>

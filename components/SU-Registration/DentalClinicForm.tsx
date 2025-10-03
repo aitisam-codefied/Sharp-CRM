@@ -37,88 +37,55 @@ export default function MedicalAndDentalForm({ formData, setFormData }: any) {
 
   const handleSameMedicChange = (checked: boolean) => {
     setSameMedic(checked);
-    setFormData((prev: any) => {
-      const newData = { ...prev, sameMedic: checked };
-      if (checked) {
-        newData.medic = "";
-        delete newData.assignedStaff;
-        if (prev.guests) {
-          newData.guests = prev.guests.map((g: any) => ({
-            ...g,
-            medic: "",
-          }));
-        }
-      } else {
-        newData.assignedStaff = Array(totalPeople).fill("");
-        delete newData.medic;
-        if (prev.guests) {
-          newData.guests = prev.guests.map((g: any) => ({
-            ...g,
-            medic: "",
-          }));
-        }
-      }
-      return newData;
-    });
   };
 
   const handleSameDentistChange = (checked: boolean) => {
     setSameDentist(checked);
-    setFormData((prev: any) => {
-      const newData = { ...prev, sameDentist: checked };
-      if (checked) {
-        newData.dentist = "";
-        if (prev.guests) {
-          newData.guests = prev.guests.map((g: any) => ({
-            ...g,
-            dentist: "",
-          }));
-        }
-      } else {
-        if (prev.guests) {
-          newData.guests = prev.guests.map((g: any) => ({
-            ...g,
-            dentist: "",
-          }));
-        }
-      }
-      return newData;
-    });
-  };
-
-  const handleMedicChange = (value: string) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      medic: value,
-    }));
-  };
-
-  const handleDentistChange = (value: string) => {
-    setFormData((prev: any) => ({
-      ...prev,
-      dentist: value,
-    }));
   };
 
   const handleMedicChangeGuest = (guestIndex: number, value: string) => {
     setFormData((prev: any) => {
-      const guests = [...prev.guests];
-      guests[guestIndex] = {
-        ...guests[guestIndex],
-        medic: value,
-      };
-      return { ...prev, guests };
+      const newData = { ...prev };
+
+      if (prev.sameMedic) {
+        // ✅ store globally if sameMedic is checked
+        newData.medic = value;
+        // wipe medic fields inside guests
+        newData.guests = prev.guests.map((g: any, idx: number) => ({
+          ...g,
+          medic: idx === 0 ? value : "", // optional: keep primary same as top-level
+        }));
+      } else {
+        // ✅ store per guest
+        const guests = [...prev.guests];
+        guests[guestIndex] = { ...guests[guestIndex], medic: value };
+        newData.guests = guests;
+        delete newData.medic; // no top-level medic in this mode
+      }
+
+      return newData;
     });
   };
 
   const handleDentistChangeGuest = (guestIndex: number, value: string) => {
     setFormData((prev: any) => {
-      const guests = [...prev.guests];
-      guests[guestIndex] = {
-        ...guests[guestIndex],
-        dentist: value,
-      };
-      return { ...prev, guests };
+      const newData = { ...prev };
+
+      if (prev.sameDentist) {
+        // ✅ store globally if sameDentist is checked
+        newData.dentist = value;
+        newData.guests = prev.guests.map((g: any, idx: number) => ({
+          ...g,
+          dentist: idx === 0 ? value : "",
+        }));
+      } else {
+        const guests = [...prev.guests];
+        guests[guestIndex] = { ...guests[guestIndex], dentist: value };
+        newData.guests = guests;
+        delete newData.dentist; // no top-level dentist in this mode
+      }
+
+      return newData;
     });
   };
 
@@ -149,66 +116,27 @@ export default function MedicalAndDentalForm({ formData, setFormData }: any) {
         </div>
       )}
 
-      {!hasDependants || sameMedic || sameDentist ? (
-        <div className="space-y-6">
-          <h3 className="font-semibold text-lg text-gray-800">
-            Assigned Medical & Dental Staff
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label>Select Medical Staff *</Label>
-              <Select
-                value={formData?.medic || ""}
-                onValueChange={(value) => handleMedicChange(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select medical staff" />
-                </SelectTrigger>
-                <SelectContent>
-                  {generalPractitioners.map((staff: any) => (
-                    <SelectItem key={staff._id} value={String(staff._id)}>
-                      {staff.fullName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Select Dentist *</Label>
-              <Select
-                value={formData?.dentist || ""}
-                onValueChange={(value) => handleDentistChange(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select dentist" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dentists.map((staff: any) => (
-                    <SelectItem key={staff._id} value={String(staff._id)}>
-                      {staff.fullName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <h3 className="font-semibold text-lg text-gray-800">
-            Assigned Medical & Dental Staff
-          </h3>
-          {[...Array(totalPeople)].map((_, i) => (
-            <div
-              key={i}
-              className="border p-6 rounded-lg bg-white shadow-sm relative hover:shadow-md transition-shadow"
-            >
-              <h4 className="font-semibold text-md mb-4 text-gray-800">
-                {i === 0 ? "Primary User" : `Dependant ${i}`}
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label>Select Medical Staff *</Label>
+      <div className="space-y-6">
+        <h3 className="font-semibold text-lg text-gray-800">
+          Assigned Medical & Dental Staff
+        </h3>
+
+        {[...Array(totalPeople)].map((_, i) => (
+          <div
+            key={i}
+            className="border p-6 rounded-lg bg-white shadow-sm relative hover:shadow-md transition-shadow"
+          >
+            <h4 className="font-semibold text-md mb-4 text-gray-800">
+              {i === 0 ? "Primary User" : `Dependant ${i}`}
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Medic field */}
+              <div className="space-y-2">
+                <Label>Select Medical Staff *</Label>
+                {sameMedic && i > 0 ? (
+                  <p className="text-gray-500 text-sm">Same as Primary User</p>
+                ) : (
                   <Select
                     value={formData?.guests[i]?.medic || ""}
                     onValueChange={(value) => handleMedicChangeGuest(i, value)}
@@ -224,9 +152,15 @@ export default function MedicalAndDentalForm({ formData, setFormData }: any) {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Select Dentist *</Label>
+                )}
+              </div>
+
+              {/* Dentist field */}
+              <div className="space-y-2">
+                <Label>Select Dentist *</Label>
+                {sameDentist && i > 0 ? (
+                  <p className="text-gray-500 text-sm">Same as Primary User</p>
+                ) : (
                   <Select
                     value={formData?.guests[i]?.dentist || ""}
                     onValueChange={(value) =>
@@ -244,12 +178,12 @@ export default function MedicalAndDentalForm({ formData, setFormData }: any) {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                )}
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

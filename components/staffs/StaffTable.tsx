@@ -135,26 +135,6 @@ export default function StaffTable() {
   //   console.log("branchesssss", branches);
   // });
 
-  function formatDateWithSuffix(dateString: string) {
-    const date = new Date(dateString);
-    const day = date.getDate();
-
-    // suffix calculate
-    const suffix =
-      day % 10 === 1 && day !== 11
-        ? "st"
-        : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-        ? "rd"
-        : "th";
-
-    const month = date.toLocaleString("en-US", { month: "long" });
-    const year = date.getFullYear();
-
-    return `${day}${suffix} ${month} ${year}`;
-  }
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-GB", {
       day: "numeric",
@@ -514,16 +494,30 @@ export default function StaffTable() {
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
+                            {/* Email clickable */}
                             <div className="flex items-center text-sm">
                               <Mail className="h-3 w-3 mr-1" />
-                              {staff.email}
+                              <a
+                                href={`mailto:${staff.email}`}
+                                className="hover:underline"
+                              >
+                                {staff.email}
+                              </a>
                             </div>
+
+                            {/* Phone clickable */}
                             <div className="flex items-center text-sm text-muted-foreground">
                               <Phone className="h-3 w-3 mr-1" />
-                              {staff.phone}
+                              <a
+                                href={`tel:${staff.phone}`}
+                                className="hover:underline"
+                              >
+                                {staff.phone}
+                              </a>
                             </div>
                           </div>
                         </TableCell>
+
                         <TableCell>
                           {staff.shiftTimes.length > 0 ? (
                             staff.shiftTimes.map((t: any, idx: number) => (

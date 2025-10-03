@@ -241,7 +241,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       {/* Gender + Nationality */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label className="text-gray-700 font-medium">Gender</Label>
+          <Label className="text-gray-700 font-medium">Gender *</Label>
           <Select
             value={formData.guests[0].gender || ""}
             onValueChange={(value) =>
@@ -291,42 +291,9 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
       </div>
 
-      {/* Address + Notes  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label className="text-gray-700 font-medium">Address</Label>
-          <Textarea
-            id="address"
-            placeholder="Enter address"
-            value={formData.guests[0].address || ""}
-            onChange={(e) => handleInputChange(e, 0)}
-            className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
-          />
-          {errors.address && (
-            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
-          )}
-        </div>
-
-        <div>
-          <Label className="text-gray-700 font-medium">Additional Notes</Label>
-          <Textarea
-            id="additionalNotes"
-            placeholder="Enter any additional notes"
-            value={formData.guests[0].additionalNotes || ""}
-            onChange={(e) => handleInputChange(e, 0)}
-            className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
-          />
-          {errors.additionalNotes && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.additionalNotes}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div>
-          <Label className="text-gray-700 font-medium">Language</Label>
+          <Label className="text-gray-700 font-medium">Language *</Label>
           <Select
             value={formData.guests[0].language || ""}
             onValueChange={(value) =>
@@ -387,7 +354,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
                 <SelectItem key={branch.id} value={branch.id}>
                   <div className="flex items-center gap-2">
                     <span>{branch.name}</span>-
-                    <Badge className="bg-[#F87D7D] text-white">
+                    <Badge variant="outline" className="bg-[#F87D7D] text-white">
                       {branch.company}
                     </Badge>
                   </div>
@@ -430,6 +397,39 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
             }}
             className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
           />
+        </div>
+      </div>
+
+      {/* Address + Notes  */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <Label className="text-gray-700 font-medium">Address</Label>
+          <Textarea
+            id="address"
+            placeholder="Enter address"
+            value={formData.guests[0].address || ""}
+            onChange={(e) => handleInputChange(e, 0)}
+            className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
+          />
+          {errors.address && (
+            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+          )}
+        </div>
+
+        <div>
+          <Label className="text-gray-700 font-medium">Additional Notes</Label>
+          <Textarea
+            id="additionalNotes"
+            placeholder="Enter any additional notes"
+            value={formData.guests[0].additionalNotes || ""}
+            onChange={(e) => handleInputChange(e, 0)}
+            className="mt-1 rounded-lg border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D]"
+          />
+          {errors.additionalNotes && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.additionalNotes}
+            </p>
+          )}
         </div>
       </div>
 

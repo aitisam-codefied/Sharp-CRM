@@ -210,6 +210,8 @@ export default function NewUserPage() {
       formData.guests[0].phoneNumber?.trim() &&
       isValidPhoneNumber(formData.guests[0].phoneNumber) &&
       formData.guests[0].dateOfBirth &&
+      formData.guests[0].gender?.trim() &&
+      formData.guests[0].language?.trim() &&
       formData.guests[0].nationality?.trim() &&
       (!formData.guests[0].address ||
         formData.guests[0].address.length <= 150) &&
@@ -328,13 +330,13 @@ export default function NewUserPage() {
 
   const isStep5Valid = () => {
     const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
-    const totalPeople = numDependants + 1;
     const hasDependants = numDependants > 0;
 
     // Validate Medic
     let isMedicValid = false;
     if (!hasDependants || formData.sameMedic) {
-      isMedicValid = !!formData.medic?.trim();
+      // when same, just check primary user (index 0)
+      isMedicValid = !!formData.guests[0]?.medic?.trim();
     } else {
       isMedicValid =
         Array.isArray(formData.guests) &&
@@ -344,7 +346,7 @@ export default function NewUserPage() {
     // Validate Dentist
     let isDentistValid = false;
     if (!hasDependants || formData.sameDentist) {
-      isDentistValid = !!formData.dentist?.trim();
+      isDentistValid = !!formData.guests[0]?.dentist?.trim();
     } else {
       isDentistValid =
         Array.isArray(formData.guests) &&

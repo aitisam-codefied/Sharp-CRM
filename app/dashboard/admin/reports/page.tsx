@@ -237,7 +237,7 @@ export default function ReportsPage() {
       }
 
       return {
-        title: `${key}: ${String(value)}`, // leaf metric
+        title: `${moduleName(key)}: ${String(value)}`, // leaf metric
         key: nodeKey,
       };
     });

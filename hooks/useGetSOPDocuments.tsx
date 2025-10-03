@@ -52,6 +52,8 @@ export const useSOPDocuments = () => {
         mandatory: apiDoc.isMandatoryReading,
         branch: apiDoc.branchId ? apiDoc.branchId.name : "All Branches",
         branchId: apiDoc.branchId ? apiDoc.branchId._id : null,
+        company: apiDoc.companyId ? apiDoc.companyId.name : "All Companies",
+        companyId: apiDoc.companyId ? apiDoc.companyId._id : null,
         status: apiDoc.status.toLowerCase(),
         downloadCount: apiDoc.downloadCount,
         viewCount: apiDoc.viewCount,

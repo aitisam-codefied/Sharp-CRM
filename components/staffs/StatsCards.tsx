@@ -17,7 +17,7 @@ export default function StatsCards() {
   console.log("data", data);
 
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -59,17 +59,6 @@ export default function StatsCards() {
                     (user: any) => user?.status === "Inactive"
                   ).length || 0}
             </p>
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Hours/Week</p>
-              <p className="text-2xl font-bold">0</p>
-            </div>
-            <Clock className="h-8 w-8 text-purple-600" />
           </div>
         </CardContent>
       </Card>

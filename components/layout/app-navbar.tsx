@@ -110,7 +110,7 @@ export function AppNavbar() {
     { title: "Dashboard", href: "/dashboard/admin", key: "dashboard" },
 
     {
-      title: "Staff Management",
+      title: "Employee Management",
       href: "/dashboard/admin/staffs",
       key: "staffs",
     },

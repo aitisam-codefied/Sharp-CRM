@@ -30,8 +30,8 @@ export function StyledPhoneInput({
         onChange={onChange}
         className={cn(
           "flex w-full rounded-md border border-gray-300 bg-transparent px-3 py-2 text-sm shadow-sm transition-colors",
-          "focus-visible:outline-none focus-visible:ring-[#F87D7D] focus-visible:border-[#F87D7D]",
-          error ? "border-red-500 focus-visible:ring-red-500" : ""
+          "focus:outline-none focus:ring-0 focus:border-[#F87D7D]", // remove default black focus
+          error ? "border-red-500 focus:border-red-500" : ""
         )}
       />
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

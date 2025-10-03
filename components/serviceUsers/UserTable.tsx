@@ -136,10 +136,10 @@ export function UserTable({
             <TableRow>
               <TableHead>Service User</TableHead>
               <TableHead>Port Number</TableHead>
-              <TableHead>Location</TableHead>
+              <TableHead>Branch</TableHead>
               <TableHead>Contact Info</TableHead>
               <TableHead>Dependants</TableHead>
-              <TableHead>Medic</TableHead>
+              <TableHead>General Practitioner</TableHead>
               <TableHead>Dentist</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -147,7 +147,7 @@ export function UserTable({
           <TableBody>
             {flattenedUsers.map((user, idx) => (
               <TableRow key={user.id}>
-                <TableCell>
+                <TableCell className="min-w-[150px]">
                   <div className="flex flex-col items-start gap-2">
                     <div className="font-medium capitalize bg-green-100 text-green-800 px-2 py-1 rounded-xl text-sm">
                       {user.fullName}
@@ -164,7 +164,7 @@ export function UserTable({
                         <strong>Gender:</strong> {user.gender || "N/A"}
                       </div>
                       <div>
-                        <strong>Languages:</strong>{" "}
+                        <strong>Language:</strong>{" "}
                         {user.languages.length > 0
                           ? user.languages.join(", ")
                           : "N/A"}
@@ -175,7 +175,7 @@ export function UserTable({
 
                 <TableCell>
                   <div className="text-xs flex items-center gap-2">
-                    <span className="w-[100px] break-all whitespace-normal">
+                    <span className="w-[80px] break-all whitespace-normal">
                       {user.portNumber || "N/A"}
                     </span>
                     {user.portNumber && (
@@ -200,7 +200,7 @@ export function UserTable({
                 <TableCell>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center">
-                      <MapPin className="h-3 w-3 mr-1" />
+                      {/* <MapPin className="h-3 w-3 mr-1" /> */}
                       {user.branch || "N/A"}
                     </div>
                     <div className="">Room {user.room || "N/A"}</div>
@@ -209,13 +209,34 @@ export function UserTable({
 
                 <TableCell>
                   <div className="space-y-1 text-xs">
+                    {/* Phone clickable */}
                     <div className="flex items-center">
                       <Phone className="h-3 w-3 mr-1" />
-                      {user.phone || "N/A"}
+                      {user.phone ? (
+                        <a
+                          href={`tel:${user.phone}`}
+                          className="hover:underline"
+                        >
+                          {user.phone}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
                     </div>
+
+                    {/* Email clickable */}
                     <div className="flex items-center">
                       <Mail className="h-3 w-3 mr-1" />
-                      {user.email || "N/A"}
+                      {user.email ? (
+                        <a
+                          href={`mailto:${user.email}`}
+                          className="hover:underline"
+                        >
+                          {user.email}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
                     </div>
                   </div>
                 </TableCell>
@@ -296,7 +317,7 @@ export function UserTable({
                               setSelectedViewUser(users[idx]);
                               setViewModalOpen(true);
                               setForceAssignDropdown(true);
-                              setAssigningUserId(user.id); // Set assigning state
+                              // setAssigningUserId(user.id);
                               setTimeout(() => {
                                 document.dispatchEvent(
                                   new CustomEvent("scrollToMedical")
@@ -354,7 +375,7 @@ export function UserTable({
                               setSelectedViewUser(users[idx]);
                               setViewModalOpen(true);
                               setForceAssignDropdown(true);
-                              setAssigningUserId(user.id); // Set assigning state
+                              // setAssigningUserId(user.id);
                               setTimeout(() => {
                                 document.dispatchEvent(
                                   new CustomEvent("scrollToMedical")
@@ -435,6 +456,7 @@ export function UserTable({
         isOpen={viewModalOpen}
         onOpenChange={setViewModalOpen}
         forceAssignDropdown={forceAssignDropdown}
+        setAssigningUserId={setAssigningUserId}
       />
 
       <EditUserModal

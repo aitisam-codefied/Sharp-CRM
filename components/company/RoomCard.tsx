@@ -85,6 +85,18 @@ export default function RoomCard({
           <div className={`${roomTypeColor} text-xs font-medium mt-1 w-full`}>
             {room.type}
           </div>
+
+          <div className="bg-blue-100 text-blue-700 border-blue-200 w-fit text-xs font-medium rounded-xl px-3 py-1.5 shadow-sm mt-1">
+            {room.status}
+          </div>
+          <div className="text-xs text-gray-700 mt-1">
+            Current Occupancy: {room.currentOccupancy}
+          </div>
+          {Number(room.currentKids) > 0 && (
+            <div className="text-xs text-gray-700 mt-1">
+              Current Kids In This Room: {room.currentKids}
+            </div>
+          )}
         </div>
 
         {room.amenities?.length > 0 && (

@@ -349,7 +349,14 @@ export default function AddStaffDialog() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, email: value }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    email: validateEmail(value) ? "" : "Valid email is required",
+                  }));
+                }}  
                 placeholder="Enter email"
               />
               {errors.email && (

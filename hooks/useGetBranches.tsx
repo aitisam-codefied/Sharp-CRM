@@ -47,7 +47,7 @@ export const useGetBranches = () => {
   });
 };
 
-export const useBranches = () => {
+export const useBranches = (companyId: string) => {
   return useQuery({
     queryKey: ["branches"],
     queryFn: async (): Promise<Branch[]> => {

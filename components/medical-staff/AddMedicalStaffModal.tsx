@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
 import { useCompanies } from "@/hooks/useCompnay";
+import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
 
 interface AddMedicalStaffModalProps {
   isOpen: boolean;
@@ -41,9 +42,20 @@ export function AddMedicalStaffModal({
   const [branches, setBranches] = useState<string[]>([]); // 🔹 Now array of branch ids
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // NEW: replacement related states
+  const [isReplacement, setIsReplacement] = useState<"no" | "yes">("no");
+  const [replacementId, setReplacementId] = useState("");
+  const [replacementOptions, setReplacementOptions] = useState<any[]>([]);
+
   const { toast } = useToast();
   const createMutation = useCreateMedicalStaff();
   const { data: companyData } = useCompanies();
+  const { data: medicalStaff } = useMedicalStaff(500);
+
+  useEffect(() => {
+    // only log when medicalStaff changes (avoid logging every render)
+    console.log("medicalStaff", medicalStaff?.results || []);
+  }, [medicalStaff]);
 
   // 🔹 Handle company selection → set its branches
   const handleCompanyChange = (id: string) => {
@@ -52,10 +64,50 @@ export function AddMedicalStaffModal({
     if (selectedCompany) {
       const branchIds = selectedCompany.branches.map((b: any) => b._id);
       setBranches(branchIds);
+    } else {
+      setBranches([]);
     }
   };
 
-  // 🔹 Validate fields
+  // useEffect(() => {
+  //   if (!type) {
+  //     setReplacementOptions([]);
+  //     setReplacementId("");
+  //     return;
+  //   }
+
+  //   const staffList = medicalStaff?.results || [];
+  //   const filtered = staffList.filter((s: any) => s.type === type);
+  //   setReplacementOptions(filtered);
+
+  //   if (replacementId && !filtered.find((f: any) => f._id === replacementId)) {
+  //     setReplacementId("");
+  //   }
+  // }, [type, medicalStaff]);
+
+  useEffect(() => {
+    if (!type || !companyId) {
+      setReplacementOptions([]);
+      setReplacementId("");
+      return;
+    }
+
+    const staffList = medicalStaff?.results || [];
+
+    const filtered = staffList.filter((s: any) => {
+      return (
+        s.type === type &&
+        s.branches?.some((b: any) => b.companyId?._id === companyId)
+      );
+    });
+
+    setReplacementOptions(filtered);
+
+    if (replacementId && !filtered.find((f: any) => f._id === replacementId)) {
+      setReplacementId("");
+    }
+  }, [type, companyId, medicalStaff]);
+
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
     let valid = true;
@@ -105,42 +157,52 @@ export function AddMedicalStaffModal({
     setCompanyId("");
     setBranches([]);
     setErrors({});
+
+    // reset replacement states
+    setIsReplacement("no");
+    setReplacementId("");
+    setReplacementOptions([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateFields()) return;
 
-    createMutation.mutate(
-      {
-        branches, // 🔹 Now full list of branch ids from selected company
-        fullName,
-        phoneNumber,
-        emailAddress,
-        type,
-        status,
+    // Build payload and include conditional replacement id key
+    const payload: any = {
+      branches, // 🔹 Now full list of branch ids from selected company
+      fullName,
+      phoneNumber,
+      emailAddress,
+      type,
+      status,
+    };
+
+    if (isReplacement === "yes" && replacementId) {
+      payload.replacementId = replacementId;
+    }
+
+    createMutation.mutate(payload, {
+      onSuccess: () => {
+        toast({
+          title: "Success",
+          description: "Medical staff added successfully.",
+        });
+        resetForm();
+        onClose();
       },
-      {
-        onSuccess: () => {
-          toast({
-            title: "Success",
-            description: "Medical staff added successfully.",
-          });
-          resetForm();
-          onClose();
-        },
-        onError: (error: any) => {
-          toast({
-            title: "Error Adding Staff",
-            description:
-              error.response?.data?.error ||
-              error.message ||
-              "Failed to add staff member.",
-            variant: "destructive",
-          });
-        },
-      }
-    );
+      onError: (error: any) => {
+        toast({
+          title: "Error Adding Staff",
+          description:
+            error.response?.data?.error ||
+            error.response?.data?.details ||
+            error.message ||
+            "Failed to add staff member.",
+          variant: "destructive",
+        });
+      },
+    });
   };
 
   const isFormValid =
@@ -212,7 +274,14 @@ export function AddMedicalStaffModal({
             {/* Type */}
             <div>
               <label className="block text-sm font-medium mb-1">Type</label>
-              <Select value={type} onValueChange={setType}>
+              {/* clear replacement when changing type */}
+              <Select
+                value={type}
+                onValueChange={(val) => {
+                  setType(val);
+                  setReplacementId("");
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
@@ -262,6 +331,78 @@ export function AddMedicalStaffModal({
             {errors.company && (
               <p className="text-red-500 text-sm mt-1">{errors.company}</p>
             )}
+          </div>
+
+          {/* NEW: Replacement controls (placed under Company as requested) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Replacement? Yes / No */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Is this a replacement?
+              </label>
+              <Select
+                value={isReplacement}
+                onValueChange={(val) => {
+                  setIsReplacement(val as "no" | "yes");
+                  if (val === "no") setReplacementId("");
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="yes">Yes</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Replacement staff dropdown — disabled until `type` is selected and user chose Yes */}
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Replacement staff
+              </label>
+              <Select value={replacementId} onValueChange={setReplacementId}>
+                <SelectTrigger
+                  disabled={
+                    isReplacement !== "yes" ||
+                    !type ||
+                    replacementOptions.length === 0
+                  }
+                >
+                  <SelectValue
+                    placeholder={
+                      isReplacement !== "yes"
+                        ? "Choose Yes above"
+                        : !type
+                        ? "Select Type first"
+                        : "Select replacement staff (optional)"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {replacementOptions.length > 0 ? (
+                    replacementOptions.map((s: any) => (
+                      <SelectItem key={s._id} value={s._id}>
+                        {s.fullName}{" "}
+                        {s.email
+                          ? `- ${s.email}`
+                          : s.phoneNumber
+                          ? `- ${s.phoneNumber}`
+                          : ""}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="no-staff" disabled>
+                      No staff available
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Optional — leave empty if not a replacement.
+              </p>
+            </div>
           </div>
 
           {/* Buttons */}

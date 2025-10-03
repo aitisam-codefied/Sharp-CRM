@@ -106,7 +106,7 @@ export const useInTransitUsers = () => {
         success: boolean;
         message: string;
         data: Guest[];
-      }>("/su-removal/list");
+      }>("/su-removal/intransit");
       return response.data.data;
     },
   });

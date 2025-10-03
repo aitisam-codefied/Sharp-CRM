@@ -59,7 +59,7 @@ export default function DocumentTable({
           <TableHeader>
             <TableRow>
               <TableHead>Document Details</TableHead>
-              <TableHead>Category & Branch</TableHead>
+              <TableHead>Category & Company</TableHead>
               <TableHead>Version & Updates</TableHead>
               <TableHead>Access & Usage</TableHead>
               <TableHead>Status</TableHead>
@@ -101,7 +101,7 @@ export default function DocumentTable({
                         doc.category?.slice(1)}
                     </Badge>
                     <div className="text-sm text-muted-foreground">
-                      {doc.branch}
+                      {doc.company}
                     </div>
                   </div>
                 </TableCell>

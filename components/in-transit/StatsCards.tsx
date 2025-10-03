@@ -11,14 +11,16 @@ interface StatsCardsProps {
 
 export default function StatsCards({ filteredUsers }: StatsCardsProps) {
   const getStats = () => {
-    const totalInTransit = filteredUsers.length;
-    const arrivingToday = filteredUsers.filter(
+    const totalInTransit = filteredUsers?.length;
+    const arrivingToday = filteredUsers?.filter(
       (u) => u.expectedArrival === new Date().toISOString().split("T")[0]
-    ).length;
-    const delayed = filteredUsers.filter((u) => u.status === "delayed").length;
-    const inTransit = filteredUsers.filter(
+    )?.length;
+    const delayed = filteredUsers?.filter(
+      (u) => u.status === "delayed"
+    )?.length;
+    const inTransit = filteredUsers?.filter(
       (u) => u.status === "in_transit"
-    ).length;
+    )?.length;
 
     return { totalInTransit, arrivingToday, delayed, inTransit };
   };

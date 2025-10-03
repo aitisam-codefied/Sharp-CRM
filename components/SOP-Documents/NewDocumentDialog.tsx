@@ -56,7 +56,7 @@ export default function NewDocumentDialog({
   const [description, setDescription] = useState("");
   const [descriptionError, setDescriptionError] = useState("");
   const [category, setCategory] = useState("");
-  const [branchId, setBranchId] = useState("");
+  const [branchId, setBranchId] = useState<string[]>([]);
   const [accessLevel, setAccessLevel] = useState("");
   const [tags, setTags] = useState("");
   const [tagsError, setTagsError] = useState("");
@@ -83,10 +83,10 @@ export default function NewDocumentDialog({
 
   const resetForm = () => {
     setTitle("");
-    setVersion("");
+    // setVersion("");
     setDescription("");
     setCategory("");
-    setBranchId("");
+    // setBranchId("");
     setAccessLevel("");
     setTags("");
     setIsMandatory(false);
@@ -112,18 +112,23 @@ export default function NewDocumentDialog({
       return;
     }
 
-    const normalizedVersion = version.replace(/^V/, "v");
+    // const normalizedVersion = version.replace(/^V/, "v");
 
     const formData = new FormData();
     formData.append("document", file);
     formData.append("title", title);
     formData.append("description", description);
-    formData.append("version", normalizedVersion);
+    // formData.append("version", normalizedVersion);
     formData.append("category", category);
     formData.append("tags", tags);
     formData.append("accessLevel", accessLevel);
     formData.append("isMandatoryReading", isMandatory ? "true" : "false");
-    if (branchId) formData.append("branchId", branchId);
+
+    // ✅ append all branchIds
+    branchId.forEach((id) => {
+      formData.append("branchId[]", id); // backend should accept array
+    });
+
     if (effectiveDate)
       formData.append("effectiveDate", `${effectiveDate}T00:00:00.000Z`);
     if (priority) formData.append("priority", priority);
@@ -162,13 +167,17 @@ export default function NewDocumentDialog({
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="sticky top-0 bg-white">
           <DialogTitle>Upload New Document</DialogTitle>
           <DialogDescription>
             Add a new SOP document to the system
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="text-lg font-mono bg-yellow-100 text-bold text-yellow-800 px-2 py-1 w-fit rounded-xl">
+            v1.0
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="file">Document File</Label>
             <label
@@ -209,7 +218,7 @@ export default function NewDocumentDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Document Title</Label>
               <Input
@@ -230,7 +239,7 @@ export default function NewDocumentDialog({
                 <p className="text-sm text-red-500">{titleError}</p> // ✅ error message
               )}
             </div>
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="version">Version</Label>
               <Input
                 id="version"
@@ -238,7 +247,7 @@ export default function NewDocumentDialog({
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
               />
-            </div>
+            </div> */}
           </div>
 
           {/* description */}
@@ -307,52 +316,32 @@ export default function NewDocumentDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Company Dropdown */}
-            <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Select
-                onValueChange={(val) => {
-                  setSelectedCompany(val);
-                  setBranchId(""); // reset branch jab company change ho
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {/* companyData se companies show karo */}
-                  {companyData?.map((company: any) => (
-                    <SelectItem key={company.id} value={company.name}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Company Dropdown */}
+          <div className="space-y-2">
+            <Label htmlFor="company">Company</Label>
+            <Select
+              onValueChange={(val) => {
+                setSelectedCompany(val);
 
-            {/* Branch Dropdown */}
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch</Label>
-              <Select
-                value={branchId}
-                onValueChange={setBranchId}
-                disabled={!selectedCompany} // disable jab tak company select na ho
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select branch" />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredBranches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{branch.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                // ✅ set all branch IDs of this company
+                const allBranchIds = branches
+                  .filter((b) => b.company === val)
+                  .map((b) => b.id);
+
+                setBranchId(allBranchIds);
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select company" />
+              </SelectTrigger>
+              <SelectContent>
+                {companyData?.map((company: any) => (
+                  <SelectItem key={company.id} value={company.name}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

@@ -121,7 +121,10 @@ export function EditMedicalStaffModal({
           toast({
             title: "Error",
             description:
-              error?.response?.data?.details || "Failed to update staff.",
+              error?.response?.data?.details ||
+              error?.message ||
+              error?.response?.data?.error ||
+              "Failed to update staff.",
             variant: "destructive",
           });
         },

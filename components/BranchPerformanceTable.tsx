@@ -103,7 +103,7 @@ export default function CompanyPerformanceTable() {
                 <TableHead>Information</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Residents</TableHead>
-                <TableHead>Staff Assignment</TableHead>
+                <TableHead>Alert</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

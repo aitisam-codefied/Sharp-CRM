@@ -211,11 +211,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
             ...newErrors[index],
             portNumber: "Port number is required.",
           };
-        // } else if (!portNumberRegex.test(value)) {
-        //   newErrors[index] = {
-        //     ...newErrors[index],
-        //     portNumber: "Port number must be alphanumeric.",
-        //   };
+          // } else if (!portNumberRegex.test(value)) {
+          //   newErrors[index] = {
+          //     ...newErrors[index],
+          //     portNumber: "Port number must be alphanumeric.",
+          //   };
         } else if (value.length < 12) {
           newErrors[index] = {
             ...newErrors[index],
@@ -274,6 +274,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     hasError = true;
   }
 
+  const numKidsLimit = Number(formData.numKids || 0);
+  const currentKidsCount = formData.guests
+    ?.slice(1)
+    ?.filter((guest: any) => guest?.isKid).length;
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -293,14 +298,14 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                 className="border border-gray-200 p-4 rounded-lg bg-white shadow-sm hover:shadow-lg transition-shadow duration-200"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="font-semibold text-lg text-gray-800">
+                  <Label className="font-semibold text-sm text-gray-800">
                     Room {room.roomNumber}
                   </Label>
                   <Badge
                     variant="outline"
                     className="bg-[#F87D7D] text-white border-[#F87D7D] font-medium"
                   >
-                    {room.totalAvailableSpace} Vacant
+                    Total Available Space: {room.totalAvailableSpace}
                   </Badge>
                 </div>
                 <div className="w-full flex flex-wrap gap-2 mb-3">
@@ -644,6 +649,10 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                               "isKid",
                               checked as boolean
                             )
+                          }
+                          disabled={
+                            !formData?.guests?.[i]?.isKid &&
+                            currentKidsCount >= numKidsLimit
                           }
                           className="border-[#F87D7D] data-[state=checked]:bg-[#F87D7D]"
                         />

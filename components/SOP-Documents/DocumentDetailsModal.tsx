@@ -90,8 +90,8 @@ export default function DocumentDetailsModal({
           {/* Branch and Access Level */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Branch</h3>
-              <p className="mt-1 text-gray-800">{document.branch}</p>
+              <h3 className="text-sm font-medium text-gray-500">Company</h3>
+              <p className="mt-1 text-gray-800">{document.company}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-500">

@@ -23,7 +23,7 @@ interface Staff {
   phoneNumber: string;
   emailAddress: string;
   type: string;
-  branches: string[];
+  branches: any[];
   status: string;
   createdAt: any;
 }
@@ -60,7 +60,7 @@ export function MedicalStaffTable({
   };
 
   const handleChangeStatus = (staff: Staff) => {
-    if (staff.status !== "Active" && staff.status !== "Inactive") return;
+    if (staff?.status !== "Active" && staff?.status !== "Inactive") return;
     setSelectedStaff(staff);
     setStatusModalOpen(true);
   };
@@ -81,8 +81,8 @@ export function MedicalStaffTable({
           <TableHeader>
             <TableRow>
               <TableHead>Staff</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
+              <TableHead>Company</TableHead>
+              <TableHead>Contact</TableHead>
               <TableHead>Specialization</TableHead>
               <TableHead>Registered On</TableHead>
               <TableHead>Status</TableHead>
@@ -91,40 +91,61 @@ export function MedicalStaffTable({
           </TableHeader>
           <TableBody>
             {staff.map((staffItem) => (
-              <TableRow key={staffItem._id}>
+              <TableRow className="text-xs" key={staffItem?._id}>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{staffItem.fullName}</div>
+                    <div className="font-medium capitalize">
+                      {staffItem?.fullName}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{staffItem.emailAddress}</div>
+                    <div className="font-medium text-xs capitalize bg-blue-100 text-blue-800 border border-blue-300 px-3 py-1 rounded-full w-fit">
+                      {staffItem?.branches[0]?.companyId?.name}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div>
-                    <div className="font-medium">{staffItem.phoneNumber}</div>
+                  {/* Email clickable */}
+                  <div className="font-medium">
+                    <a
+                      href={`mailto:${staffItem?.emailAddress}`}
+                      className="hover:underline"
+                    >
+                      {staffItem?.emailAddress}
+                    </a>
+                  </div>
+
+                  {/* Phone clickable */}
+                  <div className="font-medium mt-1">
+                    <a
+                      href={`tel:${staffItem?.phoneNumber}`}
+                      className="hover:underline"
+                    >
+                      {staffItem?.phoneNumber}
+                    </a>
                   </div>
                 </TableCell>
+
                 <TableCell>
-                  <span className="font-medium">{staffItem.type}</span>
+                  <span className="font-medium">{staffItem?.type}</span>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm">
-                    {formatDate(staffItem.createdAt)}
+                    {formatDate(staffItem?.createdAt)}
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
                     <Badge
                       variant="outline"
-                      className={getStatusColor(staffItem.status)}
+                      className={getStatusColor(staffItem?.status)}
                     >
-                      {staffItem.status}
+                      {staffItem?.status}
                     </Badge>
-                    {(staffItem.status === "Active" ||
-                      staffItem.status === "Inactive") && (
+                    {(staffItem?.status === "Active" ||
+                      staffItem?.status === "Inactive") && (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -175,14 +196,14 @@ export function MedicalStaffTable({
             <ChangeStatusModal
               isOpen={statusModalOpen}
               onClose={() => setStatusModalOpen(false)}
-              staffId={selectedStaff._id}
-              currentStatus={selectedStaff.status as "Active" | "Inactive"}
+              staffId={selectedStaff?._id}
+              currentStatus={selectedStaff?.status as "Active" | "Inactive"}
             />
             <DeleteMedicalStaffModal
               isOpen={deleteModalOpen}
               onClose={() => setDeleteModalOpen(false)}
-              staffId={selectedStaff._id}
-              staffName={selectedStaff.fullName}
+              staffId={selectedStaff?._id}
+              staffName={selectedStaff?.fullName}
             />
           </>
         )}

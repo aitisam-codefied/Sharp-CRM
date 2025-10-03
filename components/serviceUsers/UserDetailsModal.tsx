@@ -32,7 +32,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import api from "@/lib/axios";
@@ -44,6 +44,7 @@ interface UserDetailsModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   forceAssignDropdown?: boolean;
+  setAssigningUserId?: (id: string | null) => void;
 }
 
 export function UserDetailsModal({
@@ -51,6 +52,7 @@ export function UserDetailsModal({
   isOpen,
   onOpenChange,
   forceAssignDropdown = false,
+  setAssigningUserId,
 }: UserDetailsModalProps) {
   if (!user) return null;
 
@@ -72,6 +74,12 @@ export function UserDetailsModal({
     : [];
 
   const medicalRef = useRef<HTMLDivElement | null>(null);
+
+  // Track query status to know when data refreshes
+  const { data: guestData, isFetching } = useQuery({
+    queryKey: ["guests", user._id],
+    enabled: isOpen, // Only fetch when modal is open
+  });
 
   useEffect(() => {
     const handler = () => {
@@ -96,9 +104,19 @@ export function UserDetailsModal({
     }
   }, [isOpen, forceAssignDropdown]);
 
+  // Clear assigningUserId when query data is refreshed (not fetching anymore)
+  useEffect(() => {
+    if (!isFetching && guestData) {
+      setAssigningUserId?.(null); // Clear loader state after data refresh
+    }
+  }, [isFetching, guestData, setAssigningUserId]);
+
   const assignMedicMutation = useMutation({
     mutationFn: (medicId: string) => {
       return api.patch(`/guest/${user._id}/medic`, { medicId });
+    },
+    onMutate: () => {
+      setAssigningUserId?.(user._id); // Set loader state before mutation starts
     },
     onSuccess: () => {
       // ✅ Refresh list + this user
@@ -117,6 +135,7 @@ export function UserDetailsModal({
       });
     },
     onError: (error) => {
+      setAssigningUserId?.(null);
       toast({
         title: "Error",
         description: "Failed to assign medic. Please try again.",
@@ -128,6 +147,9 @@ export function UserDetailsModal({
   const assignDentistMutation = useMutation({
     mutationFn: (dentistId: string) => {
       return api.patch(`/guest/${user._id}/dentist`, { dentistId });
+    },
+    onMutate: () => {
+      setAssigningUserId?.(user._id); // Set loader state before mutation starts
     },
     onSuccess: () => {
       // ✅ Refresh list + this user
@@ -146,6 +168,7 @@ export function UserDetailsModal({
       });
     },
     onError: (error) => {
+      setAssigningUserId?.(null);
       toast({
         title: "Error",
         description: "Failed to assign dentist. Please try again.",
@@ -156,12 +179,14 @@ export function UserDetailsModal({
 
   const handleAssignClickForMedic = () => {
     if (selectedMedicId) {
+      // setAssigningUserId?.(user._id);
       assignMedicMutation.mutate(selectedMedicId);
     }
   };
 
   const handleAssignClickForDentist = () => {
     if (selectedDentistId) {
+      // setAssigningUserId?.(user._id);
       assignDentistMutation.mutate(selectedDentistId);
     }
   };
