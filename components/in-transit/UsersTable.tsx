@@ -87,8 +87,10 @@ const fetchBranches = async (companyId: string): Promise<Branch[]> => {
   return response.data.branches;
 };
 
-const fetchRooms = async (): Promise<Room[]> => {
-  const response = await api.get(`/guest/rooms/capacity?capacity=1&kids=0`);
+const fetchRooms = async (branchId: string): Promise<Room[]> => {
+  const response = await api.get(
+    `/guest/rooms/capacity?capacity=1&kids=0&branchId=${branchId}`
+  );
   return response.data.data;
 };
 
@@ -110,6 +112,8 @@ export default function UsersTable({
   );
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [currentBranchId, setCurrentBranchId] = useState<string | null>(null);
+
   const queryClient = useQueryClient();
 
   // Fetch branches when modal opens
@@ -130,7 +134,7 @@ export default function UsersTable({
     isError: isRoomsError,
   } = useQuery({
     queryKey: ["rooms", selectedBranchId],
-    queryFn: fetchRooms,
+    queryFn: () => fetchRooms(selectedBranchId!),
     enabled: !!selectedBranchId,
   });
 
@@ -156,9 +160,14 @@ export default function UsersTable({
     }
   };
 
-  const handleApproveClick = (userId: string, companyId: string) => {
+  const handleApproveClick = (
+    userId: string,
+    companyId: string,
+    branchId: string
+  ) => {
     setSelectedUserId(userId);
     setSelectedCompanyId(companyId);
+    setCurrentBranchId(branchId);
     setIsModalOpen(true);
   };
 
@@ -245,7 +254,6 @@ export default function UsersTable({
             <TableHead>Service User</TableHead>
             <TableHead>Contact Details</TableHead>
             <TableHead>Current Location</TableHead>
-            <TableHead>Destination</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
@@ -271,17 +279,16 @@ export default function UsersTable({
               </TableCell>
               <TableCell>
                 <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs">
                     Room: {user?.guestId?.familyRooms[0]?.roomId?.roomNumber}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs">
                     Location: {user?.guestId?.familyRooms[0]?.locationId?.name}
                   </div>
+                  <div className="text-xs">Branch: {user?.branchId?.name}</div>
                 </div>
               </TableCell>
-              <TableCell>
-                <div className="space-y-1">-</div>
-              </TableCell>
+
               <TableCell>
                 <Badge
                   variant="outline"
@@ -301,7 +308,11 @@ export default function UsersTable({
                     <Button
                       size="sm"
                       onClick={() =>
-                        handleApproveClick(user._id, user.companyId._id)
+                        handleApproveClick(
+                          user._id,
+                          user.companyId._id,
+                          user.branchId._id
+                        )
                       }
                       className="bg-green-50 text-green-800 border border-green-200 hover:bg-green-100 hover:border-green-300"
                     >
@@ -353,15 +364,17 @@ export default function UsersTable({
                   <SelectValue placeholder="Select a branch" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-gray-200 shadow-lg rounded-lg">
-                  {branches.map((branch) => (
-                    <SelectItem
-                      key={branch._id}
-                      value={branch._id}
-                      className="hover:bg-blue-50 cursor-pointer"
-                    >
-                      {branch.name}
-                    </SelectItem>
-                  ))}
+                  {branches
+                    .filter((branch) => branch._id !== currentBranchId) // ✅ exclude current branch
+                    .map((branch) => (
+                      <SelectItem
+                        key={branch._id}
+                        value={branch._id}
+                        className="hover:bg-blue-50 cursor-pointer"
+                      >
+                        {branch.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
 
@@ -374,11 +387,11 @@ export default function UsersTable({
                   Error loading rooms. Please try again.
                 </div>
               ) : (
-                <div className="grid gap-4 max-h-[400px] overflow-y-auto pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
                   {rooms.map((room) => (
                     <Card
                       key={room.id}
-                      className={`border-gray-200 shadow-md hover:shadow-lg transition-shadow duration-200 rounded-lg bg-white ${
+                      className={`border-gray-200 shadow-md hover:shadow-lg hover:bg-blue-50 transition-all duration-200 rounded-lg bg-white cursor-pointer ${
                         selectedRoomId === room.id
                           ? "border-2 border-blue-500"
                           : ""
@@ -394,58 +407,78 @@ export default function UsersTable({
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
                             <p className="text-gray-600 font-medium">Type</p>
-                            <p className="text-gray-800">{room.roomType}</p>
+                            <Badge
+                              variant="outline"
+                              className="mt-1 bg-yellow-50 text-yellow-800 border-yellow-200"
+                            >
+                              {room.roomType}
+                            </Badge>
                           </div>
                           <div>
                             <p className="text-gray-600 font-medium">
                               Location
                             </p>
-                            <p className="text-gray-800">{room.location}</p>
+                            <p className="text-gray-800 mt-1">
+                              {room.location}
+                            </p>
                           </div>
                           <div>
                             <p className="text-gray-600 font-medium">Branch</p>
-                            <p className="text-gray-800">{room.branch}</p>
+                            <p className="text-gray-800 mt-1">{room.branch}</p>
                           </div>
                           <div>
                             <p className="text-gray-600 font-medium">Status</p>
-                            <p
-                              className={
+                            <Badge
+                              variant="outline"
+                              className={`mt-1 ${
                                 room.status === "Partially Available"
-                                  ? "text-green-600"
-                                  : "text-gray-800"
-                              }
+                                  ? "bg-green-100 text-green-800 border-green-200"
+                                  : "bg-gray-100 text-gray-800 border-gray-200"
+                              }`}
                             >
                               {room.status}
-                            </p>
+                            </Badge>
                           </div>
                           <div>
                             <p className="text-gray-600 font-medium">
                               Available Space
                             </p>
-                            <p className="text-gray-800">
-                              {room.totalAvailableSpace}
-                            </p>
+                            <Badge
+                              variant="outline"
+                              className="mt-1 bg-blue-100 text-blue-800 border-blue-200"
+                            >
+                              {room.totalAvailableSpace} spots
+                            </Badge>
                           </div>
                           <div>
                             <p className="text-gray-600 font-medium">
                               Amenities
                             </p>
-                            <p className="text-gray-800">
-                              {room.amenities.join(", ")}
-                            </p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {room.amenities.map((amenity) => (
+                                <Badge
+                                  key={amenity}
+                                  variant="outline"
+                                  className="bg-purple-100 text-purple-800"
+                                >
+                                  {amenity}
+                                </Badge>
+                              ))}
+                            </div>
                           </div>
                           <div className="col-span-2">
                             <p className="text-gray-600 font-medium">
                               Recommended
                             </p>
-                            <p className="text-gray-800">
+                            <p className="text-gray-800 mt-1">
                               {room.recommendedFor}
                             </p>
                           </div>
                           {room.specialNote && (
                             <div className="col-span-2">
                               <p className="text-gray-600 font-medium">Note</p>
-                              <p className="text-gray-600 italic">
+                              <p className="text-gray-600 italic mt-1 flex items-start gap-1">
+                                <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
                                 {room.specialNote}
                               </p>
                             </div>
