@@ -115,7 +115,7 @@ export default function OnboardingPage() {
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
-  const accessToken = localStorage.getItem("sms_access_token");
+  const accessToken = typeof window !== "undefined" && localStorage.getItem("sms_access_token");
 
   const createCompanyMutation = useMutation({
     mutationFn: async (data: any) => {

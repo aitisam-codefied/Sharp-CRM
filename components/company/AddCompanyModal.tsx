@@ -99,7 +99,7 @@ export default function AddCompanyModal({
   const [currentStep, setCurrentStep] = useState(1);
   const [newCompanies, setNewCompanies] = useState<Company[]>([]);
   const totalSteps = 4;
-  const accessToken = localStorage.getItem("sms_access_token");
+  const accessToken = typeof window !== "undefined" && localStorage.getItem("sms_access_token");
 
   const createCompanyMutation = useMutation({
     mutationFn: async (data: any) => {

@@ -20,19 +20,7 @@ import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm"
 import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
 import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 import { useCreateGuest } from "@/hooks/useCreateGuest";
-import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { isValidPhoneNumber } from "react-phone-number-input";
-
-const triggerHaptic = async (style: ImpactStyle) => {
-  // ✅ Only run on iOS/Android, not web
-  if (Capacitor.getPlatform() !== "web") {
-    try {
-      await Haptics.impact({ style });
-    } catch (err) {
-      console.warn("Haptics not available:", err);
-    }
-  }
-};
 
 // Guest Emergency Contact
 interface EmergencyContact {
@@ -507,8 +495,6 @@ export default function NewUserPage() {
 
   const handleSubmit = async () => {
     try {
-      await triggerHaptic(ImpactStyle.Medium);
-
       // Deep clone and clean data
       let cleanedData = structuredClone(formData);
 
@@ -783,12 +769,8 @@ export default function NewUserPage() {
       createGuestMutation.mutate(apiFormData);
 
       // ✅ Success feedback
-      await triggerHaptic(ImpactStyle.Light);
     } catch (err) {
       console.error("Error in handleSubmit", err);
-
-      // Error feedback
-      await triggerHaptic(ImpactStyle.Heavy);
     }
   };
 
