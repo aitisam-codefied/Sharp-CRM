@@ -25,9 +25,9 @@ export default function ClockSystemPage() {
   const { data: clockRecords = [], isPending } = useClockRecords();
   const { data: branchData } = useBranches();
 
-  useEffect(() => {
-    console.log("clock", clockRecords);
-  });
+  // useEffect(() => {
+  //   console.log("clock", clockRecords);
+  // });
 
   const allBranches =
     branchData?.map((branch: any) => ({
@@ -47,7 +47,7 @@ export default function ClockSystemPage() {
     });
 
     socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
+      // console.log("Connected to Socket.IO server");
       // Optionally join a room, e.g., socket.emit('join', { room: 'clock-system' });
     });
 
@@ -91,11 +91,11 @@ export default function ClockSystemPage() {
 
     // Listener for break start (update existing, e.g., set isOnBreak true)
     socket.on("break_started", (data: ApiClockRecord) => {
-      console.log("Received break_started event:", data);
+      // console.log("Received break_started event:", data);
       queryClient.setQueryData<ClockRecord[]>(["clockRecords"], (oldData) => {
         if (!oldData) return [];
         const updatedRecord = mapApiToRecord(data);
-        console.log("Updated record:", updatedRecord);
+        // console.log("Updated record:", updatedRecord);
         return oldData.map((rec) => (rec.id === data.id ? updatedRecord : rec));
       });
     });
@@ -151,7 +151,7 @@ export default function ClockSystemPage() {
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected from Socket.IO server");
+      // console.log("Disconnected from Socket.IO server");
     });
 
     return () => {

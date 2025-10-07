@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (userData && accessToken && refreshToken) {
         // Check if user has ADMIN role
         const isAdmin = userData?.roles?.some(
-          (role: any) => role.name === "Admin"
+          (role: any) => role.name === "Admin" || role.name === "Manager"
         );
 
         if (!isAdmin) {

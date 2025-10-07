@@ -90,29 +90,41 @@ export default function MealsPage() {
   useEffect(() => {
     if (data) {
       const mappedResidents = data.map((item: any) => ({
-        id: item.guestId?.userId.portNumber,
-        name: item.guestId?.userId.fullName.trim(),
-        room: item.guestId?.familyId, // Using familyId as a proxy for room
+        id: item?.guestId?.userId.portNumber,
+        name: item?.guestId?.userId.fullName.trim(),
+        room: item?.guestId?.familyId, // Using familyId as a proxy for room
         branch: item?.branchId?.name,
         branchId: item?.branchId?._id,
         meals: {
           breakfast: {
-            marked: item.meals?.breakfast.taken,
-            time: null,
-            staff: item.staffId?.fullName || null,
+            marked:
+              item?.details[item.details.length - 1]?.meals?.breakfast?.taken,
+            time: item?.details[item.details.length - 1]?.meals?.breakfast
+              ?.time,
+            staff: item?.staffId?.fullName || null,
+            reasonIfNotTaken:
+              item?.details[item.details.length - 1]?.meals?.breakfast
+                ?.reasonIfNotTaken, // New field for reason if not taken
           },
           lunch: {
-            marked: item.meals?.lunch.taken,
-            time: null,
-            staff: item.staffId?.fullName || null,
+            marked: item?.details[item.details.length - 1]?.meals?.lunch?.taken,
+            time: item?.details[item.details.length - 1]?.meals?.lunch?.time,
+            staff: item?.staffId?.fullName || null,
+            reasonIfNotTaken:
+              item?.details[item.details.length - 1]?.meals?.lunch
+                ?.reasonIfNotTaken, // New field for reason if not taken
           },
           dinner: {
-            marked: item.meals?.dinner.taken,
-            time: null,
-            staff: item.staffId?.fullName || null,
+            marked:
+              item?.details[item.details.length - 1]?.meals?.dinner?.taken,
+            time: item?.details[item.details.length - 1]?.meals?.dinner?.time,
+            staff: item?.staffId?.fullName || null,
+            reasonIfNotTaken:
+              item?.details[item.details.length - 1]?.meals?.dinner
+                ?.reasonIfNotTaken, // New field for reason if not taken
           },
         },
-        dietary: [], // Not available in API
+
         lastMeal: "None",
         markingId: item._id,
       }));

@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, Building2 } from "lucide-react";
-import { COMPANY_BUSINESS_TYPES } from "../../app/dashboard/admin/on-boarding/page";
+import { COMPANY_BUSINESS_TYPES } from "../../app/on-boarding/page";
 
 interface BusinessTypeStepProps {
   selectedBusinessType: string;

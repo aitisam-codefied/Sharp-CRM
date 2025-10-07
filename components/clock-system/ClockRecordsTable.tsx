@@ -32,6 +32,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ClockRecord } from "@/lib/types";
 import { CustomPagination } from "@/components/CustomPagination";
 import { useCompanies } from "@/hooks/useCompnay";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "../providers/auth-provider";
 
 interface ClockRecordsTableProps {
   clockRecords: ClockRecord[];
@@ -49,6 +51,8 @@ export default function ClockRecordsTable({
 
   const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
+
+  const { user } = useAuth();
 
   // Branches of selected company
   const companyBranches =
@@ -72,9 +76,9 @@ export default function ClockRecordsTable({
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    console.log("clockRecords", clockRecords);
-  }, [clockRecords]);
+  // useEffect(() => {
+  //   console.log("clockRecords", clockRecords);
+  // }, [clockRecords]);
 
   // Reset pagination to first page when filters change
   useEffect(() => {
@@ -150,42 +154,47 @@ export default function ClockRecordsTable({
           </div>
         </div>
 
-        {/* Company Select */}
-        <Select
-          value={selectedCompany}
-          onValueChange={(val) => setSelectedCompany(val)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select Company" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Companies</SelectItem>
-            {comapnayData?.map((company: any) => (
-              <SelectItem key={company._id} value={company._id}>
-                {company.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {RoleWrapper(
+          user?.roles[0]?.name,
+          <>
+            {/* Company Select */}
+            <Select
+              value={selectedCompany}
+              onValueChange={(val) => setSelectedCompany(val)}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select Company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Companies</SelectItem>
+                {comapnayData?.map((company: any) => (
+                  <SelectItem key={company._id} value={company._id}>
+                    {company.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-        {/* Branch Select (only show if company selected) */}
-        {selectedCompany !== "all" && (
-          <Select
-            value={selectedBranch}
-            onValueChange={(val) => setSelectedBranch(val)}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Branch" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Branches</SelectItem>
-              {companyBranches.map((branch: any) => (
-                <SelectItem key={branch._id} value={branch._id}>
-                  {branch.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {/* Branch Select (only show if company selected) */}
+            {selectedCompany !== "all" && (
+              <Select
+                value={selectedBranch}
+                onValueChange={(val) => setSelectedBranch(val)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Branches</SelectItem>
+                  {companyBranches.map((branch: any) => (
+                    <SelectItem key={branch._id} value={branch._id}>
+                      {branch.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </>
         )}
       </div>
 

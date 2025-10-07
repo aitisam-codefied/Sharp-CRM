@@ -56,6 +56,7 @@ import { useSearchParams } from "next/navigation";
 import { CustomPagination } from "../CustomPagination";
 import { useCompanies } from "@/hooks/useCompnay";
 import CompanyBranchFilter from "../CompanyBranchFilter";
+import { RoleWrapper } from "@/lib/RoleWrapper";
 
 // Fetch staff members with pagination
 const fetchStaffMembers = async () => {
@@ -103,9 +104,9 @@ export default function StaffTable() {
     queryFn: fetchStaffMembers,
   });
 
-  useEffect(() => {
-    console.log("user table data", data?.users);
-  }, [data]);
+  // useEffect(() => {
+  //   console.log("user table data", data?.users);
+  // }, [data]);
 
   const { mutate: deleteStaffMutation, isPending: isDeleting } =
     useDeleteStaff();
@@ -114,9 +115,9 @@ export default function StaffTable() {
   const { data: branchData } = useBranches();
   const { data: CompanyData } = useCompanies();
 
-  useEffect(() => {
-    console.log("companyy dataa", CompanyData);
-  });
+  // useEffect(() => {
+  //   console.log("companyy dataa", CompanyData);
+  // });
 
   // useEffect(() => {
   //   console.log("branch data", branchData);
@@ -362,25 +363,28 @@ export default function StaffTable() {
                     />
                   </div>
                 </div>
-                <CompanyBranchFilter
-                  companies={CompanyData || []}
-                  onChange={(companyId, branchId) => {
-                    if (branchId) {
-                      setSelectedBranches([branchId]);
-                    } else if (companyId) {
-                      // agar company select hui but branch all ho → us company ki saari branches filter ho
-                      const company = CompanyData?.find(
-                        (c: any) => c._id === companyId
-                      );
-                      const branchIds =
-                        company?.branches.map((b: any) => b._id) || [];
-                      setSelectedBranches(branchIds);
-                    } else {
-                      // all companies and all branches
-                      setSelectedBranches([]);
-                    }
-                  }}
-                />
+                {RoleWrapper(
+                  user?.roles[0]?.name,
+                  <CompanyBranchFilter
+                    companies={CompanyData || []}
+                    onChange={(companyId, branchId) => {
+                      if (branchId) {
+                        setSelectedBranches([branchId]);
+                      } else if (companyId) {
+                        // agar company select hui but branch all ho → us company ki saari branches filter ho
+                        const company = CompanyData?.find(
+                          (c: any) => c._id === companyId
+                        );
+                        const branchIds =
+                          company?.branches.map((b: any) => b._id) || [];
+                        setSelectedBranches(branchIds);
+                      } else {
+                        // all companies and all branches
+                        setSelectedBranches([]);
+                      }
+                    }}
+                  />
+                )}
 
                 <Select
                   value={selectedRoles[0] || "all"}
@@ -419,12 +423,15 @@ export default function StaffTable() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Staff Member</TableHead>
-                      <TableHead>Role & Branch</TableHead>
+                      <TableHead>Company & Branch</TableHead>
                       <TableHead>Contact</TableHead>
                       <TableHead>Shift Timings</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Joining Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      {RoleWrapper(
+                        user?.roles[0]?.name,
+                        <TableHead className="text-right">Actions</TableHead>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -436,31 +443,28 @@ export default function StaffTable() {
                       >
                         <TableCell>
                           <div className="flex items-center space-x-3">
-                            <div>
+                            <div className="space-y-1">
                               <div className="font-medium text-xs capitalize">
                                 {staff.name}
                               </div>
-                              {staff.company && (
-                                <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 capitalize">
-                                  {staff.company}
-                                </span>
-                              )}
+                              <div className="flex flex-col gap-1">
+                                {staff.roles.map(
+                                  (role: string, idx: number) => (
+                                    <Badge
+                                      variant="outline"
+                                      key={idx}
+                                      className={`w-fit ${getRoleColor(role)}`}
+                                    >
+                                      {role}
+                                    </Badge>
+                                  )
+                                )}
+                              </div>
                             </div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-1">
-                            <div className="flex flex-col gap-1">
-                              {staff.roles.map((role: string, idx: number) => (
-                                <Badge
-                                  variant="outline"
-                                  key={idx}
-                                  className={`w-fit ${getRoleColor(role)}`}
-                                >
-                                  {role}
-                                </Badge>
-                              ))}
-                            </div>
                             <div className="flex flex-col gap-2">
                               <div className="flex items-center text-xs">
                                 <MapPin className="h-3 w-3 mr-1" />
@@ -490,6 +494,12 @@ export default function StaffTable() {
                                 </div>
                               )}
                             </div>
+                            {RoleWrapper(
+                              user?.roles[0]?.name,
+                              <span className="inline-block mt-1 px-2 py-0.5 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700 capitalize">
+                                {staff.company}
+                              </span>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -547,25 +557,28 @@ export default function StaffTable() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex items-center justify-end space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditStaff(staff)}
-                              disabled={isDeleting}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteStaff(staff)}
-                              className="text-red-600 hover:text-red-700"
-                              disabled={isDeleting}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          {RoleWrapper(
+                            user?.roles[0]?.name,
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditStaff(staff)}
+                                disabled={isDeleting}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              {/* <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteStaff(staff)}
+                                className="text-red-600 hover:text-red-700"
+                                disabled={isDeleting}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button> */}
+                            </div>
+                          )}
                         </TableCell>
                       </TableRow>
                     ))}

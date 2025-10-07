@@ -370,7 +370,7 @@ export function UserDetailsModal({
                       This medic is <strong>Inactive</strong>. Kindly{" "}
                       <span
                         onClick={() =>
-                          router.push("/dashboard/admin/medical-staff")
+                          router.push("/medical-staff")
                         }
                         className="text-red-500 underline cursor-pointer"
                       >
@@ -448,7 +448,7 @@ export function UserDetailsModal({
                       This dentist is <strong>Inactive</strong>. Kindly{" "}
                       <span
                         onClick={() =>
-                          router.push("/dashboard/admin/medical-staff")
+                          router.push("/medical-staff")
                         }
                         className="text-red-500 underline cursor-pointer"
                       >

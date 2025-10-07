@@ -226,9 +226,10 @@ export default function NewUserPage() {
   };
 
   const isStep2Valid = () => {
-    const dependants = formData.guests[0].numberOfDependents || 0;
+    const dependants = formData.guests[0]?.numberOfDependents || 0;
     const totalPeople = Number(dependants) + 1;
 
+    // ✅ Validate all dependents
     if (dependants > 0) {
       for (let i = 1; i <= dependants; i++) {
         const dep = formData.guests[i];
@@ -239,7 +240,7 @@ export default function NewUserPage() {
           !dep?.phoneNumber?.trim() ||
           isValidPhoneNumber(dep.phoneNumber) === false ||
           !dep?.emailAddress?.trim() ||
-          !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
+          !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) ||
           !dep?.dateOfBirth ||
           !dep?.portNumber?.trim() ||
           dep.portNumber.length < 12 ||
@@ -248,30 +249,88 @@ export default function NewUserPage() {
           (dep.address && dep.address.length > 150) ||
           (dep.additionalNotes && dep.additionalNotes.length > 150)
         ) {
-          // console.log("Dependants validation failed at index", i);
           return false;
         }
       }
     }
 
-    if (!formData.assignedRooms) {
-      // console.log("Room assignments missing");
-      return false;
-    }
+    // ✅ Validate room assignments
+    if (!formData.assignedRooms) return false;
 
     let totalAssigned = 0;
+    let hasError = false;
+
     for (const roomId in formData.assignedRooms) {
       const assigned = Number(formData.assignedRooms[roomId]) || 0;
       const room = rooms.find((r) => r.id === roomId);
-      if (room && assigned > room.availableSpace) {
-        // console.log(`Room ${roomId} over capacity`);
-        return false;
+
+      if (!room) {
+        // 🧹 If room no longer exists (e.g., branch changed), skip it
+        continue;
       }
+
+      if (assigned > room.availableSpace) {
+        hasError = true;
+        break;
+      }
+
       totalAssigned += assigned;
     }
 
+    // ✅ If no valid rooms or mismatch, it's invalid
+    if (hasError || totalAssigned === 0) return false;
+
+    // ✅ Must exactly match total people
     return totalAssigned === totalPeople;
   };
+
+  // const isStep2Valid = () => {
+  //   const dependants = formData.guests[0].numberOfDependents || 0;
+  //   const totalPeople = Number(dependants) + 1;
+
+  //   if (dependants > 0) {
+  //     for (let i = 1; i <= dependants; i++) {
+  //       const dep = formData.guests[i];
+
+  //       if (
+  //         !dep?.fullName?.trim() ||
+  //         dep.fullName.length > 20 ||
+  //         !dep?.phoneNumber?.trim() ||
+  //         isValidPhoneNumber(dep.phoneNumber) === false ||
+  //         !dep?.emailAddress?.trim() ||
+  //         !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) || // ✅ email regex
+  //         !dep?.dateOfBirth ||
+  //         !dep?.portNumber?.trim() ||
+  //         dep.portNumber.length < 12 ||
+  //         dep.portNumber.length > 55 ||
+  //         !dep?.nationality?.trim() ||
+  //         (dep.address && dep.address.length > 150) ||
+  //         (dep.additionalNotes && dep.additionalNotes.length > 150)
+  //       ) {
+  //         // console.log("Dependants validation failed at index", i);
+  //         return false;
+  //       }
+  //     }
+  //   }
+
+  //   if (!formData.assignedRooms) {
+  //     // console.log("Room assignments missing");
+  //     return false;
+  //   }
+
+  //   let totalAssigned = 0;
+  //   for (const roomId in formData.assignedRooms) {
+  //     const assigned = Number(formData.assignedRooms[roomId]) || 0;
+  //     const room = rooms.find((r) => r.id === roomId);
+  //     if (room && assigned > room.availableSpace) {
+  //       // console.log(`Room ${roomId} over capacity`);
+  //       return false;
+  //     }
+  //     totalAssigned += assigned;
+  //   }
+
+  //   return totalAssigned === totalPeople;
+  // };
 
   const validateEmergencyContact = (ec: any) => {
     if (!ec?.fullName?.trim()) return false;

@@ -16,6 +16,8 @@ import { EditMedicalStaffModal } from "@/components/medical-staff/EditMedicalSta
 import { ChangeStatusModal } from "@/components/medical-staff/ChangeStatusModal";
 import { DeleteMedicalStaffModal } from "@/components/medical-staff/DeleteMedicalStaffModal";
 import { CustomPagination } from "../CustomPagination";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "../providers/auth-provider";
 
 interface Staff {
   _id: string;
@@ -44,6 +46,8 @@ export function MedicalStaffTable({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedStaff, setSelectedStaff] = useState<Staff | null>(null);
 
+  const { user } = useAuth();
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("en-GB", {
       day: "numeric",
@@ -70,9 +74,9 @@ export function MedicalStaffTable({
     setDeleteModalOpen(true);
   };
 
-  useEffect(() => {
-    console.log("doctorssssss", staff);
-  });
+  // useEffect(() => {
+  //   console.log("doctorssssss", staff);
+  // });
 
   return (
     <>
@@ -86,7 +90,10 @@ export function MedicalStaffTable({
               <TableHead>Specialization</TableHead>
               <TableHead>Registered On</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="">Actions</TableHead>
+              {RoleWrapper(
+                user?.roles[0]?.name,
+                <TableHead className="text-right">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -144,42 +151,36 @@ export function MedicalStaffTable({
                     >
                       {staffItem?.status}
                     </Badge>
-                    {(staffItem?.status === "Active" ||
-                      staffItem?.status === "Inactive") && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleChangeStatus(staffItem)}
-                      >
-                        <Pencil className="h-1 w-1" />
-                      </Button>
+                    {RoleWrapper(
+                      user?.roles[0]?.name || "",
+                      <div>
+                        {(staffItem?.status === "Active" ||
+                          staffItem?.status === "Inactive") && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleChangeStatus(staffItem)}
+                          >
+                            <Pencil className="h-1 w-1" />
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    {/* <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleViewDetails(staffItem._id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button> */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit(staffItem)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {/* <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(staffItem)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button> */}
-                  </div>
+                  {RoleWrapper(
+                    user?.roles[0]?.name || "",
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEdit(staffItem)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

@@ -7,6 +7,7 @@ import StatsCards from "@/components/StatsCards";
 import BranchPerformanceTable from "@/components/BranchPerformanceTable";
 import TopBranchPerformance from "@/components/TopBranchPerformance";
 import RecentActivities from "@/components/RecentActivities";
+import { RoleWrapper } from "@/lib/RoleWrapper";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -22,7 +23,7 @@ export default function AdminDashboard() {
               Hello, {user?.fullName} !
             </h1>
           </div>
-          <AddBranchDialog />
+          {RoleWrapper(user?.roles[0]?.name || "", <AddBranchDialog />)}
         </div>
 
         {/* Key Metrics */}

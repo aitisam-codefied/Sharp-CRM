@@ -46,7 +46,14 @@ export const useSOPDocuments = () => {
         description: apiDoc.description,
         version: apiDoc.version,
         category: apiDoc.category.toLowerCase(),
-        tags: apiDoc.tags,
+        tags: Array.isArray(apiDoc.tags)
+          ? apiDoc.tags.flatMap((tag: string) =>
+              tag
+                .split(",")
+                .map((t) => t.trim())
+                .filter(Boolean)
+            )
+          : [],
         accessLevel: apiDoc.accessLevel.toLowerCase().replace(" ", "_"),
         isMandatoryReading: apiDoc.isMandatoryReading,
         mandatory: apiDoc.isMandatoryReading,
@@ -68,6 +75,7 @@ export const useSOPDocuments = () => {
         fileType: apiDoc.documentFile.extension?.slice(1)?.toUpperCase(),
         fileUrl: `${apiDoc.documentFile.fileAccess?.basePath}${apiDoc.documentFile.publicUrl}`,
         documentFile: apiDoc.documentFile.downloadUrl,
+        originalFileName: apiDoc.documentFile.originalName,
       }));
 
       return { data: documents };

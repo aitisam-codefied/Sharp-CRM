@@ -17,7 +17,7 @@ export default function HomePage() {
       }
 
       if (user) {
-        router.push("/dashboard/admin");
+        router.push("/dashboard");
       }
     }
   }, [user, isLoading, router]);

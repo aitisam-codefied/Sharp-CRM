@@ -305,7 +305,7 @@ export function UserTable({
                           Kindly{" "}
                           <span
                             onClick={() =>
-                              router.push("/dashboard/admin/medical-staff")
+                              router.push("/medical-staff")
                             }
                             className="underline cursor-pointer"
                           >
@@ -363,7 +363,7 @@ export function UserTable({
                           Kindly{" "}
                           <span
                             onClick={() =>
-                              router.push("/dashboard/admin/medical-staff")
+                              router.push("/medical-staff")
                             }
                             className="underline cursor-pointer"
                           >

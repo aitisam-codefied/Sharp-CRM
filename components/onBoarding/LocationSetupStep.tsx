@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Building2, Home, MapPin, Plus, Trash2 } from "lucide-react";
-import { Company } from "../../app/dashboard/admin/on-boarding/page";
+import { Company } from "../../app/on-boarding/page";
 
 interface LocationSetupStepProps {
   companies: Company[];

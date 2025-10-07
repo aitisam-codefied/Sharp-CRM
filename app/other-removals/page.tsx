@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Truck } from "lucide-react";
-import { useInTransitUsers } from "@/hooks/useGetInTransitUsers";
-import StatsCards from "@/components/in-transit/StatsCards";
-import Filters from "@/components/in-transit/Filters";
-import UsersTable from "@/components/in-transit/UsersTable";
-import UrgentArrivals from "@/components/in-transit/UrgentArrivals";
 import { useCompanies } from "@/hooks/useCompnay";
+import UsersTable from "@/components/other-removals/UsersTable";
+import Filters from "@/components/other-removals/Filters";
+import StatsCards from "@/components/other-removals/StatsCards";
+import { useOtherRemovals } from "@/hooks/useGetOtherRemovals";
 
 export default function InTransitPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -26,16 +25,12 @@ export default function InTransitPage() {
   const [selectedDate, setSelectedDate] = useState("");
 
   const { toast } = useToast();
-  const {
-    data: inTransitUsersResponse,
-    isLoading,
-    error,
-  } = useInTransitUsers();
-  const InTransitUsers = inTransitUsersResponse || [];
+  const { data: otherRemovalsResponse, isLoading, error } = useOtherRemovals();
+  const otherRemovals = otherRemovalsResponse || [];
 
   useEffect(() => {
-    console.log("InTransitUsers", InTransitUsers);
-  }, [InTransitUsers]);
+    console.log("otherRemovals", otherRemovals);
+  }, [otherRemovals]);
 
   const { data: companyData } = useCompanies();
 
@@ -56,7 +51,7 @@ export default function InTransitPage() {
 
   const statusOptions = ["pending", "Transferred"];
 
-  const filteredUsers = InTransitUsers?.filter((user: any) => {
+  const filteredUsers = otherRemovals?.filter((user: any) => {
     const matchesSearch =
       !searchTerm ||
       user?.guestId?.userId?.fullName
@@ -98,7 +93,7 @@ export default function InTransitPage() {
 
   return (
     <DashboardLayout
-      title="In-Transit User Management"
+      title="Other Removals"
       description="Track and manage incoming service users across all branches"
     >
       <div className="space-y-6">
@@ -107,7 +102,7 @@ export default function InTransitPage() {
         {isLoading ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-            <p className="mt-2"> Loading Intransit data...</p>
+            <p className="mt-2"> Loading Other Removals data...</p>
           </div>
         ) : (
           <>
@@ -115,10 +110,11 @@ export default function InTransitPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                   <Truck className="h-5 w-5" />
-                  In-Transit Service Users
+                  Other Removals Management
                 </CardTitle>
                 <CardDescription className="text-sm">
-                  Monitor incoming service users and prepare for arrivals
+                  Manage and track service users scheduled for removals to other
+                  facilities
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -141,18 +137,16 @@ export default function InTransitPage() {
                 <UsersTable
                   filteredUsers={filteredUsers}
                   handleViewUser={handleViewUser}
-                  handleMarkArrived={handleMarkArrived}
                 />
 
                 {filteredUsers?.length === 0 && (
                   <div className="text-center py-8">
                     <Truck className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-medium mb-2">
-                      No in-transit users found
+                      No Removal users found
                     </h3>
                     <p className="text-muted-foreground">
-                      Try adjusting your search criteria or add a new transit
-                      alert.
+                      Try adjusting your search criteria or add a new removal
                     </p>
                   </div>
                 )}

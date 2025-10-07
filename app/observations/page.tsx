@@ -204,7 +204,7 @@ export default function ObservationsPage() {
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Observation Checks" }]}
+      breadcrumbs={[{ label: "Admin Dashboard", href: "" }, { label: "Observation Checks" }]}
       title="Daily Observation System"
       description="Monitor and record daily resident observations across all shifts"
       actions={

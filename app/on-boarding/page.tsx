@@ -8,11 +8,11 @@ import { Building2, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import api from "@/lib/axios";
-import BusinessTypeStep from "../../../../components/onBoarding/BusinessTypeStep";
-import CompanyInfoStep from "../../../../components/onBoarding/CompanyInfoStep";
-import BranchInfoStep from "../../../../components/onBoarding/BranchInfoStep";
-import LocationSetupStep from "../../../../components/onBoarding/LocationSetupStep";
-import RoomConfigStep from "../../../../components/onBoarding/RoomConfigStep";
+import BusinessTypeStep from "../../components/onBoarding/BusinessTypeStep";
+import CompanyInfoStep from "../../components/onBoarding/CompanyInfoStep";
+import BranchInfoStep from "../../components/onBoarding/BranchInfoStep";
+import LocationSetupStep from "../../components/onBoarding/LocationSetupStep";
+import RoomConfigStep from "../../components/onBoarding/RoomConfigStep";
 
 export const COMPANY_BUSINESS_TYPES = {
   SINGLE: "Single",
@@ -136,7 +136,7 @@ export default function OnboardingPage() {
       const newCompany = data.company;
       updateUserCompanies(newCompany);
       queryClient.invalidateQueries({ queryKey: ["companies"] });
-      router.push("/dashboard/admin");
+      router.push("/dashboard");
     },
     onError: (error: any) => {
       toast({

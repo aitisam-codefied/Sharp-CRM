@@ -222,7 +222,7 @@ export default function SafeguardingPage() {
 
   return (
     <DashboardLayout
-      breadcrumbs={[{ label: "Admin Dashboard", href: "/dashboard/admin" }, { label: "Safeguarding" }]}
+      breadcrumbs={[{ label: "Admin Dashboard", href: "" }, { label: "Safeguarding" }]}
       title="Safeguarding Management"
       description="Manage safeguarding concerns and referrals across all branches"
       actions={

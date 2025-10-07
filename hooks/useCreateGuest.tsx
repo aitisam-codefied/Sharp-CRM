@@ -19,7 +19,7 @@ export const useCreateGuest = () => {
     onSuccess: () => {
       // ✅ Auto refresh the service users table
       queryClient.invalidateQueries({ queryKey: ["guests"] });
-      router.push("/dashboard/admin/service-users");
+      router.push("/service-users");
     },
     onError: (error: any) => {
       toast({

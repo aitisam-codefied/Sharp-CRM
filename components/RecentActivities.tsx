@@ -40,9 +40,9 @@ export default function RecentActivities() {
   const { data: activities, isLoading, error } = useActivityLogs();
   const [visibleCount, setVisibleCount] = useState(5);
 
-  useEffect(() => {
-    console.log("Fetched activities:", activities);
-  }, [activities]);
+  // useEffect(() => {
+  //   console.log("Fetched activities:", activities);
+  // }, [activities]);
 
   if (isLoading) {
     return (
@@ -101,7 +101,7 @@ export default function RecentActivities() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium mb-1">
                     {/* <Link
-                      href={`/dashboard/admin/staffs?highlight=${log.username}`}
+                      href={`/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
                     > */}
                     {log.notes}

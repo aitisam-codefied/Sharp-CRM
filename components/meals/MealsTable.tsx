@@ -32,6 +32,14 @@ export default function MealsTable({
     console.log("residents", residents);
   });
 
+  const formatDate = (dateString: any) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
   return (
     <div>
       <div className="rounded-md border">
@@ -40,7 +48,7 @@ export default function MealsTable({
             <TableRow>
               <TableHead>Resident</TableHead>
               <TableHead>Branch & Room</TableHead>
-              <TableHead>Dietary Requirements</TableHead>
+
               <TableHead>Breakfast</TableHead>
               <TableHead>Lunch</TableHead>
               <TableHead>Dinner</TableHead>
@@ -59,21 +67,7 @@ export default function MealsTable({
                     <div className="text-sm font-medium">{resident.branch}</div>
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {resident.dietary.length > 0 ? (
-                      resident.dietary.map((diet: any) => (
-                        <Badge key={diet} variant="outline" className="text-xs">
-                          {diet}
-                        </Badge>
-                      ))
-                    ) : (
-                      <span className="text-sm text-muted-foreground">
-                        None
-                      </span>
-                    )}
-                  </div>
-                </TableCell>
+
                 <TableCell>
                   <div className="flex items-center space-x-2">
                     {resident.meals.breakfast.marked === true ? (
@@ -90,10 +84,18 @@ export default function MealsTable({
                     <br />
                     {resident.meals.breakfast.marked === true && (
                       <div className="text-xs text-muted-foreground">
-                        <div>{resident.meals.breakfast.time}</div>
-                        <div>{resident.meals.breakfast.staff}</div>
+                        <div>{formatDate(resident.meals.breakfast.time)}</div>
                       </div>
                     )}
+
+                    {resident.meals.breakfast.marked === false &&
+                      resident.meals.breakfast.reasonIfNotTaken && (
+                        <div className="text-xs bg-green-100 text-green-800 px-3 py-1 w-fit rounded-xl">
+                          {resident.meals.breakfast.reasonIfNotTaken
+                            ? resident.meals.breakfast.reasonIfNotTaken
+                            : "No reason provided"}
+                        </div>
+                      )}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -111,10 +113,18 @@ export default function MealsTable({
                     )}
                     {resident.meals.lunch.marked === true && (
                       <div className="text-xs text-muted-foreground">
-                        <div>{resident.meals.lunch.time}</div>
-                        <div>{resident.meals.lunch.staff}</div>
+                        <div>{formatDate(resident.meals.lunch.time)}</div>
                       </div>
                     )}
+
+                    {resident.meals.lunch.marked === false &&
+                      resident.meals.lunch.reasonIfNotTaken && (
+                        <div className="text-xs bg-green-100 text-green-800 px-3 py-1 w-fit rounded-xl">
+                          {resident.meals.lunch.reasonIfNotTaken
+                            ? resident.meals.lunch.reasonIfNotTaken
+                            : "No reason provided"}
+                        </div>
+                      )}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -132,10 +142,18 @@ export default function MealsTable({
                     )}
                     {resident.meals.dinner.marked === true && (
                       <div className="text-xs text-muted-foreground">
-                        <div>{resident.meals.dinner.time}</div>
-                        <div>{resident.meals.dinner.staff}</div>
+                        <div>{formatDate(resident.meals.dinner.time)}</div>
                       </div>
                     )}
+
+                    {resident.meals.dinner.marked === false &&
+                      resident.meals.dinner.reasonIfNotTaken && (
+                        <div className="text-xs bg-green-100 text-green-800 px-3 py-1 w-fit rounded-xl">
+                          {resident.meals.dinner.reasonIfNotTaken
+                            ? resident.meals.dinner.reasonIfNotTaken
+                            : "No reason provided"}
+                        </div>
+                      )}
                   </div>
                 </TableCell>
               </TableRow>

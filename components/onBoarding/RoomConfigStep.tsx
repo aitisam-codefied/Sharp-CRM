@@ -15,8 +15,8 @@ import { Building2, MapPin, Home, Bed, Plus, Trash2 } from "lucide-react";
 import {
   ROOM_PREFERENCE_TYPES,
   ROOM_AMENITIES,
-} from "../../app/dashboard/admin/on-boarding/page";
-import { Company } from "../../app/dashboard/admin/on-boarding/page";
+} from "../../app/on-boarding/page";
+import { Company } from "../../app/on-boarding/page";
 
 const ROOM_TYPE_CAPACITY: Record<string, number> = {
   "Single Room (Capacity 1)": 1,

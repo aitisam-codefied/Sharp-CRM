@@ -103,7 +103,7 @@ export default function ModuleLogs({ moduleType, title }: ModuleLogsProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium mb-1">
                     {/* <Link
-                      href={`/dashboard/admin/staffs?highlight=${log.username}`}
+                      href={`/staffs?highlight=${log.username}`}
                       className="hover:underline cursor-pointer"
                     > */}
                     {log.notes}

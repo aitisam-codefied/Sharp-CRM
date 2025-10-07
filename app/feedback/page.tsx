@@ -1,7 +1,7 @@
 // Updated FeedbackPage component
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -48,44 +48,17 @@ export default function FeedbackPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const { toast } = useToast();
 
-  const { data, isLoading, error } = useFoodFeedbacks();
-  const { data: branchData } = useBranches();
+  const { data: feedback, isLoading, error } = useFoodFeedbacks();
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      // hour: "2-digit",
-      // minute: "2-digit",
-    });
-  };
+  useEffect(() => {
+    console.log("feedback data", feedback);
+  });
+
+  const { data: branchData } = useBranches();
 
   if (error) {
     return <div>Error loading feedback: {error.message}</div>;
   }
-
-  const transformed: DisplayFeedback[] =
-    data?.map((fb: any) => ({
-      id: fb._id,
-      residentId: fb.guestId?.userId.portNumber,
-      residentName: fb.guestId?.userId?.fullName,
-      room: "N/A", // No room data in API
-      branch: fb.branchId?.name,
-      mealType: "Weekly", // API is weekly feedback, not per meal
-      date: formatDate(fb?.weekStartDate),
-      time: "", // No time data
-      ratings: {
-        taste: 0, // No breakdown in API
-        freshness: 0,
-        portion: 0,
-        temperature: 0,
-        overall: fb.overallRating,
-      },
-      comments: fb.comments,
-      staffMember: fb.staffId?.fullName,
-      dietary: [], // No dietary data
-    })) || [];
 
   // useEffect(() => {
   //   console.log("branch data", branchData);
@@ -98,40 +71,38 @@ export default function FeedbackPage() {
       company: branch.companyId.name,
     })) || [];
 
-  const mealTypes = ["Weekly"]; // Adjusted to match API data
-
-  const filteredFeedback = transformed.filter((feedback) => {
-    const matchesSearch =
-      feedback.residentName
-        ?.toLowerCase()
-        .includes(searchTerm?.toLowerCase()) ||
-      feedback.residentId?.toLowerCase().includes(searchTerm?.toLowerCase()) ||
-      feedback.comments?.toLowerCase().includes(searchTerm?.toLowerCase());
+  const filteredFeedback = feedback?.filter((feedback: any) => {
+    const matchesSearch = feedback?.guestId?.userId?.fullName
+      ?.toLowerCase()
+      .includes(searchTerm?.toLowerCase());
 
     const matchesBranch =
-      selectedBranch === "all" || feedback.branch === selectedBranch;
-    const matchesMeal =
-      selectedMeal === "all" || feedback.mealType === selectedMeal;
+      selectedBranch === "all" || feedback?.branchId?._id === selectedBranch;
+
     const matchesRating =
       selectedRating === "all" ||
-      (selectedRating === "excellent" && feedback.ratings.overall >= 4.5) ||
+      (selectedRating === "excellent" &&
+        feedback?.details[feedback?.details.length - 1]?.overallRating >=
+          4.5) ||
       (selectedRating === "good" &&
-        feedback.ratings.overall >= 3.5 &&
-        feedback.ratings.overall < 4.5) ||
+        feedback?.details[feedback?.details.length - 1]?.overallRating >= 3.5 &&
+        feedback?.details[feedback?.details.length - 1]?.overallRating < 4.5) ||
       (selectedRating === "fair" &&
-        feedback.ratings.overall >= 2.5 &&
-        feedback.ratings.overall < 3.5) ||
-      (selectedRating === "poor" && feedback.ratings.overall < 2.5);
-    const matchesDate = selectedDate === "" || feedback.date === selectedDate;
+        feedback?.details[feedback?.details.length - 1]?.overallRating >= 2.5 &&
+        feedback?.details[feedback?.details.length - 1]?.overallRating < 3.5) ||
+      (selectedRating === "poor" &&
+        feedback?.details[feedback?.details.length - 1]?.overallRating < 2.5);
+    const matchesDate =
+      selectedDate === "" ||
+      feedback?.details[feedback?.details.length - 1]?.weekStartDate ===
+        selectedDate;
 
-    return (
-      matchesSearch &&
-      matchesBranch &&
-      matchesMeal &&
-      matchesRating &&
-      matchesDate
-    );
+    return matchesSearch && matchesBranch && matchesRating && matchesDate;
   });
+
+  // useEffect(() => {
+  //   console.log("filtered feedback", filteredFeedback);
+  // });
 
   const getRatingColor = (rating: number) => {
     if (rating >= 4.5) return "text-green-600";
@@ -198,37 +169,25 @@ export default function FeedbackPage() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
                 />
-                {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Branches</SelectItem>
-                  {allBranches.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{branch.name}</span>-
-                        <Badge className="bg-[#F87D7D] text-white">
-                          {branch.company}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select> */}
-                <Select value={selectedMeal} onValueChange={setSelectedMeal}>
+                <Select
+                  value={selectedBranch}
+                  onValueChange={setSelectedBranch}
+                >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Meals" />
+                    <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Meals</SelectItem>
-                    {mealTypes.map((meal) => (
-                      <SelectItem key={meal} value={meal}>
-                        {meal}
+                    <SelectItem value="all">All Branches</SelectItem>
+                    {allBranches.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{branch.name}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+
                 <Select
                   value={selectedRating}
                   onValueChange={setSelectedRating}
@@ -247,12 +206,12 @@ export default function FeedbackPage() {
               </div>
 
               <FeedbackTable
-                filteredFeedback={filteredFeedback}
+                filteredFeedback={filteredFeedback ?? []}
                 getRatingColor={getRatingColor}
                 getMealTypeColor={getMealTypeColor}
               />
 
-              {filteredFeedback.length === 0 && (
+              {filteredFeedback?.length === 0 && (
                 <div className="text-center py-8">
                   <MessageSquare className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-medium mb-2">

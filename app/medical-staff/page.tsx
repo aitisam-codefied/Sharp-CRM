@@ -38,6 +38,8 @@ import { MedicalStaffTable } from "@/components/medical-staff/MedicalStaffTable"
 import { MedicalStaffStats } from "@/components/medical-staff/MedicalStaffStats";
 import { AddMedicalStaffModal } from "@/components/medical-staff/AddMedicalStaffModal";
 import { CustomPagination } from "@/components/CustomPagination";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export default function MedicalStaffPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,6 +47,7 @@ export default function MedicalStaffPage() {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const statusForQuery = selectedStatus === "all" ? undefined : selectedStatus;
   const { data, isLoading } = useMedicalStaff(500, statusForQuery);
@@ -112,14 +115,17 @@ export default function MedicalStaffPage() {
       description="Manage and monitor medical staff across all branches"
       actions={
         <div className="flex gap-2">
-          <Button
-            className="text-xs sm:text-sm"
-            size="sm"
-            onClick={handleNewStaff}
-          >
-            <Plus className="h-4 w-4" />
-            Add Medic
-          </Button>
+          {RoleWrapper(
+            user?.roles[0]?.name || "",
+            <Button
+              className="text-xs sm:text-sm"
+              size="sm"
+              onClick={handleNewStaff}
+            >
+              <Plus className="h-4 w-4" />
+              Add Medic
+            </Button>
+          )}
         </div>
       }
     >

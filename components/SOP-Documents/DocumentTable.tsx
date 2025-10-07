@@ -16,6 +16,9 @@ import React, { useEffect, useState } from "react";
 import { Document } from "@/lib/types";
 import DocumentDetailsModal from "./DocumentDetailsModal";
 import { CustomPagination } from "@/components/CustomPagination";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "../providers/auth-provider";
+import EditDocumentDialog from "./EditDocumentDialog";
 
 interface DocumentTableProps {
   filteredDocuments: Document[];
@@ -26,6 +29,9 @@ interface DocumentTableProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  categories: string[]; // Added prop (assume passed from parent)
+  branches: any[]; // Added prop (assume passed from parent)
+  accessLevels: string[];
 }
 
 export default function DocumentTable({
@@ -37,11 +43,19 @@ export default function DocumentTable({
   currentPage,
   totalPages,
   onPageChange,
+  categories,
+  branches,
+  accessLevels,
 }: DocumentTableProps) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEditDocument, setSelectedEditDocument] =
+    useState<Document | null>(null); // New state for edit
+  const [isEditOpen, setIsEditOpen] = useState(false); // New state for edit modal
+
+  const { user } = useAuth();
 
   useEffect(() => {
     console.log("documentssssssssss", filteredDocuments);
@@ -50,6 +64,11 @@ export default function DocumentTable({
   const handleOpenModal = (doc: Document) => {
     setSelectedDocument(doc);
     setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (doc: Document) => {
+    setSelectedEditDocument(doc);
+    setIsEditOpen(true);
   };
 
   return (
@@ -61,9 +80,13 @@ export default function DocumentTable({
               <TableHead>Document Details</TableHead>
               <TableHead>Category & Company</TableHead>
               <TableHead>Version & Updates</TableHead>
-              <TableHead>Access & Usage</TableHead>
+              <TableHead>Access</TableHead>
+              <TableHead>Effective Date</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              {RoleWrapper(
+                user?.roles[0]?.name,
+                <TableHead className="text-right">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,11 +106,21 @@ export default function DocumentTable({
                       {doc.description}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {doc.tags.map((tag: any) => (
-                        <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
+                      {Array.isArray(doc.tags) && doc.tags.length > 0 ? (
+                        doc.tags.map((tag: string, index: number) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {tag}
+                          </Badge>
+                        ))
+                      ) : (
+                        <p className="text-xs text-gray-500">
+                          No tags available
+                        </p>
+                      )}
                     </div>
                   </div>
                 </TableCell>
@@ -100,7 +133,7 @@ export default function DocumentTable({
                       {doc.category.charAt(0)?.toUpperCase() +
                         doc.category?.slice(1)}
                     </Badge>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground capitalize">
                       {doc.company}
                     </div>
                   </div>
@@ -128,11 +161,9 @@ export default function DocumentTable({
                           .replace(/\b\w/g, (l: any) => l.toUpperCase())}
                       </span>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {doc.downloadCount} downloads
-                    </div>
                   </div>
                 </TableCell>
+                <TableCell>{doc.effectiveDate}</TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
@@ -144,22 +175,32 @@ export default function DocumentTable({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <div className="flex items-center justify-end space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenModal(doc)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDownloadDocument(doc.id)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {RoleWrapper(
+                    user?.roles[0]?.name || "",
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenModal(doc)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDownloadDocument(doc.id)}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button // New Edit button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenEdit(doc)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -182,6 +223,17 @@ export default function DocumentTable({
         getAccessLevelIcon={getAccessLevelIcon}
         handleDownloadDocument={handleDownloadDocument}
       />
+
+      {selectedEditDocument && ( // New EditDialog render
+        <EditDocumentDialog
+          isEditDocumentOpen={isEditOpen}
+          setIsEditDocumentOpen={setIsEditOpen}
+          document={selectedEditDocument}
+          categories={categories}
+          branches={branches}
+          accessLevels={accessLevels}
+        />
+      )}
     </>
   );
 }

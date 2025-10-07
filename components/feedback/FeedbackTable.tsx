@@ -16,7 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { CustomPagination } from "../CustomPagination";
 
 interface Props {
-  filteredFeedback: DisplayFeedback[];
+  filteredFeedback: any[];
   getRatingColor: (rating: number) => string;
   getMealTypeColor: (mealType: string) => string;
 }
@@ -56,6 +56,16 @@ export const FeedbackTable = ({
     setCurrentPage(1);
   }, [filteredFeedback]);
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
   return (
     <>
       <div className="rounded-md border">
@@ -64,7 +74,7 @@ export const FeedbackTable = ({
             <TableRow>
               <TableHead>Resident</TableHead>
               <TableHead>Meal Details</TableHead>
-              <TableHead>Overall</TableHead>
+              <TableHead>Overall Rating</TableHead>
               <TableHead>Comments</TableHead>
               <TableHead>Staff</TableHead>
               {/* <TableHead className="">Actions</TableHead> */}
@@ -72,25 +82,32 @@ export const FeedbackTable = ({
           </TableHeader>
           <TableBody>
             {currentData.map((feedback) => (
-              <TableRow key={feedback.id}>
+              <TableRow key={feedback?.id}>
                 <TableCell>
                   <div>
-                    <div className="font-medium">{feedback.residentName}</div>
+                    <div className="font-medium capitalize">
+                      {feedback?.guestId?.userId?.fullName}
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      {feedback.branch} • Room {feedback.room}
+                      {feedback?.branchId?.name} •{" "}
+                      {feedback?.guestId?.familyRooms[0]?.locationId?.name} •
+                      Room{" "}
+                      {feedback?.guestId?.familyRooms[0]?.roomId?.roomNumber}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <Badge
-                      variant="outline"
-                      className={getMealTypeColor(feedback.mealType)}
-                    >
-                      {feedback.mealType}
-                    </Badge>
                     <div className="text-xs text-muted-foreground">
-                      {feedback.date}
+                      {formatDate(
+                        feedback?.details[feedback?.details.length - 1]
+                          ?.weekStartDate
+                      )}{" "}
+                      -{" "}
+                      {formatDate(
+                        feedback?.details[feedback?.details.length - 1]
+                          ?.weekEndDate
+                      )}
                     </div>
                   </div>
                 </TableCell>
@@ -99,22 +116,29 @@ export const FeedbackTable = ({
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span
                       className={`font-bold ${getRatingColor(
-                        feedback.ratings.overall
+                        feedback?.details[feedback?.details.length - 1]
+                          ?.overallRating
                       )}`}
                     >
-                      {feedback.ratings.overall.toFixed(1)}
+                      {
+                        feedback?.details[feedback?.details.length - 1]
+                          ?.overallRating
+                      }
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>
                   <p className="text-sm line-clamp-2 max-w-xs">
-                    {feedback.comments}
+                    {feedback?.details[feedback?.details.length - 1]?.comments
+                      ? feedback?.details[feedback?.details.length - 1]
+                          ?.comments
+                      : "No Comments Provided"}
                   </p>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-muted-foreground">
-                    {feedback.staffMember
-                      ? feedback.staffMember
+                    {feedback?.staffId?.fullName
+                      ? feedback?.staffId?.fullName
                       : "No Staff Assigned"}
                   </div>
                 </TableCell>

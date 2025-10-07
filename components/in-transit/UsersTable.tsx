@@ -42,6 +42,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import api from "@/lib/axios";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "../providers/auth-provider";
 
 interface UsersTableProps {
   filteredUsers: InTransitUser[];
@@ -113,6 +115,7 @@ export default function UsersTable({
   const [isApproving, setIsApproving] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [currentBranchId, setCurrentBranchId] = useState<string | null>(null);
+  const { user: currentUser } = useAuth();
 
   const queryClient = useQueryClient();
 
@@ -255,7 +258,10 @@ export default function UsersTable({
             <TableHead>Contact Details</TableHead>
             <TableHead>Current Location</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            {RoleWrapper(
+              currentUser?.roles[0]?.name,
+              <TableHead className="text-right">Actions</TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -303,38 +309,43 @@ export default function UsersTable({
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
-                {user.removalStatus === "pending" ? (
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() =>
-                        handleApproveClick(
-                          user._id,
-                          user.companyId._id,
-                          user.branchId._id
-                        )
-                      }
-                      className="bg-green-50 text-green-800 border border-green-200 hover:bg-green-100 hover:border-green-300"
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleRejectClick(user._id)}
-                      className="bg-red-50 text-red-800 border border-red-200 hover:bg-red-100 hover:border-red-300"
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleViewUser(user._id)}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
+                {RoleWrapper(
+                  currentUser?.roles[0]?.name,
+                  <>
+                    {user.removalStatus === "pending" ? (
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleApproveClick(
+                              user._id,
+                              user.companyId._id,
+                              user.branchId._id
+                            )
+                          }
+                          className="bg-green-50 text-green-800 border border-green-200 hover:bg-green-100 hover:border-green-300"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleRejectClick(user._id)}
+                          className="bg-red-50 text-red-800 border border-red-200 hover:bg-red-100 hover:border-red-300"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={() => handleViewUser(user._id)}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </>
                 )}
               </TableCell>
             </TableRow>
@@ -342,7 +353,21 @@ export default function UsersTable({
         </TableBody>
       </Table>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog
+        open={isModalOpen}
+        onOpenChange={(open) => {
+          setIsModalOpen(open);
+          if (!open) {
+            // ✅ Reset everything when modal closes
+            setSelectedBranchId(null);
+            setSelectedRoomId(null);
+            setSelectedLocationId(null);
+            setSelectedCompanyId(null);
+            setSelectedUserId(null);
+            setCurrentBranchId(null);
+          }
+        }}
+      >
         <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="mb-6">
             <DialogTitle className="text-2xl font-semibold text-gray-800">
@@ -386,107 +411,162 @@ export default function UsersTable({
                 <div className="text-red-500 text-center py-4 bg-red-50 rounded-lg">
                   Error loading rooms. Please try again.
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
-                  {rooms.map((room) => (
-                    <Card
-                      key={room.id}
-                      className={`border-gray-200 shadow-md hover:shadow-lg hover:bg-blue-50 transition-all duration-200 rounded-lg bg-white cursor-pointer ${
-                        selectedRoomId === room.id
-                          ? "border-2 border-blue-500"
-                          : ""
-                      }`}
-                      onClick={() => handleRoomSelect(room.id, room.locationId)}
+              ) : selectedBranchId ? ( // ✅ only show room section after branch is selected
+                rooms.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-48 bg-gray-50 rounded-lg border border-gray-200">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-12 w-12 text-gray-400 mb-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
                     >
-                      <CardHeader className="border-b border-gray-100 pb-3">
-                        <CardTitle className="text-lg font-semibold text-gray-800">
-                          {room.roomNumber}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-gray-600 font-medium">Type</p>
-                            <Badge
-                              variant="outline"
-                              className="mt-1 bg-yellow-50 text-yellow-800 border-yellow-200"
-                            >
-                              {room.roomType}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 font-medium">
-                              Location
-                            </p>
-                            <p className="text-gray-800 mt-1">
-                              {room.location}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 font-medium">Branch</p>
-                            <p className="text-gray-800 mt-1">{room.branch}</p>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 font-medium">Status</p>
-                            <Badge
-                              variant="outline"
-                              className={`mt-1 ${
-                                room.status === "Partially Available"
-                                  ? "bg-green-100 text-green-800 border-green-200"
-                                  : "bg-gray-100 text-gray-800 border-gray-200"
-                              }`}
-                            >
-                              {room.status}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 font-medium">
-                              Available Space
-                            </p>
-                            <Badge
-                              variant="outline"
-                              className="mt-1 bg-blue-100 text-blue-800 border-blue-200"
-                            >
-                              {room.totalAvailableSpace} spots
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-gray-600 font-medium">
-                              Amenities
-                            </p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {room.amenities.map((amenity) => (
-                                <Badge
-                                  key={amenity}
-                                  variant="outline"
-                                  className="bg-purple-100 text-purple-800"
-                                >
-                                  {amenity}
-                                </Badge>
-                              ))}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 19V5a2 2 0 012-2h14a2 2 0 012 2v14M3 19h18M3 19l3-3m12 3l3-3"
+                      />
+                    </svg>
+                    <p className="text-gray-600 text-lg font-medium">
+                      No rooms available in this branch
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                      Try selecting another branch to view available rooms.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[550px] overflow-y-auto pr-2">
+                    {rooms.map((room) => (
+                      <Card
+                        key={room.id}
+                        className={`border-gray-200 shadow-md hover:shadow-lg hover:bg-blue-50 transition-all duration-200 rounded-lg bg-white cursor-pointer ${
+                          selectedRoomId === room.id
+                            ? "border-2 border-blue-500"
+                            : ""
+                        }`}
+                        onClick={() =>
+                          handleRoomSelect(room.id, room.locationId)
+                        }
+                      >
+                        <CardHeader className="border-b border-gray-100 pb-3">
+                          <CardTitle className="text-lg font-semibold text-gray-800">
+                            {room.roomNumber}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <p className="text-gray-600 font-medium">Type</p>
+                              <Badge
+                                variant="outline"
+                                className="mt-1 bg-yellow-50 text-yellow-800 border-yellow-200"
+                              >
+                                {room.roomType}
+                              </Badge>
                             </div>
-                          </div>
-                          <div className="col-span-2">
-                            <p className="text-gray-600 font-medium">
-                              Recommended
-                            </p>
-                            <p className="text-gray-800 mt-1">
-                              {room.recommendedFor}
-                            </p>
-                          </div>
-                          {room.specialNote && (
-                            <div className="col-span-2">
-                              <p className="text-gray-600 font-medium">Note</p>
-                              <p className="text-gray-600 italic mt-1 flex items-start gap-1">
-                                <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-                                {room.specialNote}
+                            <div>
+                              <p className="text-gray-600 font-medium">
+                                Location
+                              </p>
+                              <p className="text-gray-800 mt-1">
+                                {room.location}
                               </p>
                             </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                            <div>
+                              <p className="text-gray-600 font-medium">
+                                Branch
+                              </p>
+                              <p className="text-gray-800 mt-1">
+                                {room.branch}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600 font-medium">
+                                Status
+                              </p>
+                              <Badge
+                                variant="outline"
+                                className={`mt-1 ${
+                                  room.status === "Partially Available"
+                                    ? "bg-green-100 text-green-800 border-green-200"
+                                    : "bg-gray-100 text-gray-800 border-gray-200"
+                                }`}
+                              >
+                                {room.status}
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-gray-600 font-medium">
+                                Available Space
+                              </p>
+                              <Badge
+                                variant="outline"
+                                className="mt-1 bg-blue-100 text-blue-800 border-blue-200"
+                              >
+                                {room.totalAvailableSpace} spots
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-gray-600 font-medium">
+                                Amenities
+                              </p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {room.amenities.map((amenity) => (
+                                  <Badge
+                                    key={amenity}
+                                    variant="outline"
+                                    className="bg-purple-100 text-purple-800"
+                                  >
+                                    {amenity}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="col-span-2">
+                              <p className="text-gray-600 font-medium">
+                                Recommended
+                              </p>
+                              <p className="text-gray-800 mt-1">
+                                {room.recommendedFor}
+                              </p>
+                            </div>
+                            {room.specialNote && (
+                              <div className="col-span-2">
+                                <p className="text-gray-600 font-medium">
+                                  Note
+                                </p>
+                                <p className="text-gray-600 italic mt-1 flex items-start gap-1">
+                                  <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                  {room.specialNote}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-10 w-10 text-gray-400 mb-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6v6l4 2m4-6a8 8 0 11-16 0 8 8 0 0116 0z"
+                    />
+                  </svg>
+                  <p className="font-medium">
+                    Please select a branch to view available rooms
+                  </p>
                 </div>
               )}
 

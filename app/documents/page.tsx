@@ -23,6 +23,8 @@ import { Document } from "@/lib/types";
 import NewDocumentDialog from "@/components/SOP-Documents/NewDocumentDialog";
 import { API_HOST } from "@/lib/axios";
 import { useCompanies } from "@/hooks/useCompnay";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface Stats {
   totalDocuments: number;
@@ -46,6 +48,7 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const { data, isLoading, error } = useSOPDocuments();
   const { data: branchData } = useBranches();
@@ -100,12 +103,7 @@ export default function DocumentsPage() {
     "under_review",
   ];
 
-  const accessLevels: string[] = [
-    "all_staff",
-    "managers_only",
-    "admin_only",
-    "branch_specific",
-  ];
+  const accessLevels: string[] = ["all_staff", "managers_only", "admin_only"];
 
   const filteredDocuments: Document[] = documents.filter((doc: any) => {
     const matchesSearch =
@@ -243,14 +241,17 @@ export default function DocumentsPage() {
       description="Manage organizational documents, policies, and procedures"
       actions={
         <div className="flex gap-2">
-          <NewDocumentDialog
-            isNewDocumentOpen={isNewDocumentOpen}
-            setIsNewDocumentOpen={setIsNewDocumentOpen}
-            handleNewDocument={handleNewDocument}
-            categories={categories}
-            branches={allBranches}
-            accessLevels={accessLevels}
-          />
+          {RoleWrapper(
+            user?.roles[0]?.name || "",
+            <NewDocumentDialog
+              isNewDocumentOpen={isNewDocumentOpen}
+              setIsNewDocumentOpen={setIsNewDocumentOpen}
+              handleNewDocument={handleNewDocument}
+              categories={categories}
+              branches={allBranches}
+              accessLevels={accessLevels}
+            />
+          )}
         </div>
       }
     >
@@ -332,6 +333,9 @@ export default function DocumentsPage() {
                       currentPage={currentPage}
                       totalPages={totalPages}
                       onPageChange={setCurrentPage}
+                      categories={categories}
+                      branches={allBranches}
+                      accessLevels={accessLevels}
                     />
                     {paginatedDocuments.length === 0 && (
                       <div className="text-center py-8">

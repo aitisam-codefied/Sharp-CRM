@@ -36,43 +36,43 @@ export type SubNavItem = {
 export const mainNavItems: MainNavItem[] = [
   {
     title: "Dashboard",
-    href: "/dashboard/admin",
+    href: "",
     key: "dashboard",
     icon: Building2,
   },
   {
     title: "Staff Management",
-    href: "/dashboard/admin/staffs",
+    href: "/staffs",
     key: "staffs",
     icon: Users,
   },
   {
     title: "Operations",
-    href: "/dashboard/admin/welfare",
+    href: "/welfare",
     key: "operations",
     icon: Heart,
   },
   {
     title: "Incidents & Safety",
-    href: "/dashboard/admin/incidents",
+    href: "/incidents",
     key: "incidents",
     icon: AlertTriangle,
   },
   {
     title: "System Settings",
-    href: "/dashboard/admin/documents",
+    href: "/documents",
     key: "system",
     icon: FileText,
   },
   {
     title: "Service User Management",
-    href: "/dashboard/admin/service-users",
+    href: "/service-users",
     key: "users",
     icon: UserIcon,
   },
   {
     title: "Reports",
-    href: "/dashboard/admin/reports",
+    href: "/reports",
     key: "reports",
     icon: BarChart3,
   },
@@ -82,31 +82,31 @@ export const subNavItemsMap: Record<string, SubNavItem[]> = {
   operations: [
     {
       title: "Welfare Checks",
-      href: "/dashboard/admin/welfare",
+      href: "/welfare",
       icon: Heart,
       color: "bg-blue-100 text-blue-700 border-blue-200",
     },
     {
       title: "Meal Marker",
-      href: "/dashboard/admin/meals",
+      href: "/meals",
       icon: Utensils,
       color: "bg-green-100 text-green-700 border-green-200",
     },
     {
       title: "Food Images",
-      href: "/dashboard/admin/food-images",
+      href: "/food-images",
       icon: Camera,
       color: "bg-pink-100 text-pink-700 border-pink-200",
     },
     {
       title: "Food Feedbacks",
-      href: "/dashboard/admin/feedback",
+      href: "/feedback",
       icon: MessageSquare,
       color: "bg-orange-100 text-orange-700 border-orange-200",
     },
     {
       title: "QR Scanner",
-      href: "/dashboard/admin/qr-scanner",
+      href: "/qr-scanner",
       icon: QrCode,
       color: "bg-purple-100 text-purple-700 border-purple-200",
     },
@@ -114,7 +114,7 @@ export const subNavItemsMap: Record<string, SubNavItem[]> = {
   incidents: [
     {
       title: "Incident Reports",
-      href: "/dashboard/admin/incidents",
+      href: "/incidents",
       icon: AlertTriangle,
       color: "bg-red-100 text-red-700 border-red-200",
     },
@@ -122,19 +122,19 @@ export const subNavItemsMap: Record<string, SubNavItem[]> = {
   staffs: [
     {
       title: "Staff Management",
-      href: "/dashboard/admin/staffs",
+      href: "/staffs",
       icon: UsersIcon,
       color: "bg-pink-100 text-pink-700 border-pink-200",
     },
     {
       title: "QR Clock In/Out",
-      href: "/dashboard/admin/clock-system",
+      href: "/clock-system",
       icon: Clock,
       color: "bg-green-100 text-green-700 border-green-200",
     },
     {
       title: "Medical Staff",
-      href: "/dashboard/admin/medical-staff",
+      href: "/medical-staff",
       icon: UsersIcon,
       color: "bg-yellow-100 text-yellow-700 border-yellow-200",
     },
@@ -142,7 +142,7 @@ export const subNavItemsMap: Record<string, SubNavItem[]> = {
   system: [
     {
       title: "SOP Documents",
-      href: "/dashboard/admin/documents",
+      href: "/documents",
       icon: FileText,
       color: "bg-blue-100 text-blue-700 border-blue-200",
     },
@@ -150,25 +150,25 @@ export const subNavItemsMap: Record<string, SubNavItem[]> = {
   users: [
     {
       title: "Service Users",
-      href: "/dashboard/admin/service-users",
+      href: "/service-users",
       icon: UserIcon,
       color: "bg-pink-100 text-pink-700 border-pink-200",
     },
     {
       title: "Service User Registration",
-      href: "/dashboard/admin/new-user",
+      href: "/new-user",
       icon: UserPlus,
       color: "bg-green-100 text-green-700 border-green-200",
     },
     {
       title: "In-Transit User",
-      href: "/dashboard/admin/in-transit",
+      href: "/in-transit",
       icon: Truck,
       color: "bg-orange-100 text-orange-700 border-orange-200",
     },
     {
       title: "Service User Baskets",
-      href: "/dashboard/admin/su-basket",
+      href: "/su-basket",
       icon: ShoppingBasket,
       color: "bg-blue-100 text-blue-700 border-blue-200",
     },

@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building2, MapPin, Plus, Trash2 } from "lucide-react";
-import { COMPANY_BUSINESS_TYPES } from "../../app/dashboard/admin/on-boarding/page";
-import { Company } from "../../app/dashboard/admin/on-boarding/page";
+import { COMPANY_BUSINESS_TYPES } from "../../app/on-boarding/page";
+import { Company } from "../../app/on-boarding/page";
 import { useEffect, useState } from "react";
 
 interface BranchInfoStepProps {

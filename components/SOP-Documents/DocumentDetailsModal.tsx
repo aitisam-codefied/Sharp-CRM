@@ -134,6 +134,12 @@ export default function DocumentDetailsModal({
                 {document.createdBy}
               </div>
             </div>
+            <div>
+              <h3 className="text-sm font-medium text-gray-500">File Name</h3>
+              <div className="flex items-center mt-1 text-gray-800">
+                {document?.originalFileName?.replace(/_/g, " ")}
+              </div>
+            </div>
           </div>
 
           {/* Tags */}
@@ -157,14 +163,6 @@ export default function DocumentDetailsModal({
               </Badge>
             </div>
           )}
-
-          {/* Download Count */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500">Usage</h3>
-            <p className="mt-1 text-gray-800">
-              {document.downloadCount} downloads
-            </p>
-          </div>
         </div>
       </DialogContent>
     </Dialog>

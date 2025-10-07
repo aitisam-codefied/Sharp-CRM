@@ -136,16 +136,6 @@ export default function ServiceUsersPage() {
     <DashboardLayout
       title="Service User Management"
       description="Manage resident profiles and information across all branches"
-      actions={
-        <Button
-          onClick={() => router.push("/dashboard/admin/new-user")}
-          size="sm"
-          className="text-xs sm:text-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Add User
-        </Button>
-      }
     >
       <div className="space-y-6">
         <UserStats users={filteredUsers} />{" "}

@@ -34,24 +34,31 @@ export default function LoginPage() {
     try {
       const userResponse = await login(emailAddress, password);
 
-      if (!userResponse || typeof userResponse !== "object" || !("roles" in userResponse)) {
+      if (
+        !userResponse ||
+        typeof userResponse !== "object" ||
+        !("roles" in userResponse)
+      ) {
         setError("Invalid email or password");
+        console.error("Invalid user response:", userResponse);
         return;
       }
 
       const roles = (userResponse as any).roles || [];
-      const isAdmin = roles.some((role: any) => role.name === "Admin");
+      const isAuthorized = roles.some(
+        (role: any) => role.name === "Admin" || role.name === "Manager"
+      );
 
-      if (!isAdmin) {
+      if (!isAuthorized) {
         setError("You are not authorized");
         return;
       }
 
       // If admin, proceed based on onboarding status
       if (!(userResponse as any)?.isOnboarded) {
-        router.push("/dashboard/admin/on-boarding");
+        router.push("/on-boarding");
       } else {
-        router.push("/dashboard/admin");
+        router.push("/dashboard");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
