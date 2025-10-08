@@ -4,43 +4,42 @@ export const dynamic = "force-dynamic";
 
 import type React from "react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 
 export default function LoginPage() {
-  const [emailAddress, setemailAddress] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const router = useRouter();
   const { toast } = useToast();
-  const { login, user } = useAuth();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
 
     try {
       const userResponse = await login(emailAddress, password);
+      console.log("userResponse", userResponse);
 
       if (
         !userResponse ||
         typeof userResponse !== "object" ||
         !("roles" in userResponse)
       ) {
-        setError("Invalid email or password");
-        console.error("Invalid user response:", userResponse);
+        toast({
+          title: "Login Failed",
+          description: "Invalid response from server.",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -50,18 +49,36 @@ export default function LoginPage() {
       );
 
       if (!isAuthorized) {
-        setError("You are not authorized");
+        toast({
+          title: "Access Denied",
+          description: "You are not authorized to log in.",
+          variant: "destructive",
+        });
         return;
       }
 
-      // If admin, proceed based on onboarding status
+      // Redirect based on onboarding status
       if (!(userResponse as any)?.isOnboarded) {
         router.push("/on-boarding");
       } else {
         router.push("/dashboard");
       }
-    } catch (err) {
-      setError("Login failed. Please try again.");
+    } catch (err: any) {
+      console.error("Login Error:", err);
+      const errorData = err.response?.data;
+
+      const message =
+        errorData?.error ||
+        errorData?.message ||
+        errorData?.details ||
+        err.message ||
+        "Login failed. Please try again.";
+
+      toast({
+        title: "Login Failed",
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,13 +113,6 @@ export default function LoginPage() {
               Welcome to Sharp MS
             </p>
 
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label
@@ -115,7 +125,7 @@ export default function LoginPage() {
                   id="emailAddress"
                   type="email"
                   value={emailAddress}
-                  onChange={(e) => setemailAddress(e.target.value)}
+                  onChange={(e) => setEmailAddress(e.target.value)}
                   required
                   className="text-base border-gray-200 rounded-xl bg-white focus:border-gray-300 focus:ring-0"
                 />

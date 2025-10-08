@@ -3,6 +3,8 @@
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginUser } from "@/services/authService";
+import api from "@/lib/axios";
+import { useToast } from "@/hooks/use-toast";
 
 interface Location {
   _id: string;
@@ -60,6 +62,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { toast } = useToast();
+
   useEffect(() => {
     const userData = localStorage.getItem("sms_user");
     const token = localStorage.getItem("sms_access_token");
@@ -102,9 +106,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       return null;
-    } catch (error) {
-      console.error("Login failed:", error);
-      return null;
+    } catch (err: any) {
+      const errorData = err.response?.data || err.error || err.response?.error || err.response?.data?.error;
+
+      console.error("Login failed:", err);
+
+      const message =
+        errorData?.error ||
+        errorData?.message ||
+        errorData?.details ||
+        err.message ||
+        "Login failed. Please try again.";
+
+      return toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -166,11 +184,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("sms_user");
-    localStorage.removeItem("sms_access_token");
-    localStorage.removeItem("sms_refresh_token");
+  const logout = async () => {
+    try {
+      const token = localStorage.getItem("sms_access_token");
+
+      if (token) {
+        await api.post(
+          "/auth/logout",
+          {}, // no body
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      // Always clear local storage, even if API fails
+      setUser(null);
+      localStorage.removeItem("sms_user");
+      localStorage.removeItem("sms_access_token");
+      localStorage.removeItem("sms_refresh_token");
+    }
   };
 
   return (
