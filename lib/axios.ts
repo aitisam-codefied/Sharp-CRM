@@ -15,9 +15,11 @@ const api = axios.create({
 // Request interceptor – attach access token
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("sms_access_token");
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (typeof window !== "undefined") {
+      const accessToken = localStorage.getItem("sms_access_token");
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
     return config;
   },
@@ -34,6 +36,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        if (typeof window === "undefined") {
+          return Promise.reject(error);
+        }
+
         const refreshToken = localStorage.getItem("sms_refresh_token");
         const oldaccessToken = localStorage.getItem("sms_access_token");
         // console.log("old access token", oldaccessToken); // <--debug
@@ -69,8 +75,10 @@ api.interceptors.response.use(
         throw new Error("Missing tokens in refresh response");
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
-        localStorage.clear();
-        window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          localStorage.clear();
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }

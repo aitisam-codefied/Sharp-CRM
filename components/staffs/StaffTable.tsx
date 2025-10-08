@@ -220,8 +220,6 @@ export default function StaffTable() {
         return "bg-green-100 text-green-800";
       case "Inactive":
         return "bg-red-100 text-red-800";
-      case "Suspended":
-        return "bg-orange-100 text-orange-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -413,7 +411,6 @@ export default function StaffTable() {
                     <SelectItem value="all">All Status</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

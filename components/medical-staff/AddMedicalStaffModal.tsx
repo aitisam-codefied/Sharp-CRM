@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 import { useCompanies } from "@/hooks/useCompnay";
 import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
 

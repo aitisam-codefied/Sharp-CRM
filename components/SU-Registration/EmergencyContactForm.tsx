@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 export default function EmergencyContactForm({ formData, setFormData }: any) {
   const numDependants = Number(formData.guests[0].numberOfDependents) || 0;

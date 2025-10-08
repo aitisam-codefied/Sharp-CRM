@@ -14,7 +14,7 @@ import DependantsModal from "./DependantsModal";
 import { useBranches } from "@/hooks/useGetBranches";
 import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 const nationalities = [
   "Syrian",

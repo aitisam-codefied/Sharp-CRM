@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import {
   Card,
@@ -12,15 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { UserPlus, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import PersonalInfoForm from "@/components/SU-Registration/PersonalInfoForm";
-import DependantsForm from "@/components/SU-Registration/DependantForm";
 import api from "@/lib/axios";
-import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactForm";
-import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
-import DentalClinicForm from "@/components/SU-Registration/DentalClinicForm";
-import ReviewConfirmationForm from "@/components/SU-Registration/ReviewConfirmationForm";
 import { useCreateGuest } from "@/hooks/useCreateGuest";
-import { isValidPhoneNumber } from "react-phone-number-input";
+
+// Dynamic imports to prevent SSR issues with browser-only libraries
+const PersonalInfoForm = dynamic(() => import("@/components/SU-Registration/PersonalInfoForm"), { ssr: false });
+const DependantsForm = dynamic(() => import("@/components/SU-Registration/DependantForm"), { ssr: false });
+const EmergencyContactForm = dynamic(() => import("@/components/SU-Registration/EmergencyContactForm"), { ssr: false });
+const MedicalDietaryForm = dynamic(() => import("@/components/SU-Registration/MedicalDietaryForm"), { ssr: false });
+const DentalClinicForm = dynamic(() => import("@/components/SU-Registration/DentalClinicForm"), { ssr: false });
+const ReviewConfirmationForm = dynamic(() => import("@/components/SU-Registration/ReviewConfirmationForm"), { ssr: false });
 
 // Guest Emergency Contact
 interface EmergencyContact {
@@ -86,6 +88,17 @@ export interface CreateGuestForm {
   sameDentist?: boolean;
   roomRequirement?: number;
 }
+
+// Safe phone validation wrapper
+const isValidPhoneNumber = (phone: string) => {
+  if (typeof window === 'undefined') return true; // Skip validation during SSR
+  try {
+    const { isValidPhoneNumber: validate } = require('react-phone-number-input');
+    return validate(phone);
+  } catch {
+    return true; // If library fails to load, don't block validation
+  }
+};
 
 export default function NewUserPage() {
   const [currentStep, setCurrentStep] = useState(1);

@@ -40,7 +40,7 @@ import {
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 const createStaff = async (staffData: any) => {
   const response = await api.post("/user/create", staffData);

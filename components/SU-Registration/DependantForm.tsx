@@ -14,7 +14,7 @@ import { AlertCircle, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 const nationalities = [
   "Syrian",

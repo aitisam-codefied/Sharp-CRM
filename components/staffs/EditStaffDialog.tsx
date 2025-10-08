@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StyledPhoneInput, validatePhone } from "../StyledFormInput";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 const updateStaff = async ({
   id,
@@ -144,7 +144,7 @@ export default function EditStaffDialog({
     shiftEnd: staff.shiftTimes?.[0]?.end || "",
   });
 
-  const statusOptions = ["Active", "Inactive", "Suspended"];
+  const statusOptions = ["Active", "Inactive"];
   const [selectedStatus, setSelectedStatus] = useState(
     staff.status || "Active"
   );
