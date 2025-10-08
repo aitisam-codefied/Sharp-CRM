@@ -87,6 +87,7 @@
     "@capacitor/android": "^7.4.3",
     "@capacitor/cli": "^7.4.2",
     "@capacitor/core": "^7.4.2",
+    "@types/html2pdf.js": "^0.10.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
