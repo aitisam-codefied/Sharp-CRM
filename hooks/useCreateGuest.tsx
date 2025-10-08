@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { GuestFormData } from "@/lib/types";
 import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";

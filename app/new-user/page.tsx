@@ -14,7 +14,6 @@ import { UserPlus, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import PersonalInfoForm from "@/components/SU-Registration/PersonalInfoForm";
 import DependantsForm from "@/components/SU-Registration/DependantForm";
-// import axios from "axios";
 import api from "@/lib/axios";
 import EmergencyContactForm from "@/components/SU-Registration/EmergencyContactForm";
 import MedicalDietaryForm from "@/components/SU-Registration/MedicalDietaryForm";
@@ -494,7 +493,7 @@ export default function NewUserPage() {
   const createGuestMutation = useCreateGuest();
   const isLoading = createGuestMutation.isPending;
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     try {
       // Deep clone and clean data
       let cleanedData = structuredClone(formData);

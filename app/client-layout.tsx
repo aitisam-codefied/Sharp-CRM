@@ -1,19 +1,12 @@
 "use client";
 
 import type React from "react";
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { StatusBar, Style } from "@capacitor/status-bar";
-import { SplashScreen } from "@capacitor/splash-screen";
-import { App } from "@capacitor/app";
-import { Keyboard } from "@capacitor/keyboard";
-import { Capacitor } from "@capacitor/core";
-import { MobileBottomNav } from "@/components/navigation/mobile-bottom-nav";
+import { useState } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
