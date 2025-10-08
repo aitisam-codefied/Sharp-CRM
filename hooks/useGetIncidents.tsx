@@ -96,10 +96,11 @@ const fetchIncidents = async (): Promise<UIIncident[]> => {
 
   return apiIncidents.map((api: ApiIncident) => ({
     id: api._id,
-    title: `${api.incidentType} at ${api.location}`,
+    type: api?.incidentType,
     description: api.description,
     severity: api.severity?.toLowerCase(),
-    status: api.status?.toLowerCase(),
+    status: api.status,
+
     reportedBy: api.staffId?.fullName,
     assignedTo: api.staffId?.fullName,
     branch: api.branchId?.name,

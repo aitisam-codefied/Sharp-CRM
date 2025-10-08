@@ -1,6 +1,7 @@
-// IncidentsTable.tsx
 "use client";
 
+import { useState } from "react";
+import axios from "axios";
 import {
   Table,
   TableBody,
@@ -11,7 +12,24 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Edit, MapPin, User } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Pencil } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/axios";
+import { RoleWrapper } from "@/lib/RoleWrapper";
+import { useAuth } from "../providers/auth-provider";
 
 interface UIIncident {
   id: string;
@@ -23,6 +41,7 @@ interface UIIncident {
   assignedTo: string;
   branch: string;
   location: string;
+  type: string;
   residentInvolved: string;
   dateReported: string;
   timeReported: string;
@@ -45,73 +64,126 @@ export default function IncidentsTable({
   getSeverityColor,
   getStatusColor,
   getCategoryColor,
-  handleViewIncident,
 }: IncidentsTableProps) {
+  const [selectedIncident, setSelectedIncident] = useState<UIIncident | null>(
+    null
+  );
+  const [status, setStatus] = useState<string>("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  const handleStatusUpdate = async () => {
+    if (!selectedIncident || !status) return;
+    setIsUpdating(true);
+
+    try {
+      await api.patch(`/incident/${selectedIncident.id}/resolve`, {
+        status,
+        resolutionNotes: "Issue resolved", // static note
+      });
+
+      toast({
+        title: "Status Updated",
+        description: `Incident marked as ${status}`,
+      });
+
+      // Close modal & reset
+      setSelectedIncident(null);
+      setStatus("");
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description:
+          error.response?.data?.message ||
+          error.response?.data?.details ||
+          error.message ||
+          error.response?.data?.error ||
+          "Something went wrong.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
-          <TableRow className="">
+          <TableRow>
+            <TableHead>Resident</TableHead>
             <TableHead>Incident Details</TableHead>
-            <TableHead>Location & Resident</TableHead>
-            <TableHead>Severity & Category</TableHead>
+            <TableHead>Branch</TableHead>
+            <TableHead>Incident Type</TableHead>
+            <TableHead>Severity</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Reported</TableHead>
-            {/* <TableHead className="text-right">Actions</TableHead> */}
           </TableRow>
         </TableHeader>
+
         <TableBody>
           {incidents.map((incident) => (
             <TableRow key={incident.id}>
+              <TableCell className="capitalize">
+                {incident.residentInvolved}
+              </TableCell>
+
+              <TableCell className="text-sm max-w-[250px]">
+                {incident.description}
+              </TableCell>
+
+              <TableCell className="capitalize">{incident.branch}</TableCell>
+
               <TableCell>
-                <div>
-                  <div className="font-medium">{incident.title}</div>
-                  <div className="text-sm text-muted-foreground line-clamp-2">
-                    {incident.description}
-                  </div>
+                <div
+                  className={`w-fit px-2 py-1 rounded ${getCategoryColor(
+                    incident.category
+                  )}`}
+                >
+                  {incident.category}
                 </div>
               </TableCell>
+
               <TableCell>
-                <div className="space-y-1">
-                  <div className="flex items-center text-sm">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    {incident.branch}
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {incident.location}
-                  </div>
-                  <div className="flex items-center text-sm">
-                    <User className="h-3 w-3 mr-1" />
-                    {incident.residentInvolved}
-                  </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center justify-start gap-2 capitalize">
-                  <Badge
-                    variant="outline"
-                    className={getSeverityColor(incident.severity)}
+                <div className="flex flex-col gap-2 capitalize">
+                  <div
+                    className={`w-fit px-2 py-1 rounded ${getSeverityColor(
+                      incident.severity
+                    )}`}
                   >
                     {incident.severity}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={getCategoryColor(incident.category)}
-                  >
-                    {incident.category}
-                  </Badge>
+                  </div>
                 </div>
               </TableCell>
+
               <TableCell>
-                <Badge
-                  variant="outline"
-                  className={
-                    getStatusColor(incident.status) + "capitalize w-fit"
-                  }
-                >
-                  {incident.status}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant="outline"
+                    className={`${getStatusColor(incident.status)} capitalize`}
+                  >
+                    {incident.status}
+                  </Badge>
+                  {RoleWrapper(
+                    user?.roles[0]?.name,
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedIncident(incident);
+                        setStatus(
+                          incident?.status?.charAt(0)?.toUpperCase() +
+                            incident?.status?.slice(1)?.toLowerCase()
+                        );
+                      }}
+                    >
+                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                  )}
+                </div>
               </TableCell>
+
               <TableCell>
                 <div className="space-y-1">
                   <div className="text-sm">{incident.dateReported}</div>
@@ -123,24 +195,53 @@ export default function IncidentsTable({
                   </div>
                 </div>
               </TableCell>
-              {/* <TableCell className="text-right">
-                <div className="flex items-center justify-end space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleViewIncident(incident.id)}
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      {/* === Status Update Modal === */}
+      <Dialog
+        open={!!selectedIncident}
+        onOpenChange={() => setSelectedIncident(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Incident Status</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-sm font-medium">Select Status</label>
+              <Select value={status} onValueChange={(v) => setStatus(v)}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Choose new status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Resolved">Resolved</SelectItem>
+                  <SelectItem value="Closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedIncident(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-[#F87D7D] text-white"
+                onClick={handleStatusUpdate}
+                disabled={isUpdating || !status}
+              >
+                {isUpdating ? "Updating..." : "Update"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

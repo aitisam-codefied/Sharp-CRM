@@ -94,7 +94,7 @@ export default function IncidentsPage() {
   });
 
   const severityLevels = ["low", "medium", "high", "critical"];
-  const statusOptions = ["open", "investigating", "resolved", "closed"];
+  const statusOptions = ["open", "resolved", "closed"];
 
   const filteredIncidents = incidents.filter((incident: any) => {
     const matchesSearch =

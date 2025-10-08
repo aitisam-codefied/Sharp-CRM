@@ -88,12 +88,7 @@ export default function FoodImagesPage() {
   const [formData, setFormData] = useState<CreateFoodData>({
     categoryId: "",
     name: "",
-    description: "",
     mealType: "Breakfast",
-    dietaryTags: [],
-    allergens: [],
-    nutritionalInfo: {},
-    preparationTime: 0,
     images: [],
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -103,12 +98,7 @@ export default function FoodImagesPage() {
   const [editFormData, setEditFormData] = useState<CreateFoodData>({
     categoryId: "",
     name: "",
-    description: "",
     mealType: "Breakfast",
-    dietaryTags: [],
-    allergens: [],
-    nutritionalInfo: {},
-    preparationTime: 0,
     images: [],
   });
   const [editSelectedFiles, setEditSelectedFiles] = useState<File[]>([]);
@@ -166,26 +156,6 @@ export default function FoodImagesPage() {
     setEditFormData((prev) => ({ ...prev, images: files }));
   };
 
-  // Add missing handler for dietary tags
-  const handleDietaryTagChange = (tag: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      dietaryTags: checked
-        ? [...prev.dietaryTags, tag]
-        : prev.dietaryTags.filter((t) => t !== tag),
-    }));
-  };
-
-  // Add missing handler for allergens
-  const handleAllergenChange = (allergen: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      allergens: checked
-        ? [...prev.allergens, allergen]
-        : prev.allergens.filter((a) => a !== allergen),
-    }));
-  };
-
   const handleFormChange = (field: keyof CreateFoodData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -201,26 +171,7 @@ export default function FoodImagesPage() {
           error = `Food name cannot exceed ${MAX_NAME_LENGTH} characters`;
         }
         break;
-      case "description":
-        if (value.length > MAX_DESCRIPTION_LENGTH) {
-          error = `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`;
-        }
-        break;
-      case "preparationTime":
-        if (String(value).length > MAX_PREP_TIME_LENGTH) {
-          error = `Preparation time cannot exceed ${MAX_PREP_TIME_LENGTH} digits`;
-        }
-        break;
-      case "calories":
-        if (String(value).length > MAX_CALORIES_LENGTH) {
-          error = `Calories cannot exceed ${MAX_CALORIES_LENGTH} digits`;
-        }
-        break;
-      case "protein":
-        if (String(value).length > MAX_PROTEIN_LENGTH) {
-          error = `Protein cannot exceed ${MAX_PROTEIN_LENGTH} digits`;
-        }
-        break;
+
       case "categoryName":
         if (value.length > MAX_CATEGORY_NAME_LENGTH) {
           error = `Category name cannot exceed ${MAX_CATEGORY_NAME_LENGTH} characters`;
@@ -239,25 +190,9 @@ export default function FoodImagesPage() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!formData.name.trim()) newErrors.name = "Food name is required";
-    if (!formData.categoryId) newErrors.categoryId = "Category is required";
     if (!formData.mealType) newErrors.mealType = "Meal type is required";
     if (!formData.images || formData.images.length === 0)
       newErrors.images = "At least one image is required";
-    if (formData.preparationTime && Number(formData.preparationTime) < 0) {
-      newErrors.preparationTime = "Preparation time cannot be negative";
-    }
-    if (
-      formData.nutritionalInfo.calories &&
-      formData.nutritionalInfo.calories < 0
-    ) {
-      newErrors.calories = "Calories cannot be negative";
-    }
-    if (
-      formData.nutritionalInfo.protein &&
-      formData.nutritionalInfo.protein < 0
-    ) {
-      newErrors.protein = "Protein cannot be negative";
-    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -265,26 +200,8 @@ export default function FoodImagesPage() {
   const validateEditForm = () => {
     const newErrors: { [key: string]: string } = {};
     if (!editFormData.name.trim()) newErrors.name = "Food name is required";
-    if (!editFormData.categoryId) newErrors.categoryId = "Category is required";
     if (!editFormData.mealType) newErrors.mealType = "Meal type is required";
-    if (
-      editFormData.preparationTime &&
-      Number(editFormData.preparationTime) < 0
-    ) {
-      newErrors.preparationTime = "Preparation time cannot be negative";
-    }
-    if (
-      editFormData.nutritionalInfo.calories &&
-      editFormData.nutritionalInfo.calories < 0
-    ) {
-      newErrors.calories = "Calories cannot be negative";
-    }
-    if (
-      editFormData.nutritionalInfo.protein &&
-      editFormData.nutritionalInfo.protein < 0
-    ) {
-      newErrors.protein = "Protein cannot be negative";
-    }
+
     setEditErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -301,12 +218,7 @@ export default function FoodImagesPage() {
         setFormData({
           categoryId: "",
           name: "",
-          description: "",
           mealType: "Breakfast",
-          dietaryTags: [],
-          allergens: [],
-          nutritionalInfo: {},
-          preparationTime: 0,
           images: [],
         });
         setSelectedFiles([]);
@@ -314,7 +226,10 @@ export default function FoodImagesPage() {
       onError: (error: any) => {
         toast({
           title: "Error",
-          description: error.response?.data?.details || "Failed to create food",
+          description:
+            error.response?.data?.details ||
+            error.response?.data?.error ||
+            "Failed to create food",
           variant: "destructive",
         });
       },
@@ -450,14 +365,9 @@ export default function FoodImagesPage() {
   const isFormValid = useMemo(() => {
     return (
       formData.name.trim() &&
-      formData.categoryId &&
       formData.mealType &&
       formData?.images?.length > 0 &&
       !errors.name &&
-      !errors.description &&
-      !errors.preparationTime &&
-      !errors.calories &&
-      !errors.protein &&
       formData.name.trim() &&
       formData.mealType
     );
@@ -468,10 +378,7 @@ export default function FoodImagesPage() {
     const initial = {
       categoryId: selectedFood.categoryId?._id || "",
       name: selectedFood.name,
-      description: selectedFood.description || "",
       mealType: selectedFood.mealType,
-      nutritionalInfo: selectedFood.nutritionalInfo || {},
-      preparationTime: selectedFood.preparationTime || 0,
     };
     // Compare without images (since edit images are new files)
     return (
@@ -633,9 +540,22 @@ export default function FoodImagesPage() {
                       <Label htmlFor="mealType">Meal Type *</Label>
                       <Select
                         value={formData.mealType}
-                        onValueChange={(value) =>
-                          handleFormChange("mealType", value)
-                        }
+                        onValueChange={(value) => {
+                          handleFormChange("mealType", value);
+
+                          if (value === "Breakfast") {
+                            // Auto-select "Breakfast" category
+                            handleFormChange(
+                              "categoryId",
+                              categories?.find(
+                                (cat) => cat.name.toLowerCase() === "breakfast"
+                              )?._id || ""
+                            );
+                          } else {
+                            // Reset category for Lunch or Dinner
+                            handleFormChange("categoryId", "");
+                          }
+                        }}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select meal type" />
@@ -644,7 +564,6 @@ export default function FoodImagesPage() {
                           <SelectItem value="Breakfast">Breakfast</SelectItem>
                           <SelectItem value="Lunch">Lunch</SelectItem>
                           <SelectItem value="Dinner">Dinner</SelectItem>
-                          {/* <SelectItem value="Snack">Snack</SelectItem> */}
                         </SelectContent>
                       </Select>
                       {errors.mealType && (
@@ -669,18 +588,37 @@ export default function FoodImagesPage() {
                           <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories?.map((category) => (
-                            <SelectItem key={category._id} value={category._id}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
+                          {categories?.map((category) => {
+                            const isBreakfast =
+                              category.name.toLowerCase() === "breakfast";
+
+                            const shouldDisable =
+                              (formData.mealType === "Breakfast" &&
+                                !isBreakfast) || // if meal is breakfast → disable all except breakfast
+                              ((formData.mealType === "Lunch" ||
+                                formData.mealType === "Dinner") &&
+                                isBreakfast); // if meal is lunch/dinner → disable breakfast only
+
+                            return (
+                              <SelectItem
+                                key={category._id}
+                                value={category._id}
+                                disabled={shouldDisable}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectContent>
                       </Select>
+
                       {errors.categoryId && (
                         <p className="text-red-500 text-xs mt-1">
                           {errors.categoryId}
                         </p>
                       )}
+
+                      {/* Add Category Button */}
                       <Dialog
                         open={isCategoryDialogOpen}
                         onOpenChange={setIsCategoryDialogOpen}
@@ -689,9 +627,10 @@ export default function FoodImagesPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="bg-[#F87D7D]"
+                            className="bg-[#F87D7D] text-white font-semibold rounded-md hover:bg-[#f96e6e]"
                           >
-                            <Plus className="h-5 w-5 text-white font-bold" />
+                            <Plus className="h-4 w-4 font-semibold" /> Add
+                            Category
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -749,200 +688,6 @@ export default function FoodImagesPage() {
                       </Dialog>
                     </div>
                   </div>
-
-                  {/* Description */}
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => {
-                        handleFormChange("description", e.target.value);
-                        validateField("description", e.target.value);
-                      }}
-                      placeholder="Describe the food item..."
-                    />
-                    {errors.description && (
-                      <p className="text-red-500 text-xs">
-                        {errors.description}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Preparation Time */}
-                  <div className="space-y-2">
-                    <Label htmlFor="preparationTime">
-                      Preparation Time (minutes)
-                    </Label>
-                    <Input
-                      id="preparationTime"
-                      type="number"
-                      value={
-                        formData.preparationTime === 0
-                          ? ""
-                          : formData.preparationTime
-                      }
-                      onChange={(e) => {
-                        const val =
-                          e.target.value === "" ? "" : parseInt(e.target.value);
-                        handleFormChange(
-                          "preparationTime",
-                          val === "" ? 0 : isNaN(val) || val < 0 ? 0 : val
-                        );
-                        validateField("preparationTime", val);
-                      }}
-                      placeholder="Enter preparation time"
-                    />
-                    {errors.preparationTime && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors.preparationTime}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Dietary Tags */}
-                  <div className="space-y-2">
-                    <Label>Dietary Tags</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        "Vegetarian",
-                        "Vegan",
-                        "Gluten-Free",
-                        "Dairy-Free",
-                        "Halal",
-                        "Kosher",
-                      ].map((tag) => (
-                        <label
-                          key={tag}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.dietaryTags.includes(tag)}
-                            onChange={(e) =>
-                              handleDietaryTagChange(tag, e.target.checked)
-                            }
-                            className="rounded"
-                          />
-                          <span className="text-sm">{tag}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Allergens */}
-                  <div className="space-y-2">
-                    <Label>Allergens</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        "High Blood Pressure (Hypertension)",
-                        "Diabetes",
-                        "High Cholesterol",
-                        "Kidney Disease",
-                        "Liver Disease",
-                        "Gastrointestinal Issues (ulcer, reflux, IBS, etc.)",
-                        "Obesity / Weight Management",
-                        "Thyroid Conditions (mainly hypothyroidism)",
-                        "Gout",
-                        "PCOS / Hormonal Disorders",
-                        "Anemia",
-                        "Celiac Disease",
-                        "IBS / FODMAP Sensitivity",
-                        "Histamine Intolerance",
-                        "Gallbladder Issues",
-                        "Nut Allergy",
-                        "Lactose Intolerance",
-                        "Shellfish Allergy",
-                        "Fish Allergy",
-                        "Egg Allergy",
-                        "Gluten Allergy / Sensitivity",
-                        "Sesame Seed Allergy",
-                        "Sulphite Sensitivity",
-                        "Mustard Allergy",
-                        "Corn Allergy",
-                        "Legume Allergies",
-                        "Fungal Sensitivity (rare)",
-                        "Fruit Allergies",
-                        "Nightshade Sensitivity",
-                        "MSG Sensitivity",
-                        "Caffeine Sensitivity",
-                        "Vegetarians",
-                        "Vegans",
-                        "Halal",
-                        "Jain Diet",
-                        "Kosher",
-                        "Pescatarian",
-                      ].map((allergen) => (
-                        <label
-                          key={allergen}
-                          className="flex items-center space-x-2"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={formData.allergens.includes(allergen)}
-                            onChange={(e) =>
-                              handleAllergenChange(allergen, e.target.checked)
-                            }
-                            className="rounded"
-                          />
-                          <span className="text-sm">{allergen}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Nutritional Information */}
-                  {/* <div className="space-y-2">
-                    <Label>Nutritional Information</Label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="calories">Calories</Label>
-                        <Input
-                          id="calories"
-                          type="number"
-                          min={0} // ✅ no negative calories
-                          value={formData.nutritionalInfo.calories || ""}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            handleFormChange("nutritionalInfo", {
-                              ...formData.nutritionalInfo,
-                              calories: isNaN(val) || val < 0 ? 0 : val,
-                            });
-                            validateField("calories", val);
-                          }}
-                          placeholder="Calories"
-                        />
-                        {errors.calories && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {errors.calories}
-                          </p>
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="protein">Protein (g)</Label>
-                        <Input
-                          id="protein"
-                          type="number"
-                          min={0} // ✅ no negative protein
-                          value={formData.nutritionalInfo.protein || ""}
-                          onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            handleFormChange("nutritionalInfo", {
-                              ...formData.nutritionalInfo,
-                              protein: isNaN(val) || val < 0 ? 0 : val,
-                            });
-                            validateField("protein", val);
-                          }}
-                          placeholder="Protein"
-                        />
-                        {errors.protein && (
-                          <p className="text-red-500 text-xs mt-1">
-                            {errors.protein}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div> */}
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -964,6 +709,7 @@ export default function FoodImagesPage() {
             </Dialog>
           </div>
         </div>
+
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-4">
           {stats.map((stat, index) => (
@@ -1049,72 +795,7 @@ export default function FoodImagesPage() {
                   <Filter className="h-4 w-4 mr-2" /> Filters
                 </Button> */}
               </div>
-              {/* Filter Tabs with Icons */}
-              {/* <div className="flex flex-wrap items-center justify-between gap-2">
-                <Button
-                  variant={activeFilter === "All" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setActiveFilter("All")}
-                  className={`flex-1 min-w-[120px] ${
-                    activeFilter === "All"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-gray-50 text-gray-600"
-                  }`}
-                >
-                  All
-                </Button>
-                <Button
-                  variant={activeFilter === "Breakfast" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setActiveFilter("Breakfast")}
-                  className={`flex-1 min-w-[120px] ${
-                    activeFilter === "Breakfast"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-gray-50 text-gray-600"
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-orange-400 rounded-sm flex items-center justify-center">
-                      <span className="text-xs text-white">🍳</span>
-                    </div>
-                    Breakfast
-                  </div>
-                </Button>
-                <Button
-                  variant={activeFilter === "Lunch" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setActiveFilter("Lunch")}
-                  className={`flex-1 min-w-[120px] ${
-                    activeFilter === "Lunch"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-gray-50 text-gray-600"
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-yellow-400 rounded-sm flex items-center justify-center">
-                      <span className="text-xs text-white">🍽️</span>
-                    </div>
-                    Lunch
-                  </div>
-                </Button>
-                <Button
-                  variant={activeFilter === "Dinner" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setActiveFilter("Dinner")}
-                  className={`flex-1 min-w-[120px] ${
-                    activeFilter === "Dinner"
-                      ? "bg-red-500 hover:bg-red-600 text-white"
-                      : "hover:bg-gray-50 text-gray-600"
-                  }`}
-                >
-                  <div className="flex items-center gap-1">
-                    <div className="w-4 h-4 bg-blue-400 rounded-sm flex items-center justify-center">
-                      <span className="text-xs text-white">🌙</span>
-                    </div>
-                    Dinner
-                  </div>
-                </Button>
-              </div> */}
+
               {/* Loading State */}
               {foodsLoading ? (
                 <div className="text-center py-8">
@@ -1134,17 +815,6 @@ export default function FoodImagesPage() {
                           src={`${API_HOST}${food.images?.[0] || ""}`}
                           alt={food.name}
                           className="w-full h-48 object-cover rounded-lg"
-                          // onError={(e) => {
-                          //   const target = e.currentTarget as HTMLImageElement;
-                          //   target.onerror = null; // infinite loop se bachaega
-                          //   const randomFallback =
-                          //     fallbackImages[
-                          //       Math.floor(
-                          //         Math.random() * fallbackImages.length
-                          //       )
-                          //     ];
-                          //   target.src = randomFallback;
-                          // }}
                         />
                         <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md text-sm">
                           <span className="font-medium">{food.mealType}</span>
@@ -1166,45 +836,6 @@ export default function FoodImagesPage() {
                           <h3 className="font-medium text-sm leading-tight line-clamp-2">
                             {food.name}
                           </h3>
-                          <p className="text-xs">{food.description}</p>
-
-                          {food?.dietaryTags.length > 0 ? (
-                            <>
-                              <p className="text-xs">Dietary Tags:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {food?.dietaryTags.map((dietaryTags) => (
-                                  <Badge
-                                    key={dietaryTags}
-                                    variant="outline"
-                                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700"
-                                  >
-                                    {dietaryTags}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </>
-                          ) : (
-                            ""
-                          )}
-
-                          {food?.allergens.length > 0 ? (
-                            <>
-                              <p className="text-xs">Allergens:</p>
-                              <div className="flex flex-wrap gap-1">
-                                {food?.allergens.map((allergen) => (
-                                  <Badge
-                                    key={allergen}
-                                    variant="outline"
-                                    className="text-xs px-2 py-1 bg-gray-100 text-gray-700"
-                                  >
-                                    {allergen}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </>
-                          ) : (
-                            ""
-                          )}
 
                           <div className="space-y-1 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
@@ -1256,7 +887,7 @@ export default function FoodImagesPage() {
         />
 
         {/* Edit Modal (Separate Component Logic) */}
-        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        {/* <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
           <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Food</DialogTitle>
@@ -1265,7 +896,6 @@ export default function FoodImagesPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              {/* Image Upload */}
               <div className="space-y-2">
                 <Label htmlFor="edit-image">Food Image (optional)</Label>
                 <div className="border-2 border-dashed rounded-lg p-8 text-center">
@@ -1277,7 +907,7 @@ export default function FoodImagesPage() {
                   <input
                     type="file"
                     accept="image/*"
-                    multiple // Added for multiple images
+                    multiple
                     onChange={handleEditFileSelect}
                     className="hidden"
                     id="edit-file-input"
@@ -1290,7 +920,7 @@ export default function FoodImagesPage() {
                   >
                     <Upload className="h-4 w-4 mr-2" /> Choose File
                   </Button>
-                  {/* Preview Section */}
+
                   {(editSelectedFiles.length > 0 ||
                     selectedFood?.images?.[0]) && (
                     <div className="mt-4">
@@ -1337,7 +967,7 @@ export default function FoodImagesPage() {
                   )}
                 </div>
               </div>
-              {/* Basic Information */}
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-name">Food Name *</Label>
@@ -1379,7 +1009,7 @@ export default function FoodImagesPage() {
                   )}
                 </div>
               </div>
-              {/* Category Selection */}
+
               <div className="space-y-2">
                 <Label htmlFor="edit-category">Food Category *</Label>
                 <div className="flex gap-2">
@@ -1405,169 +1035,6 @@ export default function FoodImagesPage() {
                       {editErrors.categoryId}
                     </p>
                   )}
-                  {/* <Dialog
-                    open={isCategoryDialogOpen}
-                    onOpenChange={setIsCategoryDialogOpen}
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-[#F87D7D]"
-                      >
-                        <Plus className="h-5 w-5 text-white font-bold" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-[95vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Create New Category</DialogTitle>
-                        <DialogDescription>
-                          Add a new food category
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="categoryName">Category Name</Label>
-                          <Input
-                            id="categoryName"
-                            value={newCategoryName}
-                            onChange={(e) =>
-                              handleNewCategoryChange(e.target.value)
-                            }
-                            placeholder="Enter category name"
-                          />
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setIsCategoryDialogOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            onClick={handleCreateCategory}
-                            disabled={!isCategoryValid}
-                          >
-                            Create Category
-                          </Button>
-                        </div>
-                        {categoryError && (
-                          <p className="text-red-500 text-xs">
-                            {categoryError}
-                          </p>
-                        )}
-                      </div>
-                    </DialogContent>
-                  </Dialog> */}
-                </div>
-              </div>
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="edit-description">Description</Label>
-                <Textarea
-                  id="edit-description"
-                  value={editFormData.description}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value.length <= 500) {
-                      handleEditFormChange("description", value);
-                      setEditErrors((prev) => ({
-                        ...prev,
-                        description: "",
-                      }));
-                    } else {
-                      setEditErrors((prev) => ({
-                        ...prev,
-                        description: "Description cannot exceed 500 characters",
-                      }));
-                    }
-                  }}
-                  placeholder="Describe the food item..."
-                />
-                {/* Character count */}
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>{editFormData.description.length} / 500</span>
-                </div>
-                {/* Error message */}
-                {editErrors.description && (
-                  <p className="text-red-500 text-xs">
-                    {editErrors.description}
-                  </p>
-                )}
-              </div>
-              {/* Preparation Time */}
-              <div className="space-y-2">
-                <Label htmlFor="edit-preparationTime">
-                  Preparation Time (minutes)
-                </Label>
-                <Input
-                  id="edit-preparationTime"
-                  type="number"
-                  min={0}
-                  value={editFormData.preparationTime}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    handleEditFormChange(
-                      "preparationTime",
-                      isNaN(val) || val < 0 ? 0 : val
-                    );
-                  }}
-                  placeholder="Enter preparation time"
-                />
-                {editErrors.preparationTime && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {editErrors.preparationTime}
-                  </p>
-                )}
-              </div>
-              {/* Nutritional Information */}
-              <div className="space-y-2">
-                <Label>Nutritional Information</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-calories">Calories</Label>
-                    <Input
-                      id="edit-calories"
-                      type="number"
-                      min={0}
-                      value={editFormData.nutritionalInfo.calories || ""}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        handleEditFormChange("nutritionalInfo", {
-                          ...editFormData.nutritionalInfo,
-                          calories: isNaN(val) || val < 0 ? 0 : val,
-                        });
-                      }}
-                      placeholder="Calories"
-                    />
-                    {editErrors.calories && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {editErrors.calories}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-protein">Protein (g)</Label>
-                    <Input
-                      id="edit-protein"
-                      type="number"
-                      min={0}
-                      value={editFormData.nutritionalInfo.protein || ""}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        handleEditFormChange("nutritionalInfo", {
-                          ...editFormData.nutritionalInfo,
-                          protein: isNaN(val) || val < 0 ? 0 : val,
-                        });
-                      }}
-                      placeholder="Protein"
-                    />
-                    {editErrors.protein && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {editErrors.protein}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </div>
             </div>
@@ -1583,7 +1050,7 @@ export default function FoodImagesPage() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
     </DashboardLayout>
   );
