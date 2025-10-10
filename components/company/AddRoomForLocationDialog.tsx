@@ -32,6 +32,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -50,11 +59,13 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
 interface AddRoomForLocationDialogProps {
   locationId: string;
+  existingRooms: { _id: string; roomNumber: string }[];
   onRoomCreated: (room: {
     _id: string;
     roomNumber: string;
@@ -65,22 +76,48 @@ interface AddRoomForLocationDialogProps {
 
 export default function AddRoomForLocationDialog({
   locationId,
+  existingRooms,
   onRoomCreated,
 }: AddRoomForLocationDialogProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [room, setRoom] = useState<Room>({
     roomNumber: "",
     type: ROOM_PREFERENCE_TYPES.SINGLE,
+    capacity: 1,
     amenities: [],
   });
   const { toast } = useToast();
   const { mutate, isPending } = useCreateRoom();
 
+  const [roomNumberError, setRoomNumberError] = useState<string | null>(null);
+
   const updateRoom = (field: keyof Room, value: string) => {
+    if (field === "roomNumber") {
+      if (value.length > 10) {
+        setRoomNumberError("Room number cannot exceed 10 characters.");
+      } else if (
+        existingRooms.some(
+          (r) =>
+            r.roomNumber.trim().toLowerCase() === value.trim().toLowerCase()
+        )
+      ) {
+        setRoomNumberError("This room number already exists in this location.");
+      } else {
+        setRoomNumberError(null);
+      }
+    }
+
     setRoom((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const isFormValid = () => {
+    if (roomNumberError) return false;
+    if (!room.roomNumber.trim() || !room.type.trim()) return false;
+    if (room.amenities.length === 0) return false;
+    return true;
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -116,6 +153,7 @@ export default function AddRoomForLocationDialog({
       roomData: {
         roomNumber: room.roomNumber,
         type: room.type,
+        capacity: room.capacity,
         amenities: room.amenities.length > 0 ? room.amenities : [""],
       },
     };
@@ -136,14 +174,18 @@ export default function AddRoomForLocationDialog({
         setRoom({
           roomNumber: "",
           type: ROOM_PREFERENCE_TYPES.SINGLE,
+          capacity: 1,
           amenities: [],
         });
       },
-      onError: (error) => {
-        console.error("Failed to create room:", error);
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create room.";
         toast({
           title: "Error",
-          description: "Failed to create room",
+          description: message,
           variant: "destructive",
         });
       },
@@ -153,12 +195,15 @@ export default function AddRoomForLocationDialog({
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-[#F87D7D] hover:bg-[#F87D7D]/90">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button
+          size="sm"
+          className="bg-[#F87D7D] hover:bg-[#F87D7D]/90 text-xs sm:text-sm"
+        >
+          {/* <Plus className="h-4 w-4" /> */}
           Add Room
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-[#F87D7D]/10 border-[#F87D7D]/20">
         <DialogHeader>
           <DialogTitle>Add New Room</DialogTitle>
           <DialogDescription>
@@ -175,14 +220,23 @@ export default function AddRoomForLocationDialog({
               placeholder="e.g., 101, A-1"
               className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30"
             />
+            {roomNumberError && (
+              <p className="text-red-600 text-sm">{roomNumberError}</p>
+            )}
           </div>
-          <div className="space-y-2">
+          <div>
             <Label>Room Type *</Label>
             <Select
               value={room.type}
-              onValueChange={(value) => updateRoom("type", value)}
+              onValueChange={(value) => {
+                updateRoom("type", value);
+                const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                if (autoCapacity) {
+                  updateRoom("capacity", String(autoCapacity));
+                }
+              }}
             >
-              <SelectTrigger className="border-[#F87D7D]/50 focus:border-[#F87D7D] focus:ring-[#F87D7D]/30">
+              <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
@@ -194,9 +248,24 @@ export default function AddRoomForLocationDialog({
               </SelectContent>
             </Select>
           </div>
+          <div className="hidden space-y-2">
+            <Label>Room Capacity *</Label>
+            <Select value={room.capacity} disabled>
+              <SelectTrigger className="text-sm sm:text-base">
+                <SelectValue placeholder="Auto-selected" />
+              </SelectTrigger>
+              <SelectContent>
+                {[1, 2, 3, 4, 5].map((num) => (
+                  <SelectItem key={num} value={String(num)}>
+                    {num}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="space-y-2">
             <Label>Amenities</Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {ROOM_AMENITIES.map((amenity) => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox
@@ -226,7 +295,7 @@ export default function AddRoomForLocationDialog({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isPending}
+            disabled={isPending || !isFormValid()}
             className="bg-[#F87D7D] hover:bg-[#F87D7D]/90"
           >
             {isPending ? (

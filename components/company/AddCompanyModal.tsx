@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -60,7 +61,7 @@ interface Room {
   type: string;
   status: string;
   amenities: string[];
-  capacity: number;
+  capacity: any;
 }
 
 interface Location {
@@ -98,7 +99,7 @@ export default function AddCompanyModal({
   const [currentStep, setCurrentStep] = useState(1);
   const [newCompanies, setNewCompanies] = useState<Company[]>([]);
   const totalSteps = 4;
-  const accessToken = localStorage.getItem("sms_access_token");
+  const accessToken = typeof window !== "undefined" && localStorage.getItem("sms_access_token");
 
   const createCompanyMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -324,19 +325,31 @@ export default function AddCompanyModal({
   const validateStep = (step: number) => {
     switch (step) {
       case 1:
-        return newCompanies.every((company) => company.name.trim() !== "");
+        return newCompanies.every(
+          (company) => company.name.trim() !== "" && company.name.length <= 50
+        );
       case 2:
         return newCompanies.every(
           (company) =>
             company.branches.length > 0 &&
             company.branches.every(
               (branch) =>
-                branch.name.trim() !== "" && branch.address.trim() !== ""
+                branch.name.trim() !== "" &&
+                branch.name.length <= 50 &&
+                branch.address.trim() !== "" &&
+                branch.address.length <= 100
             )
         );
       case 3:
-        return newCompanies.every((company) =>
-          company.branches.every((branch) => branch.locations.length > 0)
+        return newCompanies.every(
+          (company) =>
+            company.branches.every((branch) => branch.locations.length > 0) &&
+            company.branches.every((branch) =>
+              branch.locations.every(
+                (location) =>
+                  location.name.trim() !== "" && location.name.length <= 50
+              )
+            )
         );
       case 4:
         return newCompanies.every((company) =>
@@ -345,9 +358,11 @@ export default function AddCompanyModal({
               location.rooms.every(
                 (room) =>
                   room.roomNumber.trim() !== "" &&
+                  room.roomNumber.length <= 10 &&
                   room.capacity > 0 &&
                   room.type &&
-                  room.status
+                  room.status &&
+                  room.amenities.length > 0
               )
             )
           )
@@ -400,6 +415,7 @@ export default function AddCompanyModal({
           name: location.name,
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
+            capacity: room.capacity,
             type: room.type,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
@@ -411,14 +427,14 @@ export default function AddCompanyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[90vw] sm:max-w-md md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto px-4 sm:px-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Building2 className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
             Add New Company
           </DialogTitle>
         </DialogHeader>
-        <div className="bg-white rounded-lg p-8">
+        <div className="bg-white rounded-lg p-4 sm:p-6">
           <StepProgress currentStep={currentStep} totalSteps={totalSteps} />
           {currentStep === 1 && (
             <CompanyStep
@@ -453,12 +469,12 @@ export default function AddCompanyModal({
               toggleAmenity={toggleAmenity}
             />
           )}
-          <div className="flex justify-between mt-8">
+          <div className="flex flex-col sm:flex-row justify-between mt-6 gap-3">
             <Button
               variant="outline"
               onClick={handlePrevious}
               disabled={currentStep === 1}
-              className="flex items-center gap-2 bg-transparent"
+              className="flex items-center gap-2 bg-transparent text-sm sm:text-base h-10 sm:h-11"
             >
               <ArrowLeft className="h-4 w-4" />
               Previous
@@ -467,7 +483,7 @@ export default function AddCompanyModal({
               <Button
                 onClick={handleNext}
                 disabled={!validateStep(currentStep)}
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-sm sm:text-base h-10 sm:h-11"
               >
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -478,7 +494,7 @@ export default function AddCompanyModal({
                 disabled={
                   !validateStep(currentStep) || createCompanyMutation.isPending
                 }
-                className="flex items-center gap-2 bg-red-500 hover:bg-red-600"
+                className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-sm sm:text-base h-10 sm:h-11"
               >
                 {createCompanyMutation.isPending ? (
                   <>

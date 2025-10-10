@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/tooltip";
 import axios from "axios";
 import api from "@/lib/axios";
+import { CustomPagination } from "../CustomPagination";
 
 interface QRCode {
   _id: string;
@@ -87,7 +88,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
   const [selectedQRId, setSelectedQRId] = useState<string | null>(null);
   const [isToggling, setIsToggling] = useState(false);
   const { toast } = useToast();
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
   const totalPages = Math.ceil(qrcodes.length / itemsPerPage);
 
   const paginatedQRCodes = qrcodes.slice(
@@ -146,59 +147,61 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
     }
   };
 
-  if (isLoading || qrcodes.length === 0) {
-    return (
-      <div className="flex justify-center items-center py-10">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F87D7D]"></div>
-      </div>
-    );
-  }
+  // if (isLoading || qrcodes.length === 0) {
+  //   return (
+  //     <div className="flex justify-center items-center py-10">
+  //       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#F87D7D]"></div>
+  //     </div>
+  //   );
+  // }
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [qrcodes]);
 
   return (
     <>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#F87D7D] text-white rounded-md">
-              <TableHead className="text-white font-semibold">
-                Modules
-              </TableHead>
-              <TableHead className="text-white font-semibold">
-                Associated With
-              </TableHead>
-              <TableHead className="text-white font-semibold">Code</TableHead>
-              <TableHead className="text-white font-semibold">
-                Generated On
-              </TableHead>
-              <TableHead className="text-white font-semibold">
+            <TableRow className="rounded-md">
+              <TableHead>Modules</TableHead>
+              <TableHead>Associated With</TableHead>
+              <TableHead>Code</TableHead>
+              <TableHead>Generated On</TableHead>
+              {/* <TableHead className="text-white font-semibold">
                 Actions
-              </TableHead>
+              </TableHead> */}
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedQRCodes.map((qr, index) => {
               const isActive = activeStates[qr._id] ?? true;
               return (
-                <TableRow
-                  key={qr._id}
-                  className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
-                >
+                <TableRow key={qr._id} className="bg-white">
                   <TableCell className="font-medium text-black">
                     {qr.type}
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{qr.branchId.name}</span>
-                      <span className="text-xs text-gray-500">
-                        {qr.branchId.address}
-                      </span>
-                    </div>
+                    {qr.branchId?.name || qr.branchId?.address ? (
+                      <div className="flex flex-col">
+                        <span className="font-medium">{qr.branchId?.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {qr.branchId?.address}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">Not Assigned</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {visibleCodes[qr._id] ? (
+                        // ✅ Reveal state - show full code with wrapping
                         <>
-                          <span className="font-mono">{qr.code}</span>
+                          <span className="font-mono break-all max-w-[200px] whitespace-pre-wrap">
+                            {qr.code}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -209,9 +212,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                           </Button>
                         </>
                       ) : (
+                        // ✅ Hidden state - show only 20 characters worth of dots
                         <>
                           <span className="font-mono text-gray-400">
-                            {"•".repeat(qr.code.length)}
+                            {"•".repeat(Math.min(20, qr.code.length))}
+                            {qr.code.length > 20 && "…"}
                           </span>
                           <Button
                             variant="ghost"
@@ -225,8 +230,9 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                       )}
                     </div>
                   </TableCell>
+
                   <TableCell>{formatDate(qr.createdAt)}</TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -246,7 +252,7 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  </TableCell>
+                  </TableCell> */}
                 </TableRow>
               );
             })}
@@ -255,59 +261,11 @@ export function QRCodeTable({ qrcodes, isLoading }: QRCodeTableProps) {
       </div>
 
       {totalPages > 1 && (
-        <Pagination className="mt-4">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(currentPage - 1);
-                }}
-                className={`${
-                  currentPage === 1
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-                } border-[#F87D7D] hover:border-[#F87D7D]`}
-                aria-disabled={currentPage === 1}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(page);
-                  }}
-                  className={`${
-                    currentPage === page
-                      ? "bg-[#F87D7D] text-white"
-                      : "text-[#F87D7D] hover:bg-[#F87D7D] hover:text-white"
-                  } border-[#F87D7D]`}
-                  isActive={currentPage === page}
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handlePageChange(currentPage + 1);
-                }}
-                className={`${
-                  currentPage === totalPages
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-[#F87D7D] hover:text-white hover:bg-[#F87D7D]"
-                } border-[#F87D7D] hover:border-[#F87D7D]`}
-                aria-disabled={currentPage === totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <CustomPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       )}
 
       <AlertDialog open={isModalOpen} onOpenChange={closeConfirmationModal}>

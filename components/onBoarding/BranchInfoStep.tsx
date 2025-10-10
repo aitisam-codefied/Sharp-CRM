@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building2, MapPin, Plus, Trash2 } from "lucide-react";
-import { COMPANY_BUSINESS_TYPES } from "../../app/dashboard/admin/on-boarding/page";
-import { Company } from "../../app/dashboard/admin/on-boarding/page";
+import { COMPANY_BUSINESS_TYPES } from "../../app/on-boarding/page";
+import { Company } from "../../app/on-boarding/page";
 import { useEffect, useState } from "react";
 
 interface BranchInfoStepProps {
@@ -83,25 +83,28 @@ export default function BranchInfoStep({
         <p className="text-gray-600">Add branches for your companies</p>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {companies.map((company, companyIndex) => (
           <Card key={companyIndex}>
-            <CardHeader>
+            <CardHeader className="pb-2 md:pb-4">
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
                 {company.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 md:p-6">
               {company.branches.map((branch, branchIndex) => {
                 const errorKey = `${companyIndex}-${branchIndex}`;
                 const error = branchNameErrors[errorKey];
                 return (
-                  <Card key={branch.id} className="border-l-4 border-l-red-500">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                      <CardTitle className="text-base">
+                  <div
+                    key={branch.id}
+                    className="md:card md:border-l-4 md:border-l-red-500"
+                  >
+                    <div className="flex flex-row items-center justify-between space-y-0 pb-2 md:pb-4 px-4 md:px-6">
+                      <h3 className="text-base font-semibold">
                         Branch {branchIndex + 1}
-                      </CardTitle>
+                      </h3>
                       {selectedBusinessType !== COMPANY_BUSINESS_TYPES.SINGLE &&
                         company.branches.length > 1 && (
                           <Button
@@ -115,8 +118,8 @@ export default function BranchInfoStep({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         )}
-                    </CardHeader>
-                    <CardContent className="space-y-4">
+                    </div>
+                    <div className="space-y-4 p-4 md:p-6">
                       <div>
                         <Label
                           htmlFor={`branch-name-${companyIndex}-${branchIndex}`}
@@ -161,8 +164,8 @@ export default function BranchInfoStep({
                           rows={3}
                         />
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 );
               })}
 

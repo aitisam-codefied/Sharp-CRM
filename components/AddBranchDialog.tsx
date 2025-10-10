@@ -35,6 +35,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -53,7 +62,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
-  capacity: number;
+  capacity: any;
   amenities: string[];
 }
 
@@ -75,9 +84,8 @@ interface Company {
 
 export default function AddBranchDialog() {
   const { user, updateUserBranchesManually } = useAuth();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedCompanyId, setSelectedCompanyId] = useState("");
-  const [branch, setBranch] = useState<Branch>({
+  // ek helper initialBranch bana lo
+  const initialBranch: Branch = {
     name: "",
     address: "",
     locations: [
@@ -93,10 +101,12 @@ export default function AddBranchDialog() {
         ],
       },
     ],
-  });
+  };
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [branch, setBranch] = useState<Branch>(initialBranch);
+  const [selectedCompanyId, setSelectedCompanyId] = useState("");
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
-
   const { data } = useCompanies();
 
   const updateBranch = (field: keyof Branch, value: string) => {
@@ -246,6 +256,7 @@ export default function AddBranchDialog() {
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -254,29 +265,60 @@ export default function AddBranchDialog() {
 
     mutate(branchData, {
       onSuccess: () => {
-        console.log("Branch created:", branchData);
         updateUserBranchesManually(branchData);
         setIsAddDialogOpen(false);
+        setBranch(initialBranch);
+        setSelectedCompanyId("");
       },
     });
   };
 
+  const isFormValid = () => {
+    if (!selectedCompanyId.trim()) return false;
+    if (!branch.name.trim() || branch.name.length > 50) return false;
+    if (!branch.address.trim() || branch.address.length > 100) return false;
+
+    for (const location of branch.locations) {
+      if (!location.name.trim() || location.name.length > 50) return false;
+
+      for (const room of location.rooms) {
+        if (!room.roomNumber.trim() || room.roomNumber.length > 10)
+          return false;
+        if (!room.type.trim()) return false;
+        if (room.amenities.length === 0) return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
-    <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+    <Dialog
+      open={isAddDialogOpen}
+      onOpenChange={(open) => {
+        setIsAddDialogOpen(open);
+        if (!open) {
+          setBranch(initialBranch);
+          setSelectedCompanyId("");
+        }
+      }}
+    >
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button className="text-xs sm:text-sm" size="sm">
+          <Plus className="h-4 w-4" />
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="">
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
             Enter the details for the new branch
           </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
+          {/* Company Select */}
           <div className="space-y-2">
             <Label htmlFor="company">Company *</Label>
             <Select
@@ -295,6 +337,8 @@ export default function AddBranchDialog() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Branch Name */}
           <div className="space-y-2">
             <Label htmlFor="branch-name">Branch Name *</Label>
             <Input
@@ -303,7 +347,14 @@ export default function AddBranchDialog() {
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
             />
+            {branch.name.length > 50 && (
+              <p className="text-red-500 text-sm">
+                Branch name cannot exceed 50 characters.
+              </p>
+            )}
           </div>
+
+          {/* Branch Address */}
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
             <Textarea
@@ -313,22 +364,37 @@ export default function AddBranchDialog() {
               placeholder="Enter complete branch address"
               rows={3}
             />
+            {branch.address.length > 100 && (
+              <p className="text-red-500 text-sm">
+                Branch address cannot exceed 100 characters.
+              </p>
+            )}
           </div>
+
+          {/* Locations */}
           <div className="space-y-4">
-            <Label>Locations</Label>
+            <Label>Locations *</Label>
             {branch.locations.map((location, locationIndex) => (
               <div
                 key={locationIndex}
                 className="space-y-4 border p-4 rounded-md"
               >
-                <div className="flex gap-2 items-center">
-                  <Input
-                    value={location.name}
-                    onChange={(e) =>
-                      updateLocation(locationIndex, e.target.value)
-                    }
-                    placeholder="e.g., Floor 1, East Wing, Reception"
-                  />
+                {/* Location Name */}
+                <div className="flex gap-2 items-center w-full">
+                  <div className="flex-1">
+                    <Input
+                      value={location.name}
+                      onChange={(e) =>
+                        updateLocation(locationIndex, e.target.value)
+                      }
+                      placeholder="e.g., Floor 1, East Wing, Reception"
+                    />
+                    {location.name.length > 50 && (
+                      <p className="text-red-500 text-sm">
+                        Location name cannot exceed 50 characters.
+                      </p>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -338,6 +404,8 @@ export default function AddBranchDialog() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+
+                {/* Rooms */}
                 <div className="space-y-4">
                   {location.rooms.map((room, roomIndex) => (
                     <div
@@ -355,7 +423,9 @@ export default function AddBranchDialog() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Room Number */}
                         <div className="space-y-2">
                           <Label>Room Number *</Label>
                           <Input
@@ -370,24 +440,41 @@ export default function AddBranchDialog() {
                             }
                             placeholder="e.g., 101, A-1"
                           />
+                          {room.roomNumber.length > 10 && (
+                            <p className="text-red-500 text-sm">
+                              Room number cannot exceed 10 characters.
+                            </p>
+                          )}
                         </div>
+
+                        {/* Room Type */}
                         <div className="space-y-2">
                           <Label>Room Type *</Label>
                           <Select
                             value={room.type}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => {
                               updateRoom(
                                 locationIndex,
                                 roomIndex,
                                 "type",
                                 value
-                              )
-                            }
+                              );
+
+                              const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                              if (autoCapacity) {
+                                updateRoom(
+                                  locationIndex,
+                                  roomIndex,
+                                  "capacity",
+                                  String(autoCapacity)
+                                );
+                              }
+                            }}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="mt-1 text-xs sm:text-sm">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="text-xs sm:text-sm">
                               {Object.values(ROOM_PREFERENCE_TYPES).map(
                                 (type) => (
                                   <SelectItem key={type} value={type}>
@@ -398,11 +485,29 @@ export default function AddBranchDialog() {
                             </SelectContent>
                           </Select>
                         </div>
+
+                        {/* Room Capacity */}
+                        <div className="hidden space-y-2">
+                          <Label>Room Capacity</Label>
+                          <Select value={room.capacity} disabled>
+                            <SelectTrigger className="text-sm sm:text-base">
+                              <SelectValue placeholder="Auto-selected" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4, 5].map((num) => (
+                                <SelectItem key={num} value={String(num)}>
+                                  {num}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
+                      {/* Amenities */}
                       <div className="space-y-2">
                         <Label>Amenities</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                           {ROOM_AMENITIES.map((amenity) => (
                             <div
                               key={amenity}
@@ -454,6 +559,8 @@ export default function AddBranchDialog() {
             </Button>
           </div>
         </div>
+
+        {/* Footer Buttons */}
         <div className="flex justify-end gap-2">
           <Button
             variant="outline"
@@ -462,7 +569,7 @@ export default function AddBranchDialog() {
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || !isFormValid()}>
             {isPending ? "Adding..." : "Add Branch"}
           </Button>
         </div>

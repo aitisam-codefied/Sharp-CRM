@@ -58,10 +58,12 @@ export default function EditRoomDialog({
   const [form, setForm] = useState(room);
   const { toast } = useToast();
   const { mutate, isPending } = useUpdateRoom();
+  const [initialRoom, setInitialRoom] = useState(room);
 
   // Populate form when dialog opens
   useEffect(() => {
     setForm(room);
+    setInitialRoom(room);
   }, [room]);
 
   const updateField = (field: keyof typeof form, value: any) => {
@@ -92,12 +94,16 @@ export default function EditRoomDialog({
       {
         onSuccess: (data) => {
           toast({ title: "Room updated successfully" });
+
+          // ✅ API response se sahi field access karo
           onRoomUpdated({
-            _id: data.updatedRoom._id,
-            roomNumber: data.updatedRoom.roomNumber,
-            type: data.updatedRoom.type,
-            amenities: data.updatedRoom.amenities,
+            _id: data._id,
+            roomNumber: data.roomNumber,
+            type: data.type,
+            amenities: data.amenities,
           });
+
+          // ✅ dialog close karo
           onOpenChange(false);
         },
         onError: () => {
@@ -111,9 +117,11 @@ export default function EditRoomDialog({
     );
   };
 
+  const hasChanges = JSON.stringify(form) !== JSON.stringify(initialRoom);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Room</DialogTitle>
           <DialogDescription>Modify the details of this room</DialogDescription>
@@ -151,7 +159,7 @@ export default function EditRoomDialog({
           {/* Amenities */}
           <div className="space-y-2">
             <Label>Amenities</Label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {ROOM_AMENITIES.map((amenity) => (
                 <div key={amenity} className="flex items-center space-x-2">
                   <Checkbox
@@ -169,7 +177,10 @@ export default function EditRoomDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!hasChanges || isPending || form.amenities.length === 0}
+          >
             {isPending ? "Updating..." : "Update Room"}
           </Button>
         </div>

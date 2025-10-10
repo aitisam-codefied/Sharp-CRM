@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Building2 } from "lucide-react";
-import { COMPANY_BUSINESS_TYPES } from "../../app/dashboard/admin/on-boarding/page";
-import { Company } from "../../app/dashboard/admin/on-boarding/page";
+import { COMPANY_BUSINESS_TYPES } from "../../app/on-boarding/page";
+import { Company } from "../../app/on-boarding/page";
 
 interface CompanyInfoStepProps {
   companies: Company[];
@@ -59,7 +59,7 @@ export default function CompanyInfoStep({
                   </Button>
                 )}
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 md:p-6">
               <div>
                 <Label htmlFor={`company-name-${companyIndex}`}>
                   Company Name *

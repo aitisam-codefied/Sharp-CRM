@@ -1,4 +1,5 @@
-// hooks/useCompanies.ts
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 
@@ -7,7 +8,6 @@ export interface Room {
   roomNumber: string;
   type: string;
   amenities: string[];
-  capacity: number;
 }
 
 export interface Location {
@@ -25,16 +25,27 @@ export interface Branch {
   name: string;
   address: string;
   locations: Location[];
-}
-
-export interface Company {
-  _id: string;
-  name: string;
-  type: string;
-  branches: Branch[];
+  documents: any[];
   createdAt: string;
   updatedAt: string;
 }
+
+export interface BranchListResponse {
+  success: boolean;
+  branches: Branch[];
+}
+
+export const useGetBranches = () => {
+  return useQuery({
+    queryKey: ["branches"],
+    queryFn: async (): Promise<BranchListResponse> => {
+      const res = await api.get("/branch/list");
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+};
 
 export const useBranches = () => {
   return useQuery({

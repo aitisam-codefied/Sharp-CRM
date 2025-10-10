@@ -1,6 +1,9 @@
 // hooks/useCompanies.ts
+"use client"
+
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
+import { useAuth } from "@/components/providers/auth-provider";
 
 export interface Room {
   _id: string;
@@ -33,10 +36,14 @@ export interface Company {
 }
 
 export const useCompanies = () => {
+  const { user } = useAuth();
   return useQuery({
     queryKey: ["companies"],
     queryFn: async (): Promise<Company[]> => {
-      const res = await api.get("/company/list");
+      const isAdmin = user?.roles[0].name === "Admin";
+
+      const res = isAdmin ? await api.get("/company/list") : [];
+      
       if (res.data.success) {
         return res.data.companies;
       } else {

@@ -26,12 +26,14 @@ export function DashboardLayout({
             <div className="flex items-center justify-between">
               <div>
                 {title && (
-                  <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+                  <h1 className="text-sm md:text-2xl font-bold tracking-tight text-gray-900">
                     {title}
                   </h1>
                 )}
                 {description && (
-                  <p className="text-gray-600 mt-1">{description}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                    {description}
+                  </p>
                 )}
               </div>
               {actions && (

@@ -28,8 +28,14 @@ import {
   LogOutIcon,
   Building,
   User,
+  ShoppingBasket,
+  File,
+  ArrowUp,
+  ArrowDown,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -41,8 +47,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/components/providers/auth-provider";
 import Image from "next/image";
+import { Capacitor } from "@capacitor/core";
+import { RoleChecker } from "@/lib/RoleWrapper";
 
 export function AppNavbar() {
+  // const platform = Capacitor.getPlatform();
+  // if (platform === "ios" || platform === "android") return null;
+
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -56,12 +67,16 @@ export function AppNavbar() {
     router.push("/login");
   };
 
+  const roleName = user?.roles?.[0]?.name || "";
+
   const currentSection = (() => {
     if (pathname.includes("/company")) return "company";
     if (
       pathname.includes("/staffs") ||
-      pathname.includes("/scheduler") ||
-      pathname.includes("/clock-system")
+      // pathname.includes("/scheduler") ||
+      pathname.includes("/clock-system") ||
+      pathname.includes("/medical-staff") ||
+      pathname.includes("/documents")
     )
       return "staffs";
     if (
@@ -69,22 +84,19 @@ export function AppNavbar() {
       pathname.includes("/meals") ||
       pathname.includes("/feedback") ||
       pathname.includes("/food-images") ||
-      pathname.includes("/qr-scanner")
+      pathname.includes("/qr-scanner") ||
+      pathname.includes("/incidents")
     )
       return "operations";
-    if (
-      pathname.includes("/incidents") ||
-      pathname.includes("/observations") ||
-      pathname.includes("/safeguarding")
-    )
-      return "incidents";
-    if (pathname.includes("/notifications") || pathname.includes("/documents"))
-      return "system";
+
     if (
       pathname.includes("/service-users") ||
       // pathname.includes("/rooms") ||
-      // pathname.includes("/new-user") ||
-      pathname.includes("/in-transit")
+      pathname.includes("/new-user") ||
+      pathname.includes("/in-transit") ||
+      pathname.includes("/other-removals") ||
+      pathname.includes("/su-basket") ||
+      pathname.includes("/occupancy")
     )
       return "users";
     if (pathname.includes("/reports")) return "reports";
@@ -94,147 +106,144 @@ export function AppNavbar() {
   const isSubNavActive = (href: string) => pathname === href;
 
   const mainNavItems = [
-    { title: "Dashboard", href: "/dashboard/admin", key: "dashboard" },
+    { title: "Dashboard", href: "/dashboard", key: "dashboard" },
 
     {
-      title: "Staff Management",
-      href: "/dashboard/admin/staffs",
+      title: "Company Management",
+      href: "/company",
+      key: "company",
+      hasAccess: RoleChecker(roleName, ["Admin"]),
+    },
+
+    {
+      title: "Employee Management",
+      href: "/staffs",
       key: "staffs",
     },
     {
       title: "Operations",
-      href: "/dashboard/admin/welfare",
+      href: "/welfare",
       key: "operations",
     },
+
     {
-      title: "Incidents & Safety",
-      href: "/dashboard/admin/incidents",
-      key: "incidents",
-    },
-    {
-      title: "System Settings",
-      href: "/dashboard/admin/notifications",
-      key: "system",
-    },
-    {
-      title: "User Management",
-      href: "/dashboard/admin/service-users",
+      title: "Service User Management",
+      href: "/service-users",
       key: "users",
     },
-    { title: "Reports", href: "/dashboard/admin/reports", key: "reports" },
+    {
+      title: "Reports",
+      href: "/reports",
+      key: "reports",
+      hasAccess: RoleChecker(roleName, ["Admin"]),
+    },
   ];
 
   const subNavItemsMap: Record<string, any[]> = {
     operations: [
       {
         title: "Welfare Checks",
-        href: "/dashboard/admin/welfare",
+        href: "/welfare",
         icon: Heart,
         color: "bg-blue-100 text-blue-700 border-blue-200",
       },
       {
         title: "Meal Marker",
-        href: "/dashboard/admin/meals",
+        href: "/meals",
         icon: Utensils,
         color: "bg-green-100 text-green-700 border-green-200",
       },
       {
         title: "Food Images",
-        href: "/dashboard/admin/food-images",
+        href: "/food-images",
         icon: Camera,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
       {
         title: "Food Feedbacks",
-        href: "/dashboard/admin/feedback",
+        href: "/feedback",
         icon: MessageSquare,
         color: "bg-orange-100 text-orange-700 border-orange-200",
       },
       {
         title: "QR Scanner",
-        href: "/dashboard/admin/qr-scanner",
+        href: "/qr-scanner",
         icon: QrCode,
         color: "bg-purple-100 text-purple-700 border-purple-200",
       },
-    ],
-    incidents: [
       {
         title: "Incident Reports",
-        href: "/dashboard/admin/incidents",
+        href: "/incidents",
         icon: AlertTriangle,
         color: "bg-red-100 text-red-700 border-red-200",
       },
-      {
-        title: "Observation Checks",
-        href: "/dashboard/admin/observations",
-        icon: Eye,
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-      },
-      {
-        title: "Safeguarding",
-        href: "/dashboard/admin/safeguarding",
-        icon: Shield,
-        color: "bg-indigo-100 text-indigo-700 border-indigo-200",
-      },
     ],
+
     staffs: [
       {
         title: "Staff Management",
-        href: "/dashboard/admin/staffs",
+        href: "/staffs",
         icon: Users,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-      {
-        title: "Staff Scheduler",
-        href: "/dashboard/admin/scheduler",
-        icon: Calendar,
-        color: "bg-blue-100 text-blue-700 border-blue-200",
-      },
+
       {
         title: "QR Clock In/Out",
-        href: "/dashboard/admin/clock-system",
+        href: "/clock-system",
         icon: Clock,
         color: "bg-green-100 text-green-700 border-green-200",
       },
-    ],
-    system: [
       {
-        title: "Notifications",
-        href: "/dashboard/admin/notifications",
-        icon: Bell,
-        color: "bg-red-100 text-red-700 border-red-200",
+        title: "Medical Staff",
+        href: "/medical-staff",
+        icon: Users,
+        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
       },
       {
         title: "SOP Documents",
-        href: "/dashboard/admin/documents",
+        href: "/documents",
         icon: FileText,
         color: "bg-blue-100 text-blue-700 border-blue-200",
       },
     ],
+
     users: [
       {
-        title: "Service Users",
-        href: "/dashboard/admin/service-users",
+        title: "Users",
+        href: "/service-users",
         icon: UserIcon,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-      // {
-      //   title: "Room Management",
-      //   href: "/dashboard/admin/rooms",
-      //   icon: BedDouble,
-      //   color: "bg-blue-100 text-blue-700 border-blue-200",
-      // },
-      // {
-      //   title: "User Registration",
-      //   href: "/dashboard/admin/new-user",
-      //   icon: UserPlus,
-      //   color: "bg-green-100 text-green-700 border-green-200",
-      // },
+
       {
-        title: "In-Transit User",
-        href: "/dashboard/admin/in-transit",
+        title: "Registration",
+        href: "/new-user",
+        icon: UserPlus,
+        color: "bg-green-100 text-green-700 border-green-200",
+      },
+      {
+        title: "In-Transit",
+        href: "/in-transit",
         icon: Truck,
         color: "bg-orange-100 text-orange-700 border-orange-200",
+      },
+      {
+        title: "Other Removals",
+        href: "/other-removals",
+        icon: Truck,
+        color: "bg-purple-100 text-purple-700 border-purple-200",
+      },
+      {
+        title: "Item Baskets",
+        href: "/su-basket",
+        icon: ShoppingBasket,
+        color: "bg-blue-100 text-blue-700 border-blue-200",
+      },
+      {
+        title: "Occupancy Agreements",
+        href: "/occupancy",
+        icon: File,
+        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
       },
     ],
   };
@@ -244,10 +253,23 @@ export function AppNavbar() {
   const getSubNavItemsForSection = (sectionKey: string) =>
     subNavItemsMap[sectionKey] || [];
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden"; // 🚫 disable scroll
+    } else {
+      document.body.style.overflow = "auto"; // ✅ enable scroll back
+    }
+
+    // cleanup just in case
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [mobileMenuOpen]);
+
   return (
-    <div className="border-b bg-white">
+    <div className="border-b bg-white pt-6">
       <div className="flex items-center justify-between h-16 px-4 md:px-6">
-        <Link href="/dashboard/admin" className="flex items-center gap-2">
+        <Link href="" className="flex items-center gap-2">
           <div className="h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
             <Building2 className="h-4 w-4 text-white" />
           </div>
@@ -271,6 +293,7 @@ export function AppNavbar() {
         <nav className="hidden xl:flex items-center space-x-2 flex-1 justify-center">
           {mainNavItems.map((item) => {
             const isActive = currentSection === item.key;
+            if (item.hasAccess === false) return null;
             return (
               <Link
                 key={item.key}
@@ -312,17 +335,17 @@ export function AppNavbar() {
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/admin/profile">
+                <Link href="/profile">
                   <User className="mr-2 h-4 w-4" />
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/dashboard/admin/company">
+              {/* <DropdownMenuItem asChild>
+                <Link href="/company">
                   <Building className="mr-2 h-4 w-4" />
                   <span>Companies</span>
                 </Link>
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -335,79 +358,133 @@ export function AppNavbar() {
 
       {/* Mobile nav section */}
       {mobileMenuOpen && (
-        <div className="flex flex-col items-start gap-2 px-4 py-3 xl:hidden border-t">
-          {mainNavItems.map((item) => {
-            const isOpen = openMobileSection === item.key;
-            const toggleOpen = () =>
-              setOpenMobileSection(isOpen ? null : item.key);
-            const subItems = getSubNavItemsForSection(item.key);
+        <div className="fixed inset-0 z-50 xl:hidden">
+          {/* 🔥 Background overlay with blur */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMobileMenuOpen(false)}
+          />
 
-            return (
-              <div key={item.key} className="w-full">
-                <button
-                  onClick={() => {
-                    if (subItems.length) {
-                      toggleOpen();
-                    } else {
-                      router.push(item.href);
-                      setMobileMenuOpen(false);
-                    }
-                  }}
-                  className="w-full text-left text-sm py-2 text-gray-700 hover:bg-gray-100 rounded-md px-2 flex justify-between items-center"
-                >
-                  <span>{item.title}</span>
-                  {subItems.length > 0 && <span>{isOpen ? "▲" : "▼"}</span>}
-                </button>
-                {isOpen && subItems.length > 0 && (
-                  <div className="ml-4 mt-2 flex flex-col gap-2">
-                    {subItems.map((subItem) => (
-                      <Link
-                        key={subItem.title}
-                        href={subItem.href}
-                        className="text-sm text-gray-600 hover:text-black"
-                        onClick={() => {
-                          setMobileMenuOpen(false);
-                          setOpenMobileSection(null);
-                        }}
-                      >
-                        {subItem.title}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+          {/* 🔥 Sidebar */}
+          <div className="relative h-full w-72 bg-white py-10 shadow-2xl rounded-r-2xl p-5 flex flex-col overflow-y-auto animate-in slide-in-from-left">
+            {/* Header with close button */}
+            <div className="flex items-center justify-between mb-6">
+              <Link
+                href=""
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2"
+              >
+                <div className="h-9 w-9 flex items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
+                  <Building2 className="h-5 w-5 text-white" />
+                </div>
+                <span className="font-bold text-lg text-red-600">Sharp MS</span>
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+              >
+                <X className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
+
+            {/* 🔥 User profile card */}
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                router.push("/profile");
+              }}
+              className="flex items-center gap-3 p-3 mb-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition text-left"
+            >
+              <Avatar className="h-10 w-10">
+                <AvatarFallback className="bg-red-100 text-red-600 font-medium">
+                  {user?.fullName?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.fullName || "Guest User"}
+                </p>
+                <p className="text-xs text-gray-500">View Profile</p>
               </div>
-            );
-          })}
+              <User className="h-4 w-4 text-gray-400" />
+            </button>
 
-          {/* ✅ Mobile logout & settings */}
-          <div className="w-full border-t pt-3 mt-3">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                router.push("/dashboard/admin/company");
-              }}
-              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
-            >
-              <Building className="mr-2 h-4 w-4" /> Companies
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                router.push("/dashboard/admin/settings");
-              }}
-              className="text-sm w-full text-left text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 flex items-center"
-            >
-              <Settings className="mr-2 h-4 w-4" /> Settings
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleLogout();
-              }}
-              className="text-sm w-full text-left text-red-600 hover:bg-red-50 rounded-md px-2 py-2 flex items-center"
-            >
-              <LogOutIcon className="mr-2 h-4 w-4" /> Sign Out
-            </button>
+            {/* Main nav items */}
+            <div className="flex flex-col gap-2 flex-1 border-t">
+              {mainNavItems.map((item) => {
+                const isOpen = openMobileSection === item.key;
+                const toggleOpen = () =>
+                  setOpenMobileSection(isOpen ? null : item.key);
+                const subItems = getSubNavItemsForSection(item.key);
+
+                return (
+                  <div key={item.key}>
+                    <button
+                      onClick={() => {
+                        if (subItems.length) {
+                          toggleOpen();
+                        } else {
+                          router.push(item.href);
+                          setMobileMenuOpen(false);
+                        }
+                      }}
+                      className="w-full flex justify-between items-center px-3 py-3 text-sm font-medium rounded-lg hover:bg-gray-50 transition"
+                    >
+                      <span className="text-gray-800">{item.title}</span>
+                      {subItems.length > 0 && (
+                        <span className="text-black text-xs">
+                          {isOpen ? (
+                            <ChevronUp className="h-3 w-3" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3" />
+                          )}
+                        </span>
+                      )}
+                    </button>
+
+                    {isOpen && subItems.length > 0 && (
+                      <div className="ml-4 mt-2 flex flex-col gap-1 border-l pl-3">
+                        {subItems.map((subItem) => (
+                          <Link
+                            key={subItem.title}
+                            href={subItem.href}
+                            className="px-2 py-2 text-sm text-gray-600 rounded-md hover:bg-gray-100"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              setOpenMobileSection(null);
+                            }}
+                          >
+                            {subItem.title}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer actions */}
+            <div className="border-t relative top-[-100px] pt-4 space-y-2">
+              {/* <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  router.push("/company");
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                <Building className="h-4 w-4" /> Companies
+              </button> */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 rounded-lg hover:bg-red-50"
+              >
+                <LogOutIcon className="h-4 w-4" /> Sign Out
+              </button>
+            </div>
           </div>
         </div>
       )}

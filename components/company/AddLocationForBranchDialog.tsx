@@ -32,6 +32,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -50,6 +59,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
@@ -60,6 +70,7 @@ interface Location {
 
 interface AddLocationForBranchDialogProps {
   branchId: string;
+  existingLocations: Array<{ _id: string; name: string }>;
   onLocationCreated: (location: {
     _id: string;
     name: string;
@@ -75,6 +86,7 @@ interface AddLocationForBranchDialogProps {
 export default function AddLocationForBranchDialog({
   branchId,
   onLocationCreated,
+  existingLocations,
 }: AddLocationForBranchDialogProps) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [location, setLocation] = useState<Location>({
@@ -82,6 +94,7 @@ export default function AddLocationForBranchDialog({
     rooms: [
       {
         roomNumber: "",
+        capacity: 1,
         type: ROOM_PREFERENCE_TYPES.SINGLE,
         amenities: [],
       },
@@ -90,8 +103,33 @@ export default function AddLocationForBranchDialog({
   const { toast } = useToast();
   const { mutate, isPending } = useCreateLocation();
 
+  const [locationNameError, setLocationNameError] = useState<string | null>(
+    null
+  );
+  const [roomErrors, setRoomErrors] = useState<Record<number, string | null>>(
+    {}
+  );
+
   const updateLocationName = (value: string) => {
     setLocation((prev) => ({ ...prev, name: value }));
+
+    if (value.trim().length > 50) {
+      setLocationNameError("Location name cannot exceed 50 characters.");
+      return;
+    }
+
+    if (
+      existingLocations.some(
+        (loc: any) =>
+          loc.name.trim().toLowerCase() === value.trim().toLowerCase()
+      )
+    ) {
+      setLocationNameError(
+        "A location with this name already exists in this branch."
+      );
+    } else {
+      setLocationNameError(null);
+    }
   };
 
   const addRoom = () => {
@@ -102,6 +140,7 @@ export default function AddLocationForBranchDialog({
         {
           roomNumber: "",
           type: ROOM_PREFERENCE_TYPES.SINGLE,
+          capacity: 1,
           amenities: [],
         },
       ],
@@ -121,6 +160,17 @@ export default function AddLocationForBranchDialog({
       };
       return { ...prev, rooms: updatedRooms };
     });
+
+    if (field === "roomNumber") {
+      if (typeof value === "string" && value.trim().length > 10) {
+        setRoomErrors((prev) => ({
+          ...prev,
+          [roomIndex]: "Room number cannot exceed 10 characters.",
+        }));
+      } else {
+        setRoomErrors((prev) => ({ ...prev, [roomIndex]: null }));
+      }
+    }
   };
 
   const removeRoom = (roomIndex: number) => {
@@ -128,6 +178,11 @@ export default function AddLocationForBranchDialog({
       ...prev,
       rooms: prev.rooms.filter((_, i) => i !== roomIndex),
     }));
+    setRoomErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[roomIndex];
+      return newErrors;
+    });
   };
 
   const toggleAmenity = (roomIndex: number, amenity: string) => {
@@ -154,21 +209,9 @@ export default function AddLocationForBranchDialog({
   };
 
   const handleSubmit = () => {
-    if (!location.name) {
-      toast({
-        title: "Error",
-        description: "Location name is required.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!location.name || locationNameError) return;
 
-    if (location.rooms.some((room) => !room.roomNumber || !room.type)) {
-      toast({
-        title: "Error",
-        description: "All rooms must have a room number and capacity.",
-        variant: "destructive",
-      });
+    if (location.rooms.some((room, i) => !room.roomNumber || roomErrors[i])) {
       return;
     }
 
@@ -180,25 +223,17 @@ export default function AddLocationForBranchDialog({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         },
       ],
     };
 
-    // ✅ Log the data being sent
-    console.log("Sending location data to API:", locationData);
-
     mutate(locationData, {
       onSuccess: (data) => {
-        // ✅ Log the API response
-        console.log("Location created successfully:", data);
-
         const createdLocation = data.locations[0];
-        // const createdRooms = data.locations.rooms;
-        toast({
-          title: "Location Created Successfully",
-        });
+        toast({ title: "Location Created Successfully" });
         if (createdLocation) {
           onLocationCreated({
             _id: createdLocation._id,
@@ -213,18 +248,20 @@ export default function AddLocationForBranchDialog({
             {
               roomNumber: "",
               type: ROOM_PREFERENCE_TYPES.SINGLE,
+              capacity: 1,
               amenities: [],
             },
           ],
         });
       },
-      onError: (error) => {
-        // ✅ Log the error response
-        console.error("Failed to create location:", error);
-
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create Location.";
         toast({
           title: "Error",
-          description: "Failed to create location",
+          description: message,
           variant: "destructive",
         });
       },
@@ -233,9 +270,11 @@ export default function AddLocationForBranchDialog({
 
   const isFormValid =
     location.name.trim() !== "" &&
+    !locationNameError &&
     location.rooms.every(
-      (room) =>
+      (room, i) =>
         room.roomNumber.trim() !== "" &&
+        !roomErrors[i] &&
         room.type.trim() !== "" &&
         room.amenities.length > 0
     );
@@ -243,12 +282,12 @@ export default function AddLocationForBranchDialog({
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+        <Button className="text-xs sm:text-sm" size="sm">
+          {/* <Plus className="h-4 w-4" /> */}
           Add Location
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Location</DialogTitle>
           <DialogDescription>
@@ -264,6 +303,9 @@ export default function AddLocationForBranchDialog({
               onChange={(e) => updateLocationName(e.target.value)}
               placeholder="e.g., Floor 1, East Wing"
             />
+            {locationNameError && (
+              <p className="text-red-500 text-sm">{locationNameError}</p>
+            )}
           </div>
           <div className="space-y-4">
             <Label>Rooms</Label>
@@ -293,16 +335,29 @@ export default function AddLocationForBranchDialog({
                       }
                       placeholder="e.g., 101, A-1"
                     />
+                    {roomErrors[roomIndex] && (
+                      <p className="text-red-500 text-sm">
+                        {roomErrors[roomIndex]}
+                      </p>
+                    )}
                   </div>
-                  <div className="space-y-2">
+                  <div>
                     <Label>Room Type *</Label>
                     <Select
                       value={room.type}
-                      onValueChange={(value) =>
-                        updateRoom(roomIndex, "type", value)
-                      }
+                      onValueChange={(value) => {
+                        updateRoom(roomIndex, "type", value);
+                        const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                        if (autoCapacity) {
+                          updateRoom(
+                            roomIndex,
+                            "capacity",
+                            String(autoCapacity)
+                          );
+                        }
+                      }}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="mt-2">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -314,11 +369,26 @@ export default function AddLocationForBranchDialog({
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="hidden space-y-2">
+                    <Label>Room Capacity *</Label>
+                    <Select value={room.capacity} disabled>
+                      <SelectTrigger className="text-sm sm:text-base">
+                        <SelectValue placeholder="Auto-selected" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <SelectItem key={num} value={String(num)}>
+                            {num}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label>Amenities</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {ROOM_AMENITIES.map((amenity) => (
                       <div
                         key={amenity}

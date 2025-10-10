@@ -2,74 +2,44 @@
 
 FROM node:20-alpine AS base
 
-# Install dependencies only when needed
+# -----------------------------------------------------
+# 1. Dependencies
+# -----------------------------------------------------
 FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/main#nodealpine to understand why libc6-compat might be needed.
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* .npmrc* ./
+COPY package.json pnpm-lock.yaml ./
+RUN corepack enable pnpm && pnpm install --no-frozen-lockfile
 
-RUN \
-  if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && pnpm install --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then \
-    npm ci --force; \
-  elif [ -f yarn.lock ]; then \
-    yarn install --frozen-lockfile; \
-  else \
-    echo "No lockfile found, falling back to npm install" && npm install --force; \
-  fi
-
-# Rebuild the source code only when needed
+# -----------------------------------------------------
+# 2. Builder
+# -----------------------------------------------------
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED=1
+RUN corepack enable pnpm && pnpm run build
 
-RUN \
-  if [ -f pnpm-lock.yaml ]; then \
-    corepack enable pnpm && pnpm run build; \
-  elif [ -f package-lock.json ]; then \
-    npm run build; \
-  elif [ -f yarn.lock ]; then \
-    yarn run build; \
-  else \
-    echo "No lockfile found, falling back to npm run build" && npm run build; \
-  fi
-
-# Production image, copy all the files and run next
+# -----------------------------------------------------
+# 3. Runner
+# -----------------------------------------------------
 FROM base AS runner
 WORKDIR /app
-
 ENV NODE_ENV=production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN apk add --no-cache python3 make g++
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
-
-EXPOSE 3000
-
-ENV PORT=3000
-
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
+EXPOSE 3002
+ENV PORT=3002
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

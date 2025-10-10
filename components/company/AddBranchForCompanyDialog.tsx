@@ -33,6 +33,15 @@ export const ROOM_PREFERENCE_TYPES = {
   QUINTUPLE: "Quintuple Room (Capacity 5)",
 };
 
+const ROOM_TYPE_CAPACITY: Record<string, number> = {
+  "Single Room (Capacity 1)": 1,
+  "Double Room (Capacity 2)": 2,
+  "Twin Room (Capacity 2 - 2 single beds)": 2,
+  "Triple Room (Capacity 3)": 3,
+  "Quad Room (Capacity 4)": 4,
+  "Quintuple Room (Capacity 5)": 5,
+};
+
 const ROOM_AMENITIES = [
   "Wi-Fi",
   "Air Conditioning",
@@ -51,6 +60,7 @@ const ROOM_AMENITIES = [
 interface Room {
   roomNumber: string;
   type: string;
+  capacity: any;
   amenities: string[];
 }
 
@@ -67,9 +77,11 @@ interface Branch {
 
 export default function AddBranchForCompanyDialog({
   companyId,
+  existingBranches,
   onBranchCreated,
 }: {
   companyId: string;
+  existingBranches: { _id: string; name: string }[];
   onBranchCreated: (branch: {
     _id: string;
     name: string;
@@ -88,6 +100,7 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
             amenities: [],
           },
         ],
@@ -97,7 +110,24 @@ export default function AddBranchForCompanyDialog({
   const { toast } = useToast();
   const { mutate, isPending } = useCreateBranch();
 
+  const [branchNameError, setBranchNameError] = useState<string | null>(null);
+
   const updateBranch = (field: keyof Branch, value: string) => {
+    if (field === "name") {
+      const exists = existingBranches.some(
+        (b) => b.name.trim().toLowerCase() === value.trim().toLowerCase()
+      );
+      if (exists) {
+        setBranchNameError(
+          "A branch with this name already exists in this company."
+        );
+      } else if (value.length > 50) {
+        setBranchNameError("Branch name cannot exceed 50 characters.");
+      } else {
+        setBranchNameError(null);
+      }
+    }
+
     setBranch((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -112,6 +142,7 @@ export default function AddBranchForCompanyDialog({
             {
               roomNumber: "",
               type: ROOM_PREFERENCE_TYPES.SINGLE,
+              capacity: 1,
               amenities: [],
             },
           ],
@@ -148,6 +179,7 @@ export default function AddBranchForCompanyDialog({
           {
             roomNumber: "",
             type: ROOM_PREFERENCE_TYPES.SINGLE,
+            capacity: 1,
             amenities: [],
           },
         ],
@@ -223,14 +255,7 @@ export default function AddBranchForCompanyDialog({
   };
 
   const handleSubmit = () => {
-    if (!branch.name || !branch.address) {
-      toast({
-        title: "Error",
-        description: "Branch name and address are required.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!isFormValid()) return;
 
     const branchData = {
       companyId,
@@ -242,6 +267,7 @@ export default function AddBranchForCompanyDialog({
           rooms: location.rooms.map((room) => ({
             roomNumber: room.roomNumber,
             type: room.type,
+            capacity: room.capacity,
             amenities: room.amenities.length > 0 ? room.amenities : [""],
           })),
         })),
@@ -254,12 +280,7 @@ export default function AddBranchForCompanyDialog({
         toast({
           title: "Branch Created Successfully",
         });
-        // onBranchCreated({
-        //   _id: data._id, // Assuming the API returns the new branch ID
-        //   name: branch.name,
-        //   address: branch.address,
-        //   locations: branch.locations,
-        // });
+
         onBranchCreated(createdBranch);
         setIsAddDialogOpen(false);
         setBranch({
@@ -272,6 +293,7 @@ export default function AddBranchForCompanyDialog({
                 {
                   roomNumber: "",
                   type: ROOM_PREFERENCE_TYPES.SINGLE,
+                  capacity: 1,
                   amenities: [],
                 },
               ],
@@ -279,25 +301,52 @@ export default function AddBranchForCompanyDialog({
           ],
         });
       },
-      onError: () => {
+
+      onError: (error: any) => {
+        const message =
+          error.response?.data?.error ||
+          error.message ||
+          "Failed to create branch.";
         toast({
           title: "Error",
-          description: "Failed to create branch",
+          description: message,
           variant: "destructive",
         });
       },
     });
   };
 
+  const isFormValid = () => {
+    if (branchNameError) return false;
+    if (!branch.name.trim() || branch.name.length > 50) return false;
+    if (!branch.address.trim() || branch.address.length > 100) return false;
+
+    for (const location of branch.locations) {
+      if (!location.name.trim() || location.name.length > 100) return false;
+
+      for (const room of location.rooms) {
+        if (
+          !room.roomNumber.trim() ||
+          room.roomNumber.length > 10 ||
+          !room.type.trim()
+        )
+          return false;
+        if (room.amenities.length === 0) return false;
+      }
+    }
+
+    return true;
+  };
+
   return (
     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <Plus className="h-4 w-4 mr-2" />
+          {/* <Plus className="h-4 w-4 mr-2" /> */}
           Add Branch
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Branch</DialogTitle>
           <DialogDescription>
@@ -305,6 +354,7 @@ export default function AddBranchForCompanyDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          {/* Branch Name */}
           <div className="space-y-2">
             <Label htmlFor="branch-name">Branch Name *</Label>
             <Input
@@ -313,7 +363,12 @@ export default function AddBranchForCompanyDialog({
               onChange={(e) => updateBranch("name", e.target.value)}
               placeholder="Enter branch name"
             />
+            {branchNameError && (
+              <p className="text-red-600 text-sm">{branchNameError}</p>
+            )}
           </div>
+
+          {/* Branch Address */}
           <div className="space-y-2">
             <Label htmlFor="branch-address">Branch Address *</Label>
             <Textarea
@@ -323,7 +378,14 @@ export default function AddBranchForCompanyDialog({
               placeholder="Enter complete branch address"
               rows={3}
             />
+            {branch.address.length > 100 && (
+              <p className="text-red-500 text-sm">
+                Address cannot exceed 100 characters.
+              </p>
+            )}
           </div>
+
+          {/* Locations */}
           <div className="space-y-4">
             <Label>Locations</Label>
             {branch.locations.map((location, locationIndex) => (
@@ -348,6 +410,12 @@ export default function AddBranchForCompanyDialog({
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
+                {location.name.length > 100 && (
+                  <p className="text-red-500 text-sm">
+                    Location name cannot exceed 100 characters.
+                  </p>
+                )}
+
                 <div className="space-y-4">
                   {location.rooms.map((room, roomIndex) => (
                     <div
@@ -380,21 +448,35 @@ export default function AddBranchForCompanyDialog({
                             }
                             placeholder="e.g., 101, A-1"
                           />
+                          {room.roomNumber.length > 10 && (
+                            <p className="text-red-500 text-sm">
+                              Room number cannot exceed 10 characters.
+                            </p>
+                          )}
                         </div>
-                        <div className="space-y-2">
+                        <div>
                           <Label>Room Type *</Label>
                           <Select
                             value={room.type}
-                            onValueChange={(value) =>
+                            onValueChange={(value) => {
                               updateRoom(
                                 locationIndex,
                                 roomIndex,
                                 "type",
                                 value
-                              )
-                            }
+                              );
+                              const autoCapacity = ROOM_TYPE_CAPACITY[value];
+                              if (autoCapacity) {
+                                updateRoom(
+                                  locationIndex,
+                                  roomIndex,
+                                  "capacity",
+                                  String(autoCapacity)
+                                );
+                              }
+                            }}
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -408,11 +490,26 @@ export default function AddBranchForCompanyDialog({
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="hidden space-y-2">
+                          <Label>Room Capacity *</Label>
+                          <Select value={room.capacity} disabled>
+                            <SelectTrigger className="text-sm sm:text-base">
+                              <SelectValue placeholder="Auto-selected" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {[1, 2, 3, 4, 5].map((num) => (
+                                <SelectItem key={num} value={String(num)}>
+                                  {num}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
 
                       <div className="space-y-2">
                         <Label>Amenities</Label>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                           {ROOM_AMENITIES.map((amenity) => (
                             <div
                               key={amenity}
@@ -459,7 +556,7 @@ export default function AddBranchForCompanyDialog({
               className="w-full border-dashed border-2 h-10"
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4" />
               Add Location
             </Button>
           </div>
@@ -472,7 +569,7 @@ export default function AddBranchForCompanyDialog({
           >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={isPending}>
+          <Button onClick={handleSubmit} disabled={isPending || !isFormValid()}>
             {isPending ? "Adding..." : "Add Branch"}
           </Button>
         </div>

@@ -26,6 +26,21 @@ import api from "@/lib/axios";
 import { useCompanies } from "@/hooks/useCompnay";
 import { useBranches } from "@/hooks/useGetBranches";
 import { useLocations } from "@/hooks/useGetLocations";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
 
 const createStaff = async (staffData: any) => {
   const response = await api.post("/user/create", staffData);
@@ -39,19 +54,22 @@ export default function AddStaffDialog() {
   const { data: locations } = useLocations();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(
-    user?.companies?.[0]?._id || ""
-  );
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string>(""); // 🔹 Only one role
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     joinDate: "",
+    shiftStart: "",
+    shiftEnd: "",
   });
+
   const [errors, setErrors] = useState({
     name: "",
     email: "",
@@ -60,61 +78,41 @@ export default function AddStaffDialog() {
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
-  const isGeneralManager = selectedRoles.includes("Manager");
-  const isAssistantManagerOrStaff = selectedRoles.some(
-    (role) => role === "AssistantManager" || role === "Staff"
-  );
-
-  // Filter branches by selected company
-  // const filteredBranches =
-  //   branches?.filter(
-  //     (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
-  //   ) || [];
-
-  // // Filter locations by selected branches
-  // const filteredLocations =
-  //   locations?.filter((location) => {
-  //     const selectedBranchIds = filteredBranches
-  //       .filter((b) => selectedBranches.includes(b.name))
-  //       .map((b) => b._id);
-  //     return (
-  //       selectedBranches.length === 0 ||
-  //       selectedBranchIds.includes(location.branchId)
-  //     );
-  //   }) || [];
+  const isManager = selectedRole === "Manager";
+  const isAssistantManager = selectedRole === "AssistantManager";
+  const isStaff = selectedRole === "Staff";
 
   const filteredBranches =
     branches?.filter(
       (branch) => !selectedCompany || branch.companyId?._id === selectedCompany
     ) || [];
 
+  // useEffect(() => {
+  //   console.log("filteredBranches", filteredBranches);
+  // });
+
+  const allLocations =
+    branches?.flatMap((branch) =>
+      branch.locations.map((loc) => ({
+        ...loc,
+        branchId: branch._id, // attach branchId manually
+      }))
+    ) || [];
+
+  // console.log("allLocations", allLocations);
+  // console.log("selectedBranches", selectedBranches);
+
   const filteredLocations =
-    locations?.filter((location) => {
-      if (selectedBranches.length === 0) {
-        return true; // Show all locations if no branches selected
-      }
-      const selectedBranchIds = filteredBranches
-        .filter((b) => selectedBranches.includes(b.name))
-        .map((b) => b._id);
-      console.log("selectedBranchIds:", selectedBranchIds);
-      console.log("location.branchId:", location.branchId);
-      return selectedBranchIds.includes(location.branchId);
+    allLocations.filter((location) => {
+      if (selectedBranches.length === 0) return true;
+      return selectedBranches.includes(
+        branches?.find((b) => b._id === location.branchId)?.name || ""
+      );
     }) || [];
 
-  useEffect(() => {
-    console.log("selectedBranches:", selectedBranches);
-    console.log("filteredBranches:", filteredBranches);
-    console.log("locations:", locations);
-    console.log("filteredLocations:", filteredLocations);
-  }, [selectedBranches, filteredBranches, locations, filteredLocations]);
-
-  useEffect(() => {
-    console.log("locationssss", filteredLocations);
-  });
-
-  useEffect(() => {
-    console.log("Raw locations data:", JSON.stringify(locations, null, 2));
-  }, [locations]);
+  // useEffect(() => {
+  //   console.log("filteredlocations", filteredLocations);
+  // });
 
   const createMutation = useMutation({
     mutationFn: createStaff,
@@ -123,7 +121,7 @@ export default function AddStaffDialog() {
         title: "Staff Member Added",
         description: `Staff member ${
           data.data?.fullName || "new staff"
-        } has been successfully added.`,
+        } added.`,
       });
       queryClient.invalidateQueries({ queryKey: ["staffList"] });
       setIsAddDialogOpen(false);
@@ -134,84 +132,89 @@ export default function AddStaffDialog() {
         title: "Error Adding Staff",
         description:
           error.response?.data?.error ||
-          "Failed to add staff member. Please try again.",
+          error.response?.data?.details ||
+          error.message ||
+          "Failed to add staff member.",
         variant: "destructive",
       });
     },
   });
 
+  const validateEmail = (email: string) => /^\S+@\S+\.\S+$/.test(email.trim());
+
   const validateForm = () => {
+    let valid = true;
     const newErrors = { name: "", email: "", phone: "", joinDate: "" };
-    let isValid = true;
 
     if (!formData.name.trim()) {
       newErrors.name = "Full name is required";
-      isValid = false;
+      valid = false;
+    } else if (formData.name.length > 32) {
+      newErrors.name = "Name must not exceed 32 characters";
+      valid = false;
     }
-    if (!formData.email.trim() || !/^\S+@\S+\.\S+$/.test(formData.email)) {
+
+    if (!validateEmail(formData.email)) {
       newErrors.email = "Valid email is required";
-      isValid = false;
+      valid = false;
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = "Phone number is required";
-      isValid = false;
+
+    const phoneErr = validatePhone(formData.phone);
+    if (phoneErr) {
+      newErrors.phone = phoneErr;
+      valid = false;
     }
+
     if (!formData.joinDate) {
       newErrors.joinDate = "Join date is required";
-      isValid = false;
+      valid = false;
     }
 
     setErrors(newErrors);
-    return isValid;
+    return valid;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    setFormData((prev) => ({ ...prev, [id]: value }));
+
+    setFormData((prev) => {
+      let updated = { ...prev, [id]: value };
+
+      if (id === "shiftStart" && value) {
+        const [h, m] = value.split(":").map(Number);
+        const d = new Date();
+        d.setHours(h, m, 0, 0);
+        d.setHours(d.getHours() + 12);
+
+        updated.shiftEnd = `${String(d.getHours()).padStart(2, "0")}:${String(
+          d.getMinutes()
+        ).padStart(2, "0")}`;
+      }
+      return updated;
+    });
+
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
   const handleRoleChange = (value: string) => {
-    setSelectedRoles((prev) =>
-      prev.includes(value)
-        ? prev.filter((role) => role !== value)
-        : [...prev, value]
-    );
+    setSelectedRole(value);
     setSelectedBranches([]);
     setSelectedLocations([]);
-  };
-
-  const handleBranchChange = (value: string) => {
-    if (isGeneralManager) {
-      setSelectedBranches((prev) =>
-        prev.includes(value)
-          ? prev.filter((branch) => branch !== value)
-          : [...prev, value]
-      );
-    } else {
-      setSelectedBranches([value]);
-    }
-    setSelectedLocations([]);
-  };
-
-  const handleLocationChange = (value: string) => {
-    if (isAssistantManagerOrStaff) {
-      setSelectedLocations((prev) =>
-        prev.includes(value)
-          ? prev.filter((loc) => loc !== value)
-          : [...prev, value]
-      );
-    } else {
-      setSelectedLocations([value]);
-    }
   };
 
   const resetForm = () => {
-    setSelectedRoles([]);
+    setSelectedRole("");
     setSelectedBranches([]);
     setSelectedLocations([]);
-    setSelectedCompany(user?.companies?.[0]?._id || "");
-    setFormData({ name: "", email: "", phone: "", joinDate: "" });
+    setSelectedCompany("");
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      joinDate: "",
+      shiftStart: "",
+      shiftEnd: "",
+    });
     setErrors({ name: "", email: "", phone: "", joinDate: "" });
   };
 
@@ -223,16 +226,26 @@ export default function AddStaffDialog() {
         const branch = filteredBranches.find((b) => b.name === branchName);
         return branch ? branch._id : null;
       })
-      .filter((id) => id !== null);
+      .filter(Boolean);
 
-    const locationIds = selectedLocations
-      .map((locationName) => {
-        const location = filteredLocations.find(
-          (loc) => loc.name === locationName
-        );
-        return location ? location._id : null;
-      })
-      .filter((id) => id !== null);
+    let locationIds: string[] = [];
+
+    if (isManager || isAssistantManager) {
+      // Manager → multiple branches ki sari locations
+      // Assistant Manager → single branch ki sari locations
+      locationIds = branchIds.flatMap((branchId) => {
+        const branch = filteredBranches.find((b) => b._id === branchId);
+        return branch?.locations.map((loc) => loc._id) || [];
+      });
+    } else {
+      // Staff → manually selected locations
+      locationIds = selectedLocations
+        .map((locName) => {
+          const loc = filteredLocations.find((l) => l.name === locName);
+          return loc ? loc._id : null;
+        })
+        .filter(Boolean) as string[];
+    }
 
     const backendData = {
       companyId: selectedCompany,
@@ -240,191 +253,144 @@ export default function AddStaffDialog() {
       emailAddress: formData.email,
       phoneNumber: formData.phone,
       joinDate: formData.joinDate,
-      roles: selectedRoles,
-      branchId: branchIds,
-      locations: locationIds,
+      start: formData.shiftStart,
+      end: formData.shiftEnd,
+      roles: [selectedRole],
+      branches: branchIds,
+      locations: locationIds, // ✅ Manager ke liye auto filled
     };
 
     createMutation.mutate(backendData);
   };
 
   const getOneMonthAgoDate = () => {
-    const now = new Date();
-    now.setMonth(now.getMonth() - 1);
-    return now.toISOString().split("T")[0];
+    const d = new Date();
+    d.setMonth(d.getMonth() - 1);
+    return d.toISOString().split("T")[0];
   };
 
   return (
     <Dialog
       open={isAddDialogOpen}
-      onOpenChange={(open) => {
-        setIsAddDialogOpen(open);
-        if (!open) resetForm();
+      onOpenChange={(o) => {
+        setIsAddDialogOpen(o);
+        if (!o) resetForm();
       }}
     >
       <DialogTrigger asChild>
         <Button size="sm" disabled={createMutation.isPending}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Staff
+          <Plus className="h-4 w-4 mr-2" /> Add Staff
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[500px] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Staff Member</DialogTitle>
           <DialogDescription>
-            Enter the details for the new staff member
+            Enter details for the new staff member
           </DialogDescription>
         </DialogHeader>
+
         <div className="grid gap-4 py-4">
-          {companies?.length > 1 && (
-            <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Select
-                onValueChange={(value) => {
-                  setSelectedCompany(value);
-                  setSelectedBranches([]);
-                  setSelectedLocations([]);
-                }}
-                value={selectedCompany}
-                disabled={createMutation.isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies?.map((company) => (
-                    <SelectItem key={company._id} value={company._id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+          {/* Company dropdown */}
+          {/* {companies?.length > 1 && ( */}
+          <div className="space-y-2">
+            <Label>Company</Label>
+            <Select
+              onValueChange={(val) => {
+                setSelectedCompany(val);
+                setSelectedBranches([]);
+                setSelectedLocations([]);
+              }}
+              value={selectedCompany}
+              disabled={createMutation.isPending}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select company" />
+              </SelectTrigger>
+              <SelectContent>
+                {companies?.map((c) => (
+                  <SelectItem key={c._id} value={c._id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* )} */}
+
+          {/* Name & Email */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Full Name</Label>
               <Input
                 id="name"
-                placeholder="Enter full name"
                 value={formData.name}
-                onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, name: value }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    name:
+                      value.length > 32
+                        ? "Name must not exceed 32 characters"
+                        : "",
+                  }));
+                }}
+                placeholder="Enter full name"
               />
               {errors.name && (
                 <p className="text-sm text-red-600">{errors.name}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+
+            <div>
+              <Label>Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter email address"
                 value={formData.email}
-                onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setFormData((prev) => ({ ...prev, email: value }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    email: validateEmail(value) ? "" : "Valid email is required",
+                  }));
+                }}  
+                placeholder="Enter email"
               />
               {errors.email && (
                 <p className="text-sm text-red-600">{errors.email}</p>
               )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
+
+          {/* Phone & Join Date */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Phone Number</Label>
+              <StyledPhoneInput
                 id="phone"
-                placeholder="Enter phone number"
                 value={formData.phone}
-                onChange={handleInputChange}
-                disabled={createMutation.isPending}
+                onChange={(val) => {
+                  setFormData((prev) => ({ ...prev, phone: val || "" }));
+                  setErrors((prev) => ({
+                    ...prev,
+                    phone: validatePhone(val || ""),
+                  }));
+                }}
+                error={errors.phone}
+                defaultCountry="GB"
               />
-              {errors.phone && (
-                <p className="text-sm text-red-600">{errors.phone}</p>
-              )}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role(s)</Label>
-              <Select
-                onValueChange={handleRoleChange}
-                value=""
-                disabled={createMutation.isPending}
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedRoles.length > 0
-                        ? selectedRoles.join(", ")
-                        : "Select role(s)"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedRoles.includes(role)}
-                          readOnly
-                          className="mr-2"
-                        />
-                        {role}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch(es)</Label>
-              <Select
-                onValueChange={handleBranchChange}
-                value=""
-                disabled={
-                  selectedRoles.length === 0 ||
-                  (companies?.length > 1 && !selectedCompany) ||
-                  createMutation.isPending
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedBranches.length > 0
-                        ? selectedBranches.join(", ")
-                        : "Select branch(es)"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredBranches.map((branch) => (
-                    <SelectItem key={branch._id} value={branch.name}>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedBranches.includes(branch.name)}
-                          readOnly
-                          className="mr-2"
-                          disabled={!isGeneralManager}
-                        />
-                        {branch.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="joinDate">Join Date</Label>
+
+            <div>
+              <Label>Join Date</Label>
               <Input
                 id="joinDate"
                 type="date"
                 value={formData.joinDate}
                 onChange={handleInputChange}
-                disabled={createMutation.isPending}
                 min={getOneMonthAgoDate()}
               />
               {errors.joinDate && (
@@ -432,65 +398,175 @@ export default function AddStaffDialog() {
               )}
             </div>
           </div>
-          {isAssistantManagerOrStaff && (
-            <div className="space-y-2">
-              <Label htmlFor="location">Location(s)</Label>
-              <Select
-                onValueChange={handleLocationChange}
-                value=""
-                disabled={
-                  selectedBranches.length === 0 || createMutation.isPending
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue
-                    placeholder={
-                      selectedLocations.length > 0
-                        ? selectedLocations.join(", ")
-                        : "Select location(s)"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredLocations.map((location) => (
-                    <SelectItem key={location._id} value={location.name}>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedLocations.includes(location.name)}
-                          readOnly
-                          className="mr-2"
-                        />
-                        {location.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+          {/* Shift Times */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label>Shift Start</Label>
+              <Input
+                id="shiftStart"
+                type="time"
+                step="60"
+                value={formData.shiftStart}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <Label>Shift End</Label>
+              <Input
+                id="shiftEnd"
+                type="time"
+                step="60"
+                value={formData.shiftEnd}
+                readOnly
+              />
+            </div>
+          </div>
+
+          {/* Role */}
+          <div>
+            <Label>Role</Label>
+            <Select value={selectedRole} onValueChange={handleRoleChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Branch selection */}
+          {selectedRole && (
+            <div>
+              <Label>Branch{isManager ? "(es)" : ""}</Label>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                  >
+                    {selectedBranches.length > 0
+                      ? selectedBranches.join(", ")
+                      : "Select branches"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  side="bottom"
+                  align="start"
+                >
+                  <Command className="">
+                    <CommandInput placeholder="Search branches..." />
+                    <CommandEmpty>No branch found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredBranches.map((b) => (
+                        <CommandItem
+                          key={b._id}
+                          onSelect={() => {
+                            if (isManager) {
+                              setSelectedBranches((prev) =>
+                                prev.includes(b.name)
+                                  ? prev.filter((v) => v !== b.name)
+                                  : [...prev, b.name]
+                              );
+                            } else {
+                              setSelectedBranches([b.name]); // single select for non-managers
+                            }
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedBranches.includes(b.name)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {b.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
+
+          {/* Location selection (only Staff) */}
+          {isStaff && selectedBranches.length > 0 && (
+            <div>
+              <Label>Location(s)</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between"
+                  >
+                    {selectedLocations.length > 0
+                      ? selectedLocations.join(", ")
+                      : "Select locations"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[300px] p-0"
+                  side="bottom"
+                  align="start"
+                >
+                  <Command>
+                    <CommandInput placeholder="Search locations..." />
+                    <CommandEmpty>No location found.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredLocations.map((loc) => (
+                        <CommandItem
+                          key={loc._id}
+                          onSelect={() => {
+                            setSelectedLocations((prev) =>
+                              prev.includes(loc.name)
+                                ? prev.filter((v) => v !== loc.name)
+                                : [...prev, loc.name]
+                            );
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedLocations.includes(loc.name)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            )}
+                          />
+                          {loc.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </div>
+
+        {/* Footer */}
         <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsAddDialogOpen(false);
-              resetForm();
-            }}
-            disabled={createMutation.isPending}
-          >
-            Cancel
-          </Button>
           <Button
             onClick={handleAddStaff}
             disabled={
               !formData.name ||
-              !formData.email ||
+              formData.name.length > 32 ||
+              !validateEmail(formData.email) ||
               !formData.phone ||
+              !!validatePhone(formData.phone) ||
               !formData.joinDate ||
-              selectedRoles.length === 0 ||
+              !selectedRole ||
               selectedBranches.length === 0 ||
-              (companies?.length > 1 && !selectedCompany) ||
               createMutation.isPending
             }
           >

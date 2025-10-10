@@ -14,15 +14,17 @@ export default function StatsCards() {
     queryFn: fetchStaffMembers,
   });
 
+  console.log("data", data);
+
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">Total Staff</p>
               <p className="text-2xl font-bold">
-                {isLoading ? "..." : data?.count || 0}
+                {isLoading ? "..." : data?.totalCount || 0}
               </p>
             </div>
             <Users className="h-8 w-8 text-blue-600" />
@@ -33,8 +35,14 @@ export default function StatsCards() {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active Today</p>
-              <p className="text-2xl font-bold">186</p>
+              <p className="text-sm text-muted-foreground">Active Staff</p>
+              <p className="text-2xl font-bold">
+                {isLoading
+                  ? "..."
+                  : data?.users?.filter(
+                      (user: any) => user?.status === "Active"
+                    ).length || 0}
+              </p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
@@ -42,23 +50,15 @@ export default function StatsCards() {
       </Card>
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">On Leave</p>
-              <p className="text-2xl font-bold">12</p>
-            </div>
-            <Calendar className="h-8 w-8 text-orange-600" />
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Avg Hours/Week</p>
-              <p className="text-2xl font-bold">38.5</p>
-            </div>
-            <Clock className="h-8 w-8 text-purple-600" />
+          <div>
+            <p className="text-sm text-muted-foreground">Inactive Staff</p>
+            <p className="text-2xl font-bold">
+              {isLoading
+                ? "..."
+                : data?.users?.filter(
+                    (user: any) => user?.status === "Inactive"
+                  ).length || 0}
+            </p>
           </div>
         </CardContent>
       </Card>

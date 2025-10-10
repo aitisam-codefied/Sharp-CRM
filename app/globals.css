@@ -24,8 +24,10 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 355 100% 75%;
     --radius: 0.5rem;
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
-
 
   .dark {
     --background: 222.2 84% 4.9%;
@@ -124,4 +126,32 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary));
+}
+
+/* Hide scrollbars on the chip row */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Reserve space for the bottom nav on native */
+.has-bottom-nav {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+}
+
+/* Reserve space for the top nav / status bar on native */
+.has-top-nav {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }

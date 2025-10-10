@@ -1,11 +1,11 @@
 // next.config.js
 
-import withPWA from 'next-pwa';
+import withPWA from "next-pwa";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export',
-  output: 'standalone',
+  // output: "export",
+  output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -18,13 +18,11 @@ const nextConfig = {
   // You can add more Next.js settings here as needed
 };
 
-export default nextConfig
+const pwaConfig = withPWA({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: false,
+});
 
-// const pwaConfig = withPWA({
-//   dest: 'public',
-//   register: true,
-//   skipWaiting: true,
-//   disable: false,
-// });
-
-// export default pwaConfig(nextConfig);
+export default pwaConfig(nextConfig);

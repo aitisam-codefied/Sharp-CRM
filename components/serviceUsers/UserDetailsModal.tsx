@@ -8,6 +8,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ServiceUser } from "@/lib/types";
 import {
   MapPin,
@@ -20,28 +28,180 @@ import {
   Stethoscope,
   FileSignature,
   Users as UsersIcon,
+  UserIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useMedicalStaff } from "@/hooks/useGetMedicalStaff";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import api from "@/lib/axios";
+import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserDetailsModalProps {
   user: ServiceUser | null;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  forceAssignDropdown?: boolean;
+  setAssigningUserId?: (id: string | null) => void;
 }
 
 export function UserDetailsModal({
   user,
   isOpen,
   onOpenChange,
+  forceAssignDropdown = false,
+  setAssigningUserId,
 }: UserDetailsModalProps) {
   if (!user) return null;
 
+  const router = useRouter();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAssignDropdownForMedic, setShowAssignDropdownForMedic] =
+    useState(false);
+  const [showAssignDropdownForDentist, setShowAssignDropdownForDentist] =
+    useState(false);
+  const [selectedMedicId, setSelectedMedicId] = useState<string | null>(null);
+  const [selectedDentistId, setSelectedDentistId] = useState<string | null>(
+    null
+  );
+
+  const { data } = useMedicalStaff(500);
+  const medicalStaff: any[] = Array.isArray(data?.results)
+    ? data.results.filter((staff: any) => staff.status === "Active")
+    : [];
+
+  const medicalRef = useRef<HTMLDivElement | null>(null);
+
+  // Track query status to know when data refreshes
+  const { data: guestData, isFetching } = useQuery({
+    queryKey: ["guests", user._id],
+    enabled: isOpen, // Only fetch when modal is open
+  });
+
+  useEffect(() => {
+    const handler = () => {
+      if (medicalRef.current) {
+        medicalRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    };
+
+    document.addEventListener("scrollToMedical", handler);
+    return () => {
+      document.removeEventListener("scrollToMedical", handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isOpen && forceAssignDropdown) {
+      setShowAssignDropdownForMedic(true);
+      setShowAssignDropdownForDentist(true);
+    }
+  }, [isOpen, forceAssignDropdown]);
+
+  // Clear assigningUserId when query data is refreshed (not fetching anymore)
+  useEffect(() => {
+    if (!isFetching && guestData) {
+      setAssigningUserId?.(null); // Clear loader state after data refresh
+    }
+  }, [isFetching, guestData, setAssigningUserId]);
+
+  const assignMedicMutation = useMutation({
+    mutationFn: (medicId: string) => {
+      return api.patch(`/guest/${user._id}/medic`, { medicId });
+    },
+    onMutate: () => {
+      setAssigningUserId?.(user._id); // Set loader state before mutation starts
+    },
+    onSuccess: () => {
+      // ✅ Refresh list + this user
+      queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", user._id] });
+
+      // ✅ Reset states
+      setShowAssignDropdownForMedic(false);
+      setSelectedMedicId(null);
+
+      // ✅ Close modal
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Medic assigned successfully.",
+      });
+    },
+    onError: (error) => {
+      setAssigningUserId?.(null);
+      toast({
+        title: "Error",
+        description: "Failed to assign medic. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const assignDentistMutation = useMutation({
+    mutationFn: (dentistId: string) => {
+      return api.patch(`/guest/${user._id}/dentist`, { dentistId });
+    },
+    onMutate: () => {
+      setAssigningUserId?.(user._id); // Set loader state before mutation starts
+    },
+    onSuccess: () => {
+      // ✅ Refresh list + this user
+      queryClient.invalidateQueries({ queryKey: ["guests"] });
+      queryClient.invalidateQueries({ queryKey: ["guests", user._id] });
+
+      // ✅ Reset states
+      setShowAssignDropdownForDentist(false);
+      setSelectedDentistId(null);
+
+      // ✅ Close modal
+      onOpenChange(false);
+      toast({
+        title: "Success",
+        description: "Dentist assigned successfully.",
+      });
+    },
+    onError: (error) => {
+      setAssigningUserId?.(null);
+      toast({
+        title: "Error",
+        description: "Failed to assign dentist. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAssignClickForMedic = () => {
+    if (selectedMedicId) {
+      // setAssigningUserId?.(user._id);
+      assignMedicMutation.mutate(selectedMedicId);
+    }
+  };
+
+  const handleAssignClickForDentist = () => {
+    if (selectedDentistId) {
+      // setAssigningUserId?.(user._id);
+      assignDentistMutation.mutate(selectedDentistId);
+    }
+  };
+
+  useEffect(() => {
+    console.log("user in modal", user);
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto rounded-lg p-6">
+      <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg p-6">
         <DialogHeader className="mb-6">
           <DialogTitle className="flex items-center gap-3 text-2xl font-bold text-primary capitalize">
             <User className="h-6 w-6 text-primary" />
-            {user.userId?.fullName}'s Profile
+            {user.user?.fullName || "N/A"}'s Profile
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             Detailed information about the service user
@@ -49,7 +209,7 @@ export function UserDetailsModal({
         </DialogHeader>
 
         <div className="space-y-8">
-          {/* Personal and Contact Information */}
+          {/* Personal & Contact */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
@@ -60,26 +220,27 @@ export function UserDetailsModal({
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <p>
-                  <strong>Full Name:</strong> {user.userId?.fullName || "N/A"}
+                  <strong>Full Name:</strong> {user.user?.fullName || "N/A"}
                 </p>
                 <p>
                   <strong>Date of Birth:</strong>{" "}
-                  {user.dateOfBirth
-                    ? new Date(user.dateOfBirth).toLocaleDateString()
+                  {user.profile?.dateOfBirth
+                    ? new Date(user.profile.dateOfBirth).toLocaleDateString()
                     : "N/A"}
                 </p>
                 <p>
-                  <strong>Gender:</strong> {user.gender || "N/A"}
+                  <strong>Gender:</strong> {user.profile?.gender || "N/A"}
                 </p>
                 <p>
-                  <strong>Nationality:</strong> {user.nationality || "N/A"}
+                  <strong>Nationality:</strong>{" "}
+                  {user.profile?.nationality || "N/A"}
                 </p>
                 <p>
-                  <strong>Language:</strong> {user.language || "N/A"}
+                  <strong>Language:</strong> {user.profile?.language || "N/A"}
                 </p>
                 <p>
                   <strong>Number of Dependents:</strong>{" "}
-                  {user.numberOfDependents || 0}
+                  {user.profile?.numberOfDependents ?? 0}
                 </p>
               </CardContent>
             </Card>
@@ -94,11 +255,14 @@ export function UserDetailsModal({
               <CardContent className="space-y-3 text-sm">
                 <p className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  {user.userId?.emailAddress || "N/A"}
+                  {user.user?.emailAddress || "N/A"}
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground" />
-                  {user.userId?.phoneNumber || "N/A"}
+                  {user.user?.phoneNumber || "N/A"}
+                </p>
+                <p>
+                  <strong>Address:</strong> {user.profile?.address || "N/A"}
                 </p>
               </CardContent>
             </Card>
@@ -106,44 +270,41 @@ export function UserDetailsModal({
 
           <Separator className="my-4" />
 
-          {/* Location Information */}
+          {/* Room */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <MapPin className="h-5 w-5 text-primary" />
-                Location Information
+                <Home className="h-5 w-5 text-primary" />
+                Room Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <p className="flex items-center gap-2">
-                <span>
-                  <strong>Branch:</strong> {user.branch?.name || "N/A"}
-                </span>
-              </p>
-              <p className="">
-                <strong>Address:</strong> {user.branch?.address || "N/A"}
-              </p>
-              <p>
-                <strong>Room:</strong> {user.assignedRoom?.roomNumber || "N/A"}{" "}
-                ({user.assignedRoom?.type || "N/A"})
-              </p>
-              <p>
-                <strong>Check-in Date:</strong>{" "}
-                {user.checkInDate
-                  ? new Date(user.checkInDate).toLocaleDateString()
-                  : "N/A"}
-              </p>
-              <p>
-                <strong>Room Preference:</strong>{" "}
-                {user.roomTypePreference || "N/A"}
-              </p>
+              {user.assignedRooms?.length > 0 ? (
+                user.assignedRooms.map((room, index) => (
+                  <div key={index} className="mb-3 last:mb-0">
+                    <p>
+                      <strong>Room Number:</strong> {room.roomNumber || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Room Type:</strong> {room.type || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Status:</strong> {room.status || "N/A"}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No room information available
+                </p>
+              )}
             </CardContent>
           </Card>
 
           <Separator className="my-4" />
 
-          {/* Medical Information */}
-          <Card className="shadow-sm">
+          {/* Medical */}
+          <Card className="shadow-sm" ref={medicalRef}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Stethoscope className="h-5 w-5 text-primary" />
@@ -153,20 +314,20 @@ export function UserDetailsModal({
             <CardContent className="space-y-3 text-sm">
               <p>
                 <strong>Medical Conditions:</strong>{" "}
-                {user.medicalCondition || "N/A"}
+                {user.profile?.medicalCondition || "N/A"}
               </p>
               <p>
                 <strong>Current Medications:</strong>{" "}
-                {user.currentMedications || "N/A"}
+                {user.profile?.currentMedications || "N/A"}
               </p>
               <p>
-                <strong>Allergies:</strong> {user.allergies || "N/A"}
+                <strong>Allergies:</strong> {user.profile?.allergies || "N/A"}
               </p>
               <p className="flex items-center gap-3">
                 <strong>Dietary Requirements:</strong>{" "}
                 <div className="flex flex-wrap gap-2">
-                  {user.dietaryRequirements?.length > 0 ? (
-                    user.dietaryRequirements.map((diet, index) => (
+                  {user.profile?.dietaryRequirements?.length > 0 ? (
+                    user.profile.dietaryRequirements.map((diet, index) => (
                       <Badge
                         key={index}
                         variant="secondary"
@@ -182,38 +343,190 @@ export function UserDetailsModal({
                   )}
                 </div>
               </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Medic */}
+                <div
+                  className={`space-y-2 rounded-md p-3 text-sm ${
+                    user?.medic?.status === "Inactive"
+                      ? "bg-red-50 text-gray-600"
+                      : "bg-green-50 text-gray-800"
+                  }`}
+                >
+                  <p className="mb-2">
+                    <strong>Assigned Medical Staff:</strong>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    <span>{user?.medic?.name || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>{user?.medic?.phoneNumber || "N/A"}</span>
+                  </div>
+
+                  {user?.medic?.status === "Inactive" && (
+                    <p className="text-red-500 text-xs mt-2">
+                      This medic is <strong>Inactive</strong>. Kindly{" "}
+                      <span
+                        onClick={() =>
+                          router.push("/medical-staff")
+                        }
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        activate
+                      </span>{" "}
+                      or{" "}
+                      <span
+                        onClick={() => setShowAssignDropdownForMedic(true)}
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        assign another
+                      </span>
+                      .
+                      {showAssignDropdownForMedic && (
+                        <div className="mt-3 space-y-2">
+                          <Select
+                            onValueChange={(value) => setSelectedMedicId(value)}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select medical staff" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {medicalStaff
+                                .filter(
+                                  (staff) =>
+                                    staff.type === "General Practitioner"
+                                ) // ✅ filter
+                                .map((staff) => (
+                                  <SelectItem key={staff._id} value={staff._id}>
+                                    {staff.fullName}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={handleAssignClickForMedic}
+                            disabled={
+                              !selectedMedicId || assignMedicMutation.isPending
+                            }
+                            size="sm"
+                            variant="destructive"
+                          >
+                            {assignMedicMutation.isPending
+                              ? "Assigning..."
+                              : "Assign"}
+                          </Button>
+                        </div>
+                      )}
+                    </p>
+                  )}
+                </div>
+
+                {/* Dentist */}
+                <div
+                  className={`space-y-2 rounded-md p-3 text-sm ${
+                    user?.dentist?.status === "Inactive"
+                      ? "bg-red-50 text-gray-600"
+                      : "bg-green-50 text-gray-800"
+                  }`}
+                >
+                  <p className="mb-2">
+                    <strong>Assigned Dentist:</strong>
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <UserIcon className="h-4 w-4 text-primary" />
+                    <span>{user?.dentist?.name || "N/A"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span>{user?.dentist?.phoneNumber || "N/A"}</span>
+                  </div>
+
+                  {user?.dentist?.status === "Inactive" && (
+                    <p className="text-red-500 text-xs mt-2">
+                      This dentist is <strong>Inactive</strong>. Kindly{" "}
+                      <span
+                        onClick={() =>
+                          router.push("/medical-staff")
+                        }
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        activate
+                      </span>{" "}
+                      or{" "}
+                      <span
+                        onClick={() => setShowAssignDropdownForDentist(true)}
+                        className="text-red-500 underline cursor-pointer"
+                      >
+                        assign another
+                      </span>
+                      .
+                      {showAssignDropdownForDentist && (
+                        <div className="mt-3 space-y-2">
+                          <Select
+                            onValueChange={(value) =>
+                              setSelectedDentistId(value)
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select dentist" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {medicalStaff
+                                .filter((staff) => staff.type === "Dental") // ✅ filter
+                                .map((staff) => (
+                                  <SelectItem key={staff._id} value={staff._id}>
+                                    {staff.fullName}
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            onClick={handleAssignClickForDentist}
+                            disabled={
+                              !selectedDentistId ||
+                              assignDentistMutation.isPending
+                            }
+                            size="sm"
+                            variant="destructive"
+                          >
+                            {assignDentistMutation.isPending
+                              ? "Assigning..."
+                              : "Assign"}
+                          </Button>
+                        </div>
+                      )}
+                    </p>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           <Separator className="my-4" />
 
-          {/* Support Services and Emergency Contacts */}
+          {/* Case Worker + Emergency */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Heart className="h-5 w-5 text-primary" />
-                  Support Services
+                  Case Worker
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {user.supportServices?.length > 0 ? (
-                    user.supportServices.map((service, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-primary/10 text-primary"
-                      >
-                        {service}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No support services assigned
-                    </p>
-                  )}
-                </div>
+              <CardContent className="space-y-3 text-sm">
+                <p>
+                  <strong>Name:</strong> {user.caseWorker?.fullName || "N/A"}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  {user.caseWorker?.phoneNumber || "N/A"}
+                </p>
+                <p className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  {user.caseWorker?.emailAddress || "N/A"}
+                </p>
               </CardContent>
             </Card>
 
@@ -225,18 +538,22 @@ export function UserDetailsModal({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.emergencyContacts?.length > 0 ? (
-                  user.emergencyContacts.map((contact, index) => (
-                    <div key={index} className="text-sm mb-3 last:mb-0">
+                {user.profile?.emergencyContacts?.length > 0 ? (
+                  user.profile.emergencyContacts.map((contact, index) => (
+                    <div
+                      key={index}
+                      className="text-sm mb-3 flex flex-col gap-2 last:mb-0"
+                    >
                       <p>
-                        <strong>Name:</strong> {contact.fullName}
+                        <strong>Name:</strong> {contact.fullName || "N/A"}
                       </p>
                       <p>
-                        <strong>Relationship:</strong> {contact.relationship}
+                        <strong>Relationship:</strong>{" "}
+                        {contact.relationship || "N/A"}
                       </p>
                       <p className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        {contact.phoneNumber}
+                        {contact.phoneNumber || "N/A"}
                       </p>
                     </div>
                   ))
@@ -251,122 +568,43 @@ export function UserDetailsModal({
 
           <Separator className="my-4" />
 
-          {/* Documents and Additional Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Documents
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {user.documents?.length > 0 ? (
-                  user.documents.map((doc, index) => (
-                    <div
-                      key={index}
-                      className="text-sm mb-3 last:mb-0 flex items-center gap-2"
-                    >
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <a
-                        href={doc.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {doc.type}
-                      </a>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No documents uploaded
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+          {/* Additional Notes */}
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileSignature className="h-5 w-5 text-primary" />
+                Additional Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <p>{user.profile?.additionalNotes || "N/A"}</p>
+            </CardContent>
+          </Card>
 
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <FileSignature className="h-5 w-5 text-primary" />
-                  Additional Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <p>
-                  <strong>Additional Notes:</strong>{" "}
-                  {user.additionalNotes || "N/A"}
+          {/* Removal */}
+          <Separator className="my-4" />
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5 text-primary" />
+                Removal Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm">
+              {user.removal?.status === "none" || !user.removal?.status ? (
+                <p className="text-muted-foreground">
+                  No removal or transfer request has been made for this guest
+                  yet.
                 </p>
-                <p>
-                  <strong>Signature:</strong> {user.signature || "N/A"}
+              ) : (
+                <p className="text-muted-foreground">
+                  A transfer is currently in process.
                 </p>
-                <p>
-                  <strong>Priority Level:</strong>{" "}
-                  <Badge
-                    className={getStatusColor(user.priorityLevel || "Unknown")}
-                  >
-                    {user.priorityLevel || "Unknown"}
-                  </Badge>
-                </p>
-                <p>
-                  <strong>Consent - Accuracy:</strong>{" "}
-                  {user.consentAccuracy ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Consent - Data Processing:</strong>{" "}
-                  {user.consentDataProcessing ? "Yes" : "No"}
-                </p>
-                <p>
-                  <strong>Consent - Data Retention:</strong>{" "}
-                  {user.consentDataRetention ? "Yes" : "No"}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Dental Information */}
-          {user.dental && (
-            <>
-              <Separator className="my-4" />
-              <Card className="shadow-sm">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Stethoscope className="h-5 w-5 text-primary" />
-                    Dental Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  <p>
-                    <strong>Clinic Name:</strong> {user.dental.name || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {user.dental.emailAddress || "N/A"}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    {user.dental.phoneNumber || "N/A"}
-                  </p>
-                </CardContent>
-              </Card>
-            </>
-          )}
+              )}
+            </CardContent>
+          </Card>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
-
-// Helper function to reuse status color logic
-function getStatusColor(status: string) {
-  switch (status) {
-    case "High":
-      return "bg-red-100 text-red-800";
-    case "Medium":
-      return "bg-yellow-100 text-yellow-800";
-    case "Low":
-      return "bg-green-100 text-green-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
 }

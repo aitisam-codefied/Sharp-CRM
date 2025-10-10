@@ -7,7 +7,7 @@ interface ConsentFieldsProps {
 
 export function ConsentFields2({ register }: ConsentFieldsProps) {
   return (
-    <div className="grid grid-cols-3 gap-4 mt-4">
+    <div className="grid grid-cols-2 gap-4 mt-4">
       <div className="space-y-2 flex items-center justify-start gap-2">
         <Label className="mt-[7px]" htmlFor={`consentAccuracy`}>
           Consent to Data Accuracy
@@ -28,7 +28,7 @@ export function ConsentFields2({ register }: ConsentFieldsProps) {
           {...register(`consentDataProcessing`)}
         />
       </div>
-      <div className="space-y-2 flex items-center justify-start gap-2">
+      {/* <div className="space-y-2 flex items-center justify-start gap-2">
         <Label className="mt-[7px]" htmlFor={`consentDataRetention`}>
           Consent to Data Retention
         </Label>
@@ -37,7 +37,7 @@ export function ConsentFields2({ register }: ConsentFieldsProps) {
           id={`consentDataRetention`}
           {...register(`consentDataRetention`)}
         />
-      </div>
+      </div> */}
     </div>
   );
 }

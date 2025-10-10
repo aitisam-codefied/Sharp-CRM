@@ -1,4 +1,6 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -16,138 +18,73 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Building2,
-  Search,
-  Filter,
-  Eye,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Building2, Search } from "lucide-react";
+import { CustomPagination } from "@/components/CustomPagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const branchData = [
-  {
-    id: 1,
-    branch: "Downtown",
-    branchCode: "BRANCH-01",
-    totalStaff: 23,
-    status: "Active",
-    residents: 193,
-    occupancy: 92,
-    openIRs: 3,
-    alertLevel: "Moderate",
-  },
-  {
-    id: 2,
-    branch: "Downtown",
-    branchCode: "BRANCH-02",
-    totalStaff: 54,
-    status: "Active",
-    residents: 533,
-    occupancy: 54,
-    openIRs: 6,
-    alertLevel: "High",
-  },
-  {
-    id: 3,
-    branch: "Downtown",
-    branchCode: "BRANCH-03",
-    totalStaff: 34,
-    status: "Active",
-    residents: 212,
-    occupancy: 87,
-    openIRs: 8,
-    alertLevel: "Stable",
-  },
-  {
-    id: 4,
-    branch: "Downtown",
-    branchCode: "BRANCH-04",
-    totalStaff: 124,
-    status: "Active",
-    residents: 343,
-    occupancy: 23,
-    openIRs: 3,
-    alertLevel: "Requires",
-  },
-  {
-    id: 5,
-    branch: "Downtown",
-    branchCode: "BRANCH-05",
-    totalStaff: 65,
-    status: "Active",
-    residents: 531,
-    occupancy: 98,
-    openIRs: 1,
-    alertLevel: "No Issues",
-  },
-];
+import { useCompanyTree, type CompanyNode } from "@/hooks/useCompanyTree";
+import TreeDemo from "./Tree";
+import { useAuth } from "./providers/auth-provider";
 
-const getAlertLevelColor = (level: string) => {
-  switch (level.toLowerCase()) {
-    case "high":
-      return "bg-red-100 text-red-800";
-    case "moderate":
-      return "bg-yellow-100 text-yellow-800";
-    case "stable":
-      return "bg-green-100 text-green-800";
-    case "requires":
-      return "bg-orange-100 text-orange-800";
-    case "no issues":
-      return "bg-green-100 text-green-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-export default function BranchPerformanceTable() {
+export default function CompanyPerformanceTable() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("all-status");
+
+  const { user } = useAuth();
+  const tenantId = user?.tenantId || "";
+  const { data, isLoading, error } = useCompanyTree(tenantId);
+
+  const companyData: CompanyNode[] = data?.data || [];
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedStatus]);
+
   const itemsPerPage = 5;
-  const totalPages = Math.ceil(branchData.length / itemsPerPage);
+
+  const filteredData = companyData?.filter((company) => {
+    const matchesSearch =
+      searchTerm === "" ||
+      company?.title?.toLowerCase()?.includes(searchTerm?.toLowerCase());
+
+    const matchesStatus =
+      selectedStatus === "all-status" ||
+      company?.status?.toLowerCase() === selectedStatus?.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = branchData.slice(startIndex, endIndex);
+  const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+  if (error) {
+    return <div>Error loading data: {(error as Error).message}</div>;
+  }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
           <Building2 className="h-5 w-5" />
-          Branch Performance
+          Company Performance
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center justify-between gap-2 mb-6">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search" className="pl-10" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search companies..."
+              className="pl-10"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <Select defaultValue="all-branches">
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="All Branches" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-branches">All Branches</SelectItem>
-              <SelectItem value="downtown">Downtown</SelectItem>
-              <SelectItem value="uptown">Uptown</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select defaultValue="all-roles">
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="All Roles" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-roles">All Roles</SelectItem>
-              <SelectItem value="manager">Manager</SelectItem>
-              <SelectItem value="staff">Staff</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select defaultValue="all-status">
-            <SelectTrigger className="w-40">
+          <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <SelectTrigger>
               <SelectValue placeholder="All Status" />
             </SelectTrigger>
             <SelectContent>
@@ -156,97 +93,95 @@ export default function BranchPerformanceTable() {
               <SelectItem value="inactive">Inactive</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
         </div>
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted">
-                <TableHead>Branch</TableHead>
-                <TableHead>Total Staff</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Information</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Residents</TableHead>
-                <TableHead>Occupancy</TableHead>
-                <TableHead>Open IRs</TableHead>
-                <TableHead>Alert Level</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>Alert</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {currentData.map((branch) => (
-                <TableRow key={branch.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{branch.branch}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {branch.branchCode}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{branch.totalStaff}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-green-100 text-green-800">
-                      {branch.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{branch.residents}</TableCell>
-                  <TableCell>{branch.occupancy}%</TableCell>
-                  <TableCell>{branch.openIRs}</TableCell>
-                  <TableCell>
-                    <Badge className={getAlertLevelColor(branch.alertLevel)}>
-                      {branch.alertLevel}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {isLoading
+                ? Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell>
+                        <Skeleton className="h-4 w-28" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-40" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-4 w-12" />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton className="h-6 w-16 rounded-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : currentData?.map((company) => (
+                    <TableRow key={company?.key}>
+                      <TableCell>
+                        <div className="font-medium capitalize">
+                          {company?.title}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <TreeDemo
+                          treeData={[
+                            {
+                              title: "Branches",
+                              key: `${company?.key}-branches`,
+                              children: company?.children,
+                            },
+                          ]}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={
+                            company?.status?.toLowerCase() === "active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }
+                        >
+                          {company?.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{company?.residents}</TableCell>
+                      <TableCell>
+                        <div
+                          className={
+                            company?.health === "OK"
+                              ? "bg-green-100 text-green-700 border-green-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs"
+                              : "bg-orange-100 text-orange-700 border-orange-300 w-full sm:w-fit px-2 py-1 rounded-none lg:rounded-full text-xs"
+                          }
+                        >
+                          {company?.health}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-muted-foreground">
-            Rows per page: {itemsPerPage}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">
-              {startIndex + 1}-{Math.min(endIndex, branchData.length)} of{" "}
-              {branchData.length}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+
+        {!isLoading && (
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        )}
       </CardContent>
     </Card>
   );

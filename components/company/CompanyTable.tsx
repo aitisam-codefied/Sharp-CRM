@@ -53,6 +53,10 @@ export default function CompanyTable() {
     setCompanies(companiesData);
   }, [companiesData]);
 
+  useEffect(() => {
+    console.log("companies", companiesData);
+  });
+
   // Handle company updates (e.g., when a branch or company name is updated)
   const handleCompanyUpdate = (updatedCompany: Company) => {
     setCompanies((prev) =>
@@ -114,7 +118,7 @@ export default function CompanyTable() {
     <>
       <Card className="shadow-xl border-0 bg-gradient-to-br from-white to-gray-50/50">
         <CardHeader className="bg-gray-100 rounded-t-lg">
-          <CardTitle className="flex items-center gap-3 text-xl">
+          <CardTitle className="flex items-center gap-3 text-md sm:text-xl">
             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
               <Building className="h-6 w-6" />
             </div>

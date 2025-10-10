@@ -1,24 +1,25 @@
 import axios from "axios";
 
+// const API_HOST = "http://localhost:5001";
+const API_HOST = "https://beta.api.supasystem.co.uk";
 // const BASE_URL = "http://localhost:5001/api/v1";
-const BASE_URL =
-  process.env.NODE_ENV === "development"
-    ? "https://beta.api.supasystem.co.uk/api/v1"
-    : "https://test.api.supasystem.co.uk/api/v1";
+const BASE_URL = "https://beta.api.supasystem.co.uk/api/v1";
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true,
+  withCredentials: false,
 });
 
 // Request interceptor – attach access token
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("sms_access_token");
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    if (typeof window !== "undefined") {
+      const accessToken = localStorage.getItem("sms_access_token");
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
     }
     return config;
   },
@@ -35,10 +36,14 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        if (typeof window === "undefined") {
+          return Promise.reject(error);
+        }
+
         const refreshToken = localStorage.getItem("sms_refresh_token");
         const oldaccessToken = localStorage.getItem("sms_access_token");
-        console.log("old access token", oldaccessToken); // <--debug
-        console.log("Refresh token:", refreshToken); // <--debug
+        // console.log("old access token", oldaccessToken); // <--debug
+        // console.log("Refresh token:", refreshToken); // <--debug
         if (!refreshToken) throw new Error("No refresh token found");
 
         const res = await axios.post(
@@ -51,7 +56,7 @@ api.interceptors.response.use(
             },
           }
         );
-        console.log("res", res); //<--debug
+        // console.log("res", res); //<--debug
 
         const { accessToken, refreshToken: newRefreshToken } =
           res.data.tokens || {};
@@ -60,7 +65,7 @@ api.interceptors.response.use(
           localStorage.setItem("sms_access_token", accessToken);
           localStorage.setItem("sms_refresh_token", newRefreshToken);
 
-          console.log("newwww access token", accessToken); //<--debug
+          // console.log("newwww access token", accessToken); //<--debug
 
           // ✅ Correct way to retry original request
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
@@ -70,8 +75,10 @@ api.interceptors.response.use(
         throw new Error("Missing tokens in refresh response");
       } catch (refreshError) {
         console.error("Token refresh failed:", refreshError);
-        localStorage.clear();
-        window.location.href = "/login";
+        if (typeof window !== "undefined") {
+          localStorage.clear();
+          window.location.href = "/login";
+        }
         return Promise.reject(refreshError);
       }
     }
@@ -80,4 +87,5 @@ api.interceptors.response.use(
   }
 );
 
+export { API_HOST, BASE_URL };
 export default api;

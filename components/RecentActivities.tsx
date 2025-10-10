@@ -1,110 +1,160 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Heart,
-  AlertTriangle,
-  Users,
-  CheckCircle,
-  Clock,
-  Activity,
-} from "lucide-react";
+"use client";
 
-const recentActivities = [
-  {
-    type: "critical",
-    message: "Critical welfare check flagged - Manchester Branch",
-    time: "2 minutes ago",
-    branch: "Manchester",
-    priority: "high",
-  },
-  {
-    type: "incident",
-    message: "New incident reported - Birmingham Branch",
-    time: "15 minutes ago",
-    branch: "Birmingham",
-    priority: "medium",
-  },
-  {
-    type: "staff",
-    message: "Staff shortage alert - Liverpool Branch",
-    time: "1 hour ago",
-    branch: "Liverpool",
-    priority: "high",
-  },
-  {
-    type: "system",
-    message: "Daily reports generated successfully",
-    time: "2 hours ago",
-    branch: "System",
-    priority: "normal",
-  },
-];
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Clock, Activity } from "lucide-react";
+import { useActivityLogs } from "@/hooks/useGetActivityLogs";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+
+function timeAgo(timestamp: string): string {
+  const now = new Date();
+  const date = new Date(timestamp);
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = Math.floor(seconds / 31536000);
+  if (interval > 1) return `${interval} years ago`;
+  if (interval === 1) return "1 year ago";
+
+  interval = Math.floor(seconds / 2592000);
+  if (interval > 1) return `${interval} months ago`;
+  if (interval === 1) return "1 month ago";
+
+  interval = Math.floor(seconds / 86400);
+  if (interval > 1) return `${interval} days ago`;
+  if (interval === 1) return "1 day ago";
+
+  interval = Math.floor(seconds / 3600);
+  if (interval > 1) return `${interval} hours ago`;
+  if (interval === 1) return "1 hour ago";
+
+  interval = Math.floor(seconds / 60);
+  if (interval > 1) return `${interval} minutes ago`;
+  if (interval === 1) return "1 minute ago";
+
+  return "just now";
+}
 
 export default function RecentActivities() {
+  const { data: activities, isLoading, error } = useActivityLogs();
+  const [visibleCount, setVisibleCount] = useState(5);
+
+  // useEffect(() => {
+  //   console.log("Fetched activities:", activities);
+  // }, [activities]);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Recent Activities
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Loading activities...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Recent Activities
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Error loading activities: {(error as Error).message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const sortedActivities =
+    activities?.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    ) ?? [];
+
+  const visibleActivities = sortedActivities.slice(0, visibleCount);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2 text-md sm:text-base">
           <Activity className="h-5 w-5" />
-          System Activities
+          Recent Activities
         </CardTitle>
-        <CardDescription>Latest updates from all branches</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {recentActivities.map((activity, index) => (
-            <div key={index} className="flex items-start space-x-3">
-              <div className="flex-shrink-0 mt-1">
-                {activity.type === "critical" && (
-                  <Heart className="h-4 w-4 text-red-500" />
-                )}
-                {activity.type === "incident" && (
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                )}
-                {activity.type === "staff" && (
-                  <Users className="h-4 w-4 text-blue-500" />
-                )}
-                {activity.type === "system" && (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium">{activity.message}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">
-                    {activity.time}
-                  </span>
-                  <Badge variant="outline" className="text-xs">
-                    {activity.branch}
-                  </Badge>
-                  <Badge
-                    variant={
-                      activity.priority === "high"
-                        ? "destructive"
-                        : activity.priority === "medium"
-                        ? "secondary"
-                        : "outline"
-                    }
-                    className="text-xs"
-                  >
-                    {activity.priority}
-                  </Badge>
+          {visibleActivities.map((log) => {
+            const time = timeAgo(log.timestamp);
+            return (
+              <div key={log._id} className="flex items-start space-x-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium mb-1">
+                    {/* <Link
+                      href={`/staffs?highlight=${log.username}`}
+                      className="hover:underline cursor-pointer"
+                    > */}
+                    {log.notes}
+                    {/* </Link> */}
+                  </p>
+                  <div className="flex flex-wrap items-center justify-start gap-2">
+                    <p className="text-xs px-2 py-1 rounded-md bg-blue-100 text-blue-700 border border-blue-300 w-fit mt-1">
+                      <span className="text-black text-xs">Action:</span>{" "}
+                      {log.actionType}
+                    </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-green-100 text-green-700 border border-green-300 w-fit mt-1">
+                      <span className="text-black text-xs">Type:</span>{" "}
+                      {log.moduleType}
+                    </p>
+                    <p className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border border-yellow-300 w-fit mt-1">
+                      <span className="text-black text-xs">Severity:</span>{" "}
+                      {log.severity}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 mt-1">
+                    <div className="flex items-start sm:items-center gap-1">
+                      <Clock className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {time}
+                      </span>
+                    </div>
+                    {/* <div className="flex flex-wrap items-center gap-4">
+                      <Badge
+                        variant="outline"
+                        className="text-xs px-2 py-1 rounded-md bg-yellow-100 text-yellow-700 border-yellow-300"
+                      >
+                        {log.severity}
+                      </Badge>
+                    </div> */}
+                  </div>
                 </div>
               </div>
+            );
+          })}
+
+          {sortedActivities.length === 0 && <p>No recent activities found.</p>}
+
+          {visibleCount < sortedActivities.length && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((prev) => prev + 5)}
+              >
+                Load More
+              </Button>
             </div>
-          ))}
+          )}
         </div>
-        <Button variant="outline" className="w-full mt-4 bg-transparent">
-          View All Activities
-        </Button>
       </CardContent>
     </Card>
   );
