@@ -2,7 +2,7 @@
 
 import AuthGuard from "@/components/auth/auth-guard";
 
-export default function DashboardLayout({
+export default function FeedbackLayout({
   children,
 }: {
   children: React.ReactNode;

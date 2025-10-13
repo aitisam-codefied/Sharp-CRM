@@ -60,6 +60,9 @@ export default function AddStaffDialog() {
   const [selectedRole, setSelectedRole] = useState<string>(""); // 🔹 Only one role
   const [selectedBranches, setSelectedBranches] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  // Add this state near top with other states:
+  const [isBranchPopoverOpen, setIsBranchPopoverOpen] = useState(false);
+  const [isLocationPopoverOpen, setIsLocationPopoverOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -354,9 +357,11 @@ export default function AddStaffDialog() {
                   setFormData((prev) => ({ ...prev, email: value }));
                   setErrors((prev) => ({
                     ...prev,
-                    email: validateEmail(value) ? "" : "Valid email is required",
+                    email: validateEmail(value)
+                      ? ""
+                      : "Valid email is required",
                   }));
-                }}  
+                }}
                 placeholder="Enter email"
               />
               {errors.email && (
@@ -445,7 +450,10 @@ export default function AddStaffDialog() {
             <div>
               <Label>Branch{isManager ? "(es)" : ""}</Label>
 
-              <Popover>
+              <Popover
+                open={isBranchPopoverOpen}
+                onOpenChange={setIsBranchPopoverOpen}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -462,7 +470,7 @@ export default function AddStaffDialog() {
                   side="bottom"
                   align="start"
                 >
-                  <Command className="">
+                  <Command>
                     <CommandInput placeholder="Search branches..." />
                     <CommandEmpty>No branch found.</CommandEmpty>
                     <CommandGroup>
@@ -471,13 +479,31 @@ export default function AddStaffDialog() {
                           key={b._id}
                           onSelect={() => {
                             if (isManager) {
-                              setSelectedBranches((prev) =>
-                                prev.includes(b.name)
+                              // Multi-select (Manager)
+                              setSelectedBranches((prev) => {
+                                const newSelection = prev.includes(b.name)
                                   ? prev.filter((v) => v !== b.name)
-                                  : [...prev, b.name]
-                              );
+                                  : [...prev, b.name];
+
+                                // 🔹 Auto-close if only one branch exists
+                                if (filteredBranches.length === 1) {
+                                  setIsBranchPopoverOpen(false);
+                                }
+
+                                // 🔹 Auto-close if all branches are now selected
+                                if (
+                                  newSelection.length ===
+                                  filteredBranches.length
+                                ) {
+                                  setIsBranchPopoverOpen(false);
+                                }
+
+                                return newSelection;
+                              });
                             } else {
-                              setSelectedBranches([b.name]); // single select for non-managers
+                              // Single-select (AssistantManager or Staff)
+                              setSelectedBranches([b.name]);
+                              setIsBranchPopoverOpen(false);
                             }
                           }}
                         >
@@ -503,7 +529,10 @@ export default function AddStaffDialog() {
           {isStaff && selectedBranches.length > 0 && (
             <div>
               <Label>Location(s)</Label>
-              <Popover>
+              <Popover
+                open={isLocationPopoverOpen}
+                onOpenChange={setIsLocationPopoverOpen}
+              >
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
@@ -528,11 +557,26 @@ export default function AddStaffDialog() {
                         <CommandItem
                           key={loc._id}
                           onSelect={() => {
-                            setSelectedLocations((prev) =>
-                              prev.includes(loc.name)
+                            // Always multi-select for staff, but if only 1 location total, auto-close
+                            setSelectedLocations((prev) => {
+                              const newSelection = prev.includes(loc.name)
                                 ? prev.filter((v) => v !== loc.name)
-                                : [...prev, loc.name]
-                            );
+                                : [...prev, loc.name];
+
+                              // 🔹 Auto close if only one total location
+                              if (filteredLocations.length === 1) {
+                                setIsLocationPopoverOpen(false);
+                              }
+
+                              // 🔹 Auto close if all locations are now selected
+                              if (
+                                newSelection.length === filteredLocations.length
+                              ) {
+                                setIsLocationPopoverOpen(false);
+                              }
+
+                              return newSelection;
+                            });
                           }}
                         >
                           <Check

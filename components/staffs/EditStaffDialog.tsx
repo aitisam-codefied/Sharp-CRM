@@ -209,6 +209,7 @@ export default function EditStaffDialog({
         title: "Error",
         description: message,
         variant: "destructive",
+        duration: 20000,
       });
     },
   });

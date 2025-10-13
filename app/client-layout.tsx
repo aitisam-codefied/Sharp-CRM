@@ -17,34 +17,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isNative, setIsNative] = useState(false);
-
-  // useEffect(() => {
-  //   const p = Capacitor.getPlatform();
-  //   const native = p === "ios" || p === "android";
-  //   setIsNative(native);
-
-  //   if (native) {
-  //     // ✅ Only run on mobile builds
-  //     StatusBar.setStyle({ style: Style.Dark });
-  //     StatusBar.setBackgroundColor({ color: "#0f172a" });
-  //     SplashScreen.hide();
-
-  //     App.addListener("backButton", ({ canGoBack }) => {
-  //       if (canGoBack) window.history.back();
-  //       else App.exitApp();
-  //     });
-
-  //     Keyboard.setScroll({ isDisabled: false });
-  //   }
-
-  //   return () => {
-  //     if (native) {
-  //       App.removeAllListeners();
-  //     }
-  //   };
-  // }, []);
-
   return (
     <html lang="en">
       <body className={`${inter.className}`}>
@@ -52,8 +24,6 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
-            {/* <MobileBottomNav /> */}
-            {/* ✅ always mounted, internally hides on web */}
           </AuthProvider>
         </QueryClientProvider>
       </body>

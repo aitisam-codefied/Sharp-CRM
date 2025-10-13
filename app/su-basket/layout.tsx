@@ -2,7 +2,7 @@
 
 import AuthGuard from "@/components/auth/auth-guard";
 
-export default function DashboardLayout({
+export default function BasketLayout({
   children,
 }: {
   children: React.ReactNode;

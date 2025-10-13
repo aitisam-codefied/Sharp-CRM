@@ -2,7 +2,7 @@
 
 import AuthGuard from "@/components/auth/auth-guard";
 
-export default function DashboardLayout({
+export default function StaffLayout({
   children,
 }: {
   children: React.ReactNode;
