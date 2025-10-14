@@ -27,9 +27,10 @@ import {
 } from "@/components/ui/select";
 import { Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import api from "@/lib/axios";
+import api, { API_HOST } from "@/lib/axios";
 import { RoleWrapper } from "@/lib/RoleWrapper";
 import { useAuth } from "../providers/auth-provider";
+import incidentPlaceholder from "../../public/incident_placeholder.jpg";
 
 interface UIIncident {
   id: string;
@@ -48,6 +49,7 @@ interface UIIncident {
   dateResolved: string | null;
   timeResolved: string | null;
   category: string;
+  evidence?: any;
   actionsTaken: string;
 }
 
@@ -70,6 +72,7 @@ export default function IncidentsTable({
   );
   const [status, setStatus] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -112,6 +115,7 @@ export default function IncidentsTable({
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Evidence</TableHead>
             <TableHead>Resident</TableHead>
             <TableHead>Incident Details</TableHead>
             <TableHead>Branch</TableHead>
@@ -124,12 +128,30 @@ export default function IncidentsTable({
 
         <TableBody>
           {incidents.map((incident) => (
-            <TableRow key={incident.id}>
+            <TableRow key={incident.id} className="text-xs">
+              <TableCell>
+                {incident.evidence ? (
+                  <img
+                    src={`${API_HOST}${incident.evidence}`}
+                    alt="Evidence"
+                    className="w-14 h-14 object-cover rounded cursor-pointer hover:opacity-80 transition"
+                    onClick={() =>
+                      setPreviewImage(`${API_HOST}${incident.evidence}`)
+                    }
+                    onError={(e) => {
+                      e.currentTarget.src = incidentPlaceholder.src; // fallback image
+                    }}
+                  />
+                ) : (
+                  <span className="text-gray-400 italic text-sm">No image</span>
+                )}
+              </TableCell>
+
               <TableCell className="capitalize">
                 {incident.residentInvolved}
               </TableCell>
 
-              <TableCell className="text-sm max-w-[250px]">
+              <TableCell className="max-w-[250px]">
                 {incident.description}
               </TableCell>
 
@@ -186,8 +208,8 @@ export default function IncidentsTable({
 
               <TableCell>
                 <div className="space-y-1">
-                  <div className="text-sm">{incident.dateReported}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="">{incident.dateReported}</div>
+                  <div className="text-muted-foreground">
                     {incident.timeReported}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -240,6 +262,25 @@ export default function IncidentsTable({
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* === Evidence Preview Modal === */}
+      <Dialog open={!!previewImage} onOpenChange={() => setPreviewImage(null)}>
+        <DialogContent className="w-[90vw] sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Evidence Preview</DialogTitle>
+          </DialogHeader>
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Full Evidence"
+              className="w-full h-auto rounded-lg object-contain"
+              onError={(e) => {
+                e.currentTarget.src = incidentPlaceholder.src; // fallback image
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

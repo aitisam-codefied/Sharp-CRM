@@ -100,7 +100,7 @@ const fetchIncidents = async (): Promise<UIIncident[]> => {
     description: api.description,
     severity: api.severity?.toLowerCase(),
     status: api.status,
-
+    evidence: api.evidence,
     reportedBy: api.staffId?.fullName,
     assignedTo: api.staffId?.fullName,
     branch: api.branchId?.name,

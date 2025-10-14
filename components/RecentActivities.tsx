@@ -38,7 +38,7 @@ function timeAgo(timestamp: string): string {
 
 export default function RecentActivities() {
   const { data: activities, isLoading, error } = useActivityLogs();
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   // useEffect(() => {
   //   console.log("Fetched activities:", activities);

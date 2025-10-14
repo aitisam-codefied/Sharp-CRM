@@ -94,7 +94,7 @@ export const useClockRecords = () => {
         success: boolean;
         message: string;
         data: ApiClockRecord[];
-      }>("/clock-in-out/list");
+      }>("/clock-in-out/list?limit=100");
       if (!response.data.success) {
         throw new Error(
           response.data.message || "Failed to fetch clock records"
