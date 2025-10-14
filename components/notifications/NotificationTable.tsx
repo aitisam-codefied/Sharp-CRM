@@ -145,7 +145,7 @@ export function NotificationTable({
               {notifications.map((notification) => (
                 <TableRow key={notification.id} className="text-xs">
                   <TableCell>
-                    <div className="space-y-1">
+                    <div className="space-y-1 font-semibold">
                       {notification?.metadata?.fullName}
                     </div>
                   </TableCell>

@@ -70,8 +70,8 @@ function NotificationBox({
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 h-6 w-6 text-xs font-bold bg-red-500 text-white rounded-full flex items-center justify-center transform translate-x-1/2 -translate-y-1/2">
-              {unreadCount}
+            <span className="absolute p-1 top-0 right-0 h-7 w-7 text-xs font-bold bg-red-500 text-white rounded-full flex items-center justify-center transform translate-x-1/2 -translate-y-1/2">
+              {unreadCount > 99 ? "99+" : unreadCount}
             </span>
           )}
         </Button>
