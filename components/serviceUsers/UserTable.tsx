@@ -27,12 +27,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { Branch, Room, Guest, Location } from "@/lib/types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDeleteGuest } from "@/hooks/useDeleteGuest";
 import DeleteConfirmationDialog from "../company/DeleteConfirmationDialog";
 import { UserDetailsModal } from "./UserDetailsModal";
 import { EditUserModal } from "./EditUserModal";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tree } from "antd";
 import { PlusSquareOutlined, MinusSquareOutlined } from "@ant-design/icons";
 
@@ -66,6 +66,27 @@ export function UserTable({
   const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
   const [assigningUserId, setAssigningUserId] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const highlight = searchParams.get("highlight");
+
+  // Refs store karne ke liye ek object
+  const rowRefs = useRef<Record<string, HTMLTableRowElement | null>>({});
+
+  useEffect(() => {
+    if (highlight && rowRefs.current[highlight]) {
+      // Scroll into view
+      rowRefs.current[highlight]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Temporary highlight effect
+      rowRefs.current[highlight]?.classList.add("bg-yellow-100");
+      setTimeout(() => {
+        rowRefs.current[highlight]?.classList.remove("bg-yellow-100");
+      }, 3000);
+    }
+  }, [highlight]);
 
   // Flatten data for display only (new API response structure)
   const flattenedUsers = users.map((guest, index) => ({
@@ -146,7 +167,10 @@ export function UserTable({
           </TableHeader>
           <TableBody>
             {flattenedUsers.map((user, idx) => (
-              <TableRow key={user.id}>
+              <TableRow
+                ref={(el) => (rowRefs.current[user.fullName] = el)}
+                key={user.id}
+              >
                 <TableCell className="min-w-[150px]">
                   <div className="flex flex-col items-start gap-2">
                     <div className="font-medium capitalize bg-green-100 text-green-800 px-2 py-1 rounded-xl text-sm">
@@ -304,9 +328,7 @@ export function UserTable({
                         <>
                           Kindly{" "}
                           <span
-                            onClick={() =>
-                              router.push("/medical-staff")
-                            }
+                            onClick={() => router.push("/medical-staff")}
                             className="underline cursor-pointer"
                           >
                             activate
@@ -362,9 +384,7 @@ export function UserTable({
                         <>
                           Kindly{" "}
                           <span
-                            onClick={() =>
-                              router.push("/medical-staff")
-                            }
+                            onClick={() => router.push("/medical-staff")}
                             className="underline cursor-pointer"
                           >
                             activate

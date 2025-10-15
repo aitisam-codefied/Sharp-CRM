@@ -75,7 +75,7 @@ export function NotificationFilters({
           ))}
         </SelectContent>
       </Select>
-      <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+      {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
         <SelectTrigger className="w-full md:w-48">
           <SelectValue placeholder="All Branches" />
         </SelectTrigger>
@@ -87,7 +87,7 @@ export function NotificationFilters({
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
     </div>
   );
 }

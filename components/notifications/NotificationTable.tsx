@@ -114,10 +114,6 @@ export function NotificationTable({
     }
   };
 
-  useEffect(() => {
-    console.log("notificationss", notifications);
-  });
-
   return (
     <Card>
       <CardHeader>

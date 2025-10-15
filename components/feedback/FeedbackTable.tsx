@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Eye, Edit, Trash2 } from "lucide-react";
+import { Star, Eye, Edit, Trash2, Check, Copy } from "lucide-react";
 import { DisplayFeedback } from "@/hooks/useGetFoodFeedback";
 import { useEffect, useMemo, useState } from "react";
 import { CustomPagination } from "../CustomPagination";
+import Link from "next/link";
 
 interface Props {
   filteredFeedback: any[];
@@ -28,6 +29,7 @@ export const FeedbackTable = ({
 }: Props) => {
   // 🔹 Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
   const itemsPerPage = 10;
 
   // useEffect(() => {
@@ -73,6 +75,7 @@ export const FeedbackTable = ({
           <TableHeader>
             <TableRow>
               <TableHead>Resident</TableHead>
+              <TableHead>Port Number</TableHead>
               <TableHead>Meal Details</TableHead>
               <TableHead>Overall Rating</TableHead>
               <TableHead>Comments</TableHead>
@@ -85,9 +88,14 @@ export const FeedbackTable = ({
               <TableRow key={feedback?.id}>
                 <TableCell>
                   <div>
-                    <div className="font-medium capitalize">
-                      {feedback?.guestId?.userId?.fullName}
-                    </div>
+                    <Link
+                      href={`/service-users?highlight=${feedback?.guestId?.userId?.fullName}`}
+                      className="hover:underline cursor-pointer"
+                    >
+                      <div className="font-medium capitalize">
+                        {feedback?.guestId?.userId?.fullName}
+                      </div>
+                    </Link>
                     <div className="text-sm text-muted-foreground">
                       {feedback?.branchId?.name} •{" "}
                       {feedback?.guestId?.familyRooms[0]?.locationId?.name} •
@@ -96,6 +104,33 @@ export const FeedbackTable = ({
                     </div>
                   </div>
                 </TableCell>
+
+                <TableCell>
+                  <div className="flex items-center justify-start gap-1">
+                    <div>{feedback?.guestId?.userId?.portNumber}</div>
+                    <div>
+                      {feedback?.guestId?.userId?.portNumber && (
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              feedback?.guestId?.userId?.portNumber
+                            );
+                            setCopiedPortId(feedback._id); // jis user ka copy kiya uska id set
+                            setTimeout(() => setCopiedPortId(null), 2000); // 2 sec baad reset
+                          }}
+                          className="text-gray-500 hover:text-black transition-colors"
+                        >
+                          {copiedPortId === feedback._id ? (
+                            <Check size={14} className="text-green-600" />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </TableCell>
+
                 <TableCell>
                   <div className="space-y-1">
                     <div className="text-xs text-muted-foreground">

@@ -11,9 +11,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-import { CheckCircle, Clock } from "lucide-react";
-import { useEffect } from "react";
+import { Check, CheckCircle, Clock, Copy } from "lucide-react";
+import { useEffect, useState } from "react";
 import { CustomPagination } from "../CustomPagination";
+import Link from "next/link";
 
 export default function MealsTable({
   residents,
@@ -22,6 +23,7 @@ export default function MealsTable({
 }: any) {
   const itemsPerPage = 10;
   const totalPages = Math.ceil(residents.length / itemsPerPage);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedResidents = residents.slice(
     startIndex,
@@ -47,8 +49,8 @@ export default function MealsTable({
           <TableHeader>
             <TableRow>
               <TableHead>Resident</TableHead>
-              <TableHead>Branch & Room</TableHead>
-
+              <TableHead>Port Number</TableHead>
+              <TableHead>Branch</TableHead>
               <TableHead>Breakfast</TableHead>
               <TableHead>Lunch</TableHead>
               <TableHead>Dinner</TableHead>
@@ -58,10 +60,38 @@ export default function MealsTable({
             {paginatedResidents.map((resident: any) => (
               <TableRow key={resident.id}>
                 <TableCell>
+                  <Link
+                    href={`/service-users?highlight=${resident.name}`}
+                    className="hover:underline cursor-pointer"
+                  >
+                    <div className="font-medium capitalize">
+                      {resident.name}
+                    </div>
+                  </Link>
+                </TableCell>
+
+                <TableCell className="flex items-center justify-start gap-1">
+                  <div className="">{resident?.portNumber}</div>
                   <div>
-                    <div className="font-medium">{resident.name}</div>
+                    {resident?.portNumber && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(resident?.portNumber);
+                          setCopiedPortId(resident.id); // jis user ka copy kiya uska id set
+                          setTimeout(() => setCopiedPortId(null), 2000); // 2 sec baad reset
+                        }}
+                        className="text-gray-500 hover:text-black transition-colors"
+                      >
+                        {copiedPortId === resident.id ? (
+                          <Check size={14} className="text-green-600" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </TableCell>
+
                 <TableCell>
                   <div className="space-y-1">
                     <div className="text-sm font-medium">{resident.branch}</div>

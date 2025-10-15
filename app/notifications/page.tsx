@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { NotificationStats } from "@/components/notifications/NotificationStats";
 import { NotificationFilters } from "@/components/notifications/NotificationFilters";
@@ -8,7 +8,8 @@ import { NotificationTable } from "@/components/notifications/NotificationTable"
 import { NewNotificationDialog } from "@/components/notifications/NewNotificationDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useBranches } from "@/hooks/useGetBranches";
-import { useNotifications, Notification } from "@/hooks/useNotifications"; // New import
+import { useNotifications, Notification } from "@/hooks/useNotifications";
+import { CustomPagination } from "@/components/CustomPagination"; // ✅ import pagination
 
 interface Stats {
   totalNotifications: number;
@@ -32,11 +33,18 @@ export default function NotificationsPage() {
   const [selectedBranch, setSelectedBranch] = useState<string>("all");
   const [isNewNotificationOpen, setIsNewNotificationOpen] =
     useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
   const { toast } = useToast();
   const { data: branchData, isLoading: branchesLoading } = useBranches();
-
   const { data: apiNotifications, isLoading: notificationsLoading } =
     useNotifications();
+
+  useEffect(() => {
+    console.log("notifications", apiNotifications);
+  });
+
+  const ITEMS_PER_PAGE = 10;
 
   // Dynamic options from API for filters
   const notificationTypes = [
@@ -46,9 +54,9 @@ export default function NotificationsPage() {
     ...new Set(apiNotifications?.map((n: Notification) => n.status) || []),
   ];
 
-  // Branches are objects with id and name
   const branches = branchData ?? [];
 
+  // ✅ Filtering logic
   const filteredNotifications: Notification[] = (apiNotifications || []).filter(
     (notification: Notification) => {
       const matchesSearch =
@@ -60,18 +68,30 @@ export default function NotificationsPage() {
         selectedType === "all" || notification.type === selectedType;
       const matchesStatus =
         selectedStatus === "all" || notification.status === selectedStatus;
-      const matchesBranch =
-        selectedBranch === "all" ||
-        notification.metadata.branchId === selectedBranch;
 
-      return matchesSearch && matchesType && matchesStatus && matchesBranch;
+      return matchesSearch && matchesType && matchesStatus;
     }
   );
 
+  // ✅ Calculate total pages
+  const totalPages = Math.ceil(filteredNotifications.length / ITEMS_PER_PAGE);
+
+  // ✅ Paginated slice
+  const paginatedNotifications = filteredNotifications.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // ✅ Reset to page 1 when filters/search change
+  const handleFilterChange = () => {
+    setCurrentPage(1);
+  };
+
+  // ✅ Stats calculation
   const getStats = (): Stats => {
     const totalNotifications = filteredNotifications.length;
     const activeNotifications = filteredNotifications.filter(
-      (n) => n.status === "SENT" // Adapt to API value
+      (n) => n.status === "SENT"
     ).length;
     const highPriorityNotifications = filteredNotifications.filter(
       (n) => n.priority === "HIGH" || n.priority === "URGENT"
@@ -98,27 +118,43 @@ export default function NotificationsPage() {
       {notificationsLoading || branchesLoading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#F87D7D] mx-auto"></div>
-          <p className="mt-2"> Loading Notifications...</p>
+          <p className="mt-2">Loading Notifications...</p>
         </div>
       ) : (
         <div className="space-y-6">
           <NotificationStats stats={stats} />
+
+          {/* ✅ Filters */}
           <NotificationFilters
             searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
+            setSearchTerm={(val) => {
+              setSearchTerm(val);
+              handleFilterChange();
+            }}
             selectedType={selectedType}
-            setSelectedType={setSelectedType}
+            setSelectedType={(val) => {
+              setSelectedType(val);
+              handleFilterChange();
+            }}
             selectedStatus={selectedStatus}
-            setSelectedStatus={setSelectedStatus}
+            setSelectedStatus={(val) => {
+              setSelectedStatus(val);
+              handleFilterChange();
+            }}
             selectedBranch={selectedBranch}
-            setSelectedBranch={setSelectedBranch}
-            notificationTypes={notificationTypes} // Dynamic from API
-            statusOptions={statusOptions} // Dynamic from API
-            branches={branches} // Pass full objects
+            setSelectedBranch={(val) => {
+              setSelectedBranch(val);
+              handleFilterChange();
+            }}
+            notificationTypes={notificationTypes}
+            statusOptions={statusOptions}
+            branches={branches}
           />
+
+          {/* ✅ Table */}
           <NotificationTable
-            notifications={filteredNotifications}
-            branches={branches} // New prop for lookup
+            notifications={paginatedNotifications}
+            branches={branches}
             onView={(id: string) =>
               toast({
                 title: "View Notification",
@@ -132,6 +168,13 @@ export default function NotificationsPage() {
                 variant: "destructive",
               })
             }
+          />
+
+          {/* ✅ Pagination */}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
         </div>
       )}

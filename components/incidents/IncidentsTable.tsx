@@ -25,12 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Pencil } from "lucide-react";
+import { Check, Copy, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import api, { API_HOST } from "@/lib/axios";
 import { RoleWrapper } from "@/lib/RoleWrapper";
 import { useAuth } from "../providers/auth-provider";
 import incidentPlaceholder from "../../public/incident_placeholder.jpg";
+import Link from "next/link";
 
 interface UIIncident {
   id: string;
@@ -51,6 +52,7 @@ interface UIIncident {
   category: string;
   evidence?: any;
   actionsTaken: string;
+  portNumber: string;
 }
 
 interface IncidentsTableProps {
@@ -73,6 +75,7 @@ export default function IncidentsTable({
   const [status, setStatus] = useState<string>("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -117,6 +120,7 @@ export default function IncidentsTable({
           <TableRow>
             <TableHead>Evidence</TableHead>
             <TableHead>Resident</TableHead>
+            <TableHead>Port Number</TableHead>
             <TableHead>Incident Details</TableHead>
             <TableHead>Branch</TableHead>
             <TableHead>Incident Type</TableHead>
@@ -148,7 +152,36 @@ export default function IncidentsTable({
               </TableCell>
 
               <TableCell className="capitalize">
-                {incident.residentInvolved}
+                <Link
+                  href={`/service-users?highlight=${incident.residentInvolved}`}
+                  className="hover:underline cursor-pointer"
+                >
+                  {incident.residentInvolved}
+                </Link>
+              </TableCell>
+
+              <TableCell className="">
+                <div className="flex items-center justify-center gap-1">
+                  <div>{incident.portNumber}</div>
+                  <div>
+                    {incident.portNumber && (
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(incident.portNumber);
+                          setCopiedPortId(incident.id); // jis user ka copy kiya uska id set
+                          setTimeout(() => setCopiedPortId(null), 2000); // 2 sec baad reset
+                        }}
+                        className="text-gray-500 hover:text-black transition-colors"
+                      >
+                        {copiedPortId === incident.id ? (
+                          <Check size={14} className="text-green-600" />
+                        ) : (
+                          <Copy size={14} />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </TableCell>
 
               <TableCell className="max-w-[250px]">

@@ -88,8 +88,8 @@ function NotificationBox({
           notifications.slice(0, 3).map((n: Notification) => (
             <DropdownMenuItem key={n.id}>
               <div className="flex flex-col">
-                <span className="text-sm font-medium">{n.title}</span>
-                <span className="text-sm">{n.message}</span>
+                <span className="text-xs font-medium">{n.title}</span>
+                <span className="text-xs">{n.message}</span>
                 <span className="text-xs text-muted-foreground">
                   {new Date(n.createdAt).toLocaleString()}
                 </span>
