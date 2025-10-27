@@ -49,11 +49,71 @@ import { useAuth } from "@/components/providers/auth-provider";
 import Image from "next/image";
 import { Capacitor } from "@capacitor/core";
 import { RoleChecker } from "@/lib/RoleWrapper";
+import { useNotifications, Notification } from "@/hooks/useNotifications";
+
+function NotificationBox({
+  closeMobileMenu,
+}: {
+  closeMobileMenu?: () => void;
+}) {
+  const router = useRouter();
+  const { data: apiNotifications } = useNotifications(); // Use hook
+  const notifications: Notification[] = apiNotifications || [];
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 rounded-full relative p-0 bg-gray-100"
+        >
+          <Bell className="h-4 w-4" />
+          {unreadCount > 0 && (
+            <span className="absolute p-1 top-0 right-0 h-7 w-7 text-xs font-bold bg-red-500 text-white rounded-full flex items-center justify-center transform translate-x-1/2 -translate-y-1/2">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-80" align="end">
+        <div className="px-4 py-2 font-semibold border-b">Notifications</div>
+        {notifications.length === 0 ? (
+          <DropdownMenuItem>
+            <div className="flex flex-col">
+              <span className="text-sm">No notifications</span>
+            </div>
+          </DropdownMenuItem>
+        ) : (
+          notifications.slice(0, 3).map((n: Notification) => (
+            <DropdownMenuItem key={n.id}>
+              <div className="flex flex-col">
+                <span className="text-xs font-medium">{n.title}</span>
+                <span className="text-xs">{n.message}</span>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(n.createdAt).toLocaleString()}
+                </span>
+              </div>
+            </DropdownMenuItem>
+          ))
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          asChild
+          className="justify-center"
+          onClick={() => {
+            if (closeMobileMenu) closeMobileMenu();
+            router.push("/notifications");
+          }}
+        >
+          <Link href="/notifications">View All</Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function AppNavbar() {
-  // const platform = Capacitor.getPlatform();
-  // if (platform === "ios" || platform === "android") return null;
-
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
@@ -73,7 +133,6 @@ export function AppNavbar() {
     if (pathname.includes("/company")) return "company";
     if (
       pathname.includes("/staffs") ||
-      // pathname.includes("/scheduler") ||
       pathname.includes("/clock-system") ||
       pathname.includes("/medical-staff") ||
       pathname.includes("/documents")
@@ -88,10 +147,8 @@ export function AppNavbar() {
       pathname.includes("/incidents")
     )
       return "operations";
-
     if (
       pathname.includes("/service-users") ||
-      // pathname.includes("/rooms") ||
       pathname.includes("/new-user") ||
       pathname.includes("/in-transit") ||
       pathname.includes("/other-removals") ||
@@ -107,14 +164,12 @@ export function AppNavbar() {
 
   const mainNavItems = [
     { title: "Dashboard", href: "/dashboard", key: "dashboard" },
-
     {
       title: "Company Management",
       href: "/company",
       key: "company",
       hasAccess: RoleChecker(roleName, ["Admin"]),
     },
-
     {
       title: "Employee Management",
       href: "/staffs",
@@ -125,7 +180,6 @@ export function AppNavbar() {
       href: "/welfare",
       key: "operations",
     },
-
     {
       title: "Service User Management",
       href: "/service-users",
@@ -178,7 +232,6 @@ export function AppNavbar() {
         color: "bg-red-100 text-red-700 border-red-200",
       },
     ],
-
     staffs: [
       {
         title: "Staff Management",
@@ -186,7 +239,6 @@ export function AppNavbar() {
         icon: Users,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-
       {
         title: "QR Clock In/Out",
         href: "/clock-system",
@@ -206,7 +258,6 @@ export function AppNavbar() {
         color: "bg-blue-100 text-blue-700 border-blue-200",
       },
     ],
-
     users: [
       {
         title: "Users",
@@ -214,7 +265,6 @@ export function AppNavbar() {
         icon: UserIcon,
         color: "bg-pink-100 text-pink-700 border-pink-200",
       },
-
       {
         title: "Registration",
         href: "/new-user",
@@ -311,6 +361,7 @@ export function AppNavbar() {
         </nav>
 
         <div className="hidden xl:flex items-center gap-3">
+          <NotificationBox />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 rounded-full">
@@ -340,12 +391,6 @@ export function AppNavbar() {
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem asChild>
-                <Link href="/company">
-                  <Building className="mr-2 h-4 w-4" />
-                  <span>Companies</span>
-                </Link>
-              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -367,7 +412,7 @@ export function AppNavbar() {
 
           {/* 🔥 Sidebar */}
           <div className="relative h-full w-72 bg-white py-10 shadow-2xl rounded-r-2xl p-5 flex flex-col overflow-y-auto animate-in slide-in-from-left">
-            {/* Header with close button */}
+            {/* Header with close button and notification */}
             <div className="flex items-center justify-between mb-6">
               <Link
                 href=""
@@ -379,12 +424,17 @@ export function AppNavbar() {
                 </div>
                 <span className="font-bold text-lg text-red-600">Sharp MS</span>
               </Link>
-              <button
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2 rounded-full hover:bg-gray-100 transition"
-              >
-                <X className="h-5 w-5 text-gray-600" />
-              </button>
+              <div className="flex items-center gap-2">
+                <NotificationBox
+                  closeMobileMenu={() => setMobileMenuOpen(false)}
+                />
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 transition"
+                >
+                  <X className="h-5 w-5 text-gray-600" />
+                </button>
+              </div>
             </div>
 
             {/* 🔥 User profile card */}
@@ -465,16 +515,7 @@ export function AppNavbar() {
             </div>
 
             {/* Footer actions */}
-            <div className="border-t relative top-[-100px] pt-4 space-y-2">
-              {/* <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  router.push("/company");
-                }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50"
-              >
-                <Building className="h-4 w-4" /> Companies
-              </button> */}
+            <div className="border-t pt-4 space-y-2">
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

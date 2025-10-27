@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,55 +28,20 @@ export default function LoginPage() {
 
     try {
       const userResponse = await login(emailAddress, password);
-      console.log("userResponse", userResponse);
 
-      if (
-        !userResponse ||
-        typeof userResponse !== "object" ||
-        !("roles" in userResponse)
-      ) {
-        toast({
-          title: "Login Failed",
-          description: "Invalid response from server.",
-          variant: "destructive",
-        });
-        return;
-      }
+      // If login failed, stop here
+      if (!userResponse) return;
 
-      const roles = (userResponse as any).roles || [];
-      const isAuthorized = roles.some(
-        (role: any) => role.name === "Admin" || role.name === "Manager"
-      );
-
-      if (!isAuthorized) {
-        toast({
-          title: "Access Denied",
-          description: "You are not authorized to log in.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Redirect based on onboarding status
-      if (!(userResponse as any)?.isOnboarded) {
-        router.push("/on-boarding");
-      } else {
+      // ✅ Redirect logic
+      if (userResponse.isOnboarded) {
         router.push("/dashboard");
+      } else {
+        router.push("/on-boarding");
       }
-    } catch (err: any) {
-      console.error("Login Error:", err);
-      const errorData = err.response?.data;
-
-      const message =
-        errorData?.error ||
-        errorData?.message ||
-        errorData?.details ||
-        err.message ||
-        "Login failed. Please try again.";
-
+    } catch (error: any) {
       toast({
-        title: "Login Failed",
-        description: message,
+        title: "Error",
+        description: error?.message || "Something went wrong.",
         variant: "destructive",
       });
     } finally {

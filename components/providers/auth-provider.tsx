@@ -2,7 +2,6 @@
 
 import type React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
-import { loginUser } from "@/services/authService";
 import api from "@/lib/axios";
 import { useToast } from "@/hooks/use-toast";
 
@@ -79,50 +78,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string
   ): Promise<any | null> => {
     try {
-      const data = await loginUser({ emailAddress, password });
+      const response = await api.post("/auth/login", {
+        emailAddress,
+        password,
+      });
 
+      const data = response.data;
       const userData = data.user;
       const accessToken = data.tokens?.accessToken;
       const refreshToken = data.tokens?.refreshToken;
 
-      if (userData && accessToken && refreshToken) {
-        // Check if user has ADMIN role
-        const isAdmin = userData?.roles?.some(
-          (role: any) => role.name === "Admin" || role.name === "Manager"
-        );
+      // Role check
+      const isAccesible = userData?.roles?.some(
+        (role: any) => role.name === "Admin" || role.name === "Manager"
+      );
 
-        if (!isAdmin) {
-          // Do NOT save to localStorage or setUser
-          return null;
-        }
-
-        // Authorized admin — safe to store in localStorage
-        setUser(userData);
-        localStorage.setItem("sms_user", JSON.stringify(userData));
-        localStorage.setItem("sms_access_token", accessToken);
-        localStorage.setItem("sms_refresh_token", refreshToken);
-
-        return userData;
+      if (!isAccesible) {
+        toast({
+          title: "Access Denied",
+          description: "You are not authorized to log in.",
+          variant: "destructive",
+        });
+        return null;
       }
 
-      return null;
+      // ✅ Store user data
+      localStorage.setItem("sms_user", JSON.stringify(userData));
+      localStorage.setItem("sms_access_token", accessToken);
+      localStorage.setItem("sms_refresh_token", refreshToken);
+
+      // If you have a React Context
+      setUser?.(userData);
+
+      return userData;
     } catch (err: any) {
-      const errorData = err.response?.data || err.error || err.response?.error || err.response?.data?.error;
-
-      console.error("Login failed:", err);
-
       const message =
-        errorData?.error ||
-        errorData?.message ||
-        errorData?.details ||
-        err.message ||
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
         "Login failed. Please try again.";
 
-      return toast({
+      toast({
         title: "Error",
         description: message,
         variant: "destructive",
       });
+
+      return null; // ✅ Return null to handle it gracefully
     }
   };
 

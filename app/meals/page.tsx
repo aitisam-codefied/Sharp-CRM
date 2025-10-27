@@ -92,6 +92,7 @@ export default function MealsPage() {
       const mappedResidents = data.map((item: any) => ({
         id: item?.guestId?.userId.portNumber,
         name: item?.guestId?.userId.fullName.trim(),
+        portNumber: item?.guestId?.userId.portNumber,
         room: item?.guestId?.familyId, // Using familyId as a proxy for room
         branch: item?.branchId?.name,
         branchId: item?.branchId?._id,

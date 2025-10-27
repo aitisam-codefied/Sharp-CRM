@@ -4,7 +4,7 @@ import { Users, CheckCircle, Calendar, Clock } from "lucide-react";
 import api from "@/lib/axios";
 
 const fetchStaffMembers = async () => {
-  const response = await api.get("/user/list");
+  const response = await api.get("/user/list?limit=1000");
   return response.data;
 };
 

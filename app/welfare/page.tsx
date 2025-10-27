@@ -33,6 +33,8 @@ import {
   CheckCircle,
   Clock,
   Loader2,
+  Check,
+  Copy,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useGetWelfareChecks } from "@/hooks/useGetWelfareChecks";
@@ -40,6 +42,11 @@ import { CustomPagination } from "@/components/CustomPagination";
 import { WelfareCheck } from "@/lib/types";
 import { DateRange } from "react-day-picker";
 import { DateRangePicker } from "@/components/DateRangePicker";
+import Link from "next/link";
+import { API_HOST } from "@/lib/axios";
+import incidentPlaceholder from "../../public/incident_placeholder.jpg";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialogHeader } from "@/components/ui/alert-dialog";
 
 export default function WelfarePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -47,6 +54,8 @@ export default function WelfarePage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
   const itemsPerPage = 10; // ek page me 10 hi dikhayenge
   const { toast } = useToast();
 
@@ -234,7 +243,10 @@ export default function WelfarePage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Welfare Check</TableHead>
+                        <TableHead>Snapshot</TableHead>
+                        <TableHead>Resident</TableHead>
+                        <TableHead>Port Number</TableHead>
+                        <TableHead>Checked By</TableHead>
                         <TableHead>Week Period</TableHead>
                         <TableHead>Physical Health</TableHead>
                         <TableHead>Mental Health</TableHead>
@@ -246,17 +258,73 @@ export default function WelfarePage() {
                     </TableHeader>
                     <TableBody>
                       {paginatedChecks.map((check) => (
-                        <TableRow key={check._id}>
+                        <TableRow className="text-xs" key={check._id}>
                           <TableCell>
-                            <div>
-                              <div className="text-sm text-muted-foreground">
-                                {check.guestId?.userId?.fullName || "No Guest"}
+                            <img
+                              src={`${API_HOST}${check?.details[0]?.images}`}
+                              alt="Evidence"
+                              className="w-14 h-14 object-cover rounded cursor-pointer hover:opacity-80 transition"
+                              onClick={() =>
+                                setPreviewImage(
+                                  `${API_HOST}${check?.details[0]?.images}`
+                                )
+                              }
+                              onError={(e) => {
+                                e.currentTarget.src = incidentPlaceholder.src; // fallback image
+                              }}
+                            />
+                          </TableCell>
+
+                          <TableCell>
+                            <Link
+                              href={`/service-users?highlight=${check.guestId?.userId?.fullName}`}
+                              className="hover:underline cursor-pointer"
+                            >
+                              <div className="capitalize">
+                                {check.guestId?.userId?.fullName}
                               </div>
-                              <div className="text-xs">{check?.portNumber}</div>
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-start gap-1">
+                              <div className="text-xs">
+                                {check?.guestId?.userId?.portNumber}
+                              </div>
+                              <div>
+                                {check?.guestId?.userId?.portNumber && (
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(
+                                        check?.guestId?.userId?.portNumber
+                                      );
+                                      setCopiedPortId(check._id); // jis user ka copy kiya uska id set
+                                      setTimeout(
+                                        () => setCopiedPortId(null),
+                                        2000
+                                      ); // 2 sec baad reset
+                                    }}
+                                    className="text-gray-500 hover:text-black transition-colors"
+                                  >
+                                    {copiedPortId === check._id ? (
+                                      <Check
+                                        size={14}
+                                        className="text-green-600"
+                                      />
+                                    ) : (
+                                      <Copy size={14} />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">
+                            <div className="capitalize">
+                              {check?.staffId?.fullName}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="">
                               {new Date(
                                 check?.details[0]?.weekStartDate
                               ).toLocaleDateString()}{" "}
@@ -325,6 +393,28 @@ export default function WelfarePage() {
                       ))}
                     </TableBody>
                   </Table>
+
+                  {/* === Evidence Preview Modal === */}
+                  <Dialog
+                    open={!!previewImage}
+                    onOpenChange={() => setPreviewImage(null)}
+                  >
+                    <DialogContent className="w-[90vw] sm:max-w-3xl">
+                      <AlertDialogHeader>
+                        <DialogTitle>Evidence Preview</DialogTitle>
+                      </AlertDialogHeader>
+                      {previewImage && (
+                        <img
+                          src={previewImage}
+                          alt="Full Evidence"
+                          className="w-full h-auto rounded-lg object-contain"
+                          onError={(e) => {
+                            e.currentTarget.src = incidentPlaceholder.src; // fallback image
+                          }}
+                        />
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 {paginatedChecks.length === 0 && (
                   <div className="text-center py-8">

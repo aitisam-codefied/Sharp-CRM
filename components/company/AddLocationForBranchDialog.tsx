@@ -51,7 +51,7 @@ const ROOM_AMENITIES = [
   "Microwave",
   "Desk",
   "Wardrobe",
-  "Balcony",
+  "Table And Chairs",
   "Kitchen Access",
   "Laundry Access",
 ];

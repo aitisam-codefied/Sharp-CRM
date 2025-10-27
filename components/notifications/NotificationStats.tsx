@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Bell, CheckCircle, AlertTriangle, Calendar } from "lucide-react";
+import { Bell, AlertTriangle, Calendar } from "lucide-react";
 
 interface Stats {
   totalNotifications: number;
@@ -14,7 +14,7 @@ interface NotificationStatsProps {
 
 export function NotificationStats({ stats }: NotificationStatsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
@@ -28,24 +28,13 @@ export function NotificationStats({ stats }: NotificationStatsProps) {
           </div>
         </CardContent>
       </Card>
+
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active</p>
-              <p className="text-2xl font-bold text-green-600">
-                {stats.activeNotifications}
-              </p>
-            </div>
-            <CheckCircle className="h-8 w-8 text-green-600" />
-          </div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">High Priority</p>
+              <p className="text-sm text-muted-foreground">High Priority</p>{" "}
+              {/* Changed from "Pending" */}
               <p className="text-2xl font-bold text-red-600">
                 {stats.highPriorityNotifications}
               </p>
@@ -58,7 +47,8 @@ export function NotificationStats({ stats }: NotificationStatsProps) {
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Scheduled</p>
+              <p className="text-sm text-muted-foreground">Scheduled</p>{" "}
+              {/* Changed from "Read" */}
               <p className="text-2xl font-bold text-blue-600">
                 {stats.scheduledNotifications}
               </p>

@@ -6,8 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Search, Filter } from "lucide-react";
+import { Search } from "lucide-react"; // Removed unused Filter
 import { Dispatch, SetStateAction } from "react";
 
 interface NotificationFiltersProps {
@@ -21,7 +20,7 @@ interface NotificationFiltersProps {
   setSelectedBranch: Dispatch<SetStateAction<string>>;
   notificationTypes: string[];
   statusOptions: string[];
-  branches: string[];
+  branches: any[]; // Full objects with id/name
 }
 
 export function NotificationFilters({
@@ -58,7 +57,7 @@ export function NotificationFilters({
           <SelectItem value="all">All Types</SelectItem>
           {notificationTypes?.map((type) => (
             <SelectItem key={type} value={type}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()}
             </SelectItem>
           ))}
         </SelectContent>
@@ -71,24 +70,24 @@ export function NotificationFilters({
           <SelectItem value="all">All Status</SelectItem>
           {statusOptions?.map((status) => (
             <SelectItem key={status} value={status}>
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+      {/* <Select value={selectedBranch} onValueChange={setSelectedBranch}>
         <SelectTrigger className="w-full md:w-48">
           <SelectValue placeholder="All Branches" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All Branches</SelectItem>
           {branches?.map((branch) => (
-            <SelectItem key={branch} value={branch}>
-              {branch}
+            <SelectItem key={branch.id} value={branch.id}>
+              {branch.name}
             </SelectItem>
           ))}
         </SelectContent>
-      </Select>
+      </Select> */}
     </div>
   );
 }

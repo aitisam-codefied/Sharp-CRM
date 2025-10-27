@@ -25,10 +25,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, Search, Calendar } from "lucide-react";
+import { Package, Search, Calendar, Check, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Basket } from "@/hooks/useGetBaskets";
 import { CustomPagination } from "../CustomPagination";
+import { Modal, Tree } from "antd";
+import { DataNode } from "antd/es/tree";
+import { API_HOST } from "@/lib/axios";
+import Link from "next/link";
 
 interface BasketsTableProps {
   baskets: Basket[];
@@ -38,6 +42,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [expandedBasketId, setExpandedBasketId] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [copiedPortId, setCopiedPortId] = useState<string | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
@@ -158,8 +166,10 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Basket Details</TableHead>
+                <TableHead>Resident</TableHead>
+                <TableHead>Port Number</TableHead>
                 <TableHead>Branch</TableHead>
+                <TableHead>Total Items</TableHead>
                 <TableHead>Key Metrics</TableHead>
                 <TableHead>Assignment Details</TableHead>
                 <TableHead>Status</TableHead>
@@ -167,25 +177,101 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
             </TableHeader>
             <TableBody>
               {currentData?.map((basket) => (
-                <TableRow key={basket._id}>
+                <TableRow className="text-xs" key={basket._id}>
                   <TableCell>
-                    <div className="space-y-1">
-                      <div className="font-medium">
+                    <Link
+                      href={`/service-users?highlight=${basket.guestId?.userId?.fullName}`}
+                      className="hover:underline cursor-pointer"
+                    >
+                      <div className="font-medium capitalize">
                         {basket.guestId?.userId?.fullName}
                       </div>
-                      <div className="text-sm text-muted-foreground line-clamp-2">
-                        {basket.notes}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Items: {basket.totalItems}
-                      </div>
-                    </div>
+                    </Link>
                   </TableCell>
+
                   <TableCell>
-                    <div className="text-sm text-muted-foreground">
-                      {basket.branchId?.name || "Not Assigned"}
+                    <div className="flex items-center justify-start gap-1">
+                      <div>{basket.guestId?.userId?.portNumber}</div>
+                      <div>
+                        {basket.guestId?.userId?.portNumber && (
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                basket.guestId?.userId?.portNumber
+                              );
+                              setCopiedPortId(basket._id); // jis user ka copy kiya uska id set
+                              setTimeout(() => setCopiedPortId(null), 2000); // 2 sec baad reset
+                            }}
+                            className="text-gray-500 hover:text-black transition-colors"
+                          >
+                            {copiedPortId === basket._id ? (
+                              <Check size={14} className="text-green-600" />
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
+
+                  <TableCell>
+                    <div>{basket.branchId?.name || "Not Assigned"}</div>
+                  </TableCell>
+
+                  <TableCell>
+                    <div className="text-xs flex items-center gap-2">
+                      {/* Basket count */}
+                      <span>Total Items : {basket?.basket?.length}</span>
+
+                      {/* Expand/Collapse button */}
+                      <button
+                        onClick={() =>
+                          setExpandedBasketId(
+                            expandedBasketId === basket._id ? null : basket._id
+                          )
+                        }
+                        className="text-white bg-gray-400 flex items-center justify-center w-4 h-4 rounded-full text-sm font-medium"
+                      >
+                        {expandedBasketId === basket._id ? "−" : "+"}
+                      </button>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {expandedBasketId === basket._id && (
+                      <div className="mt-2 border rounded-md p-2 bg-gray-50 text-xs space-y-2">
+                        {basket.basket.map((item: any, index: number) => (
+                          <div
+                            key={`${basket._id}-item-${index}`}
+                            className="flex flex-col border-b last:border-b-0 pb-1"
+                          >
+                            {/* Item name + status */}
+                            <div className="flex justify-between">
+                              <span className="font-medium">
+                                {item.itemName} - {item.status}
+                              </span>
+                            </div>
+
+                            {/* View Proof (only for Delivered) */}
+                            {item.status === "Delivered" &&
+                              item.proofOfDelivery && (
+                                <span
+                                  className="text-blue-500 cursor-pointer hover:underline mt-1 ml-2"
+                                  onClick={() =>
+                                    setPreviewImage(
+                                      `${API_HOST}${item.proofOfDelivery}`
+                                    )
+                                  }
+                                >
+                                  View Proof
+                                </span>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </TableCell>
+
                   <TableCell>
                     <div className="space-y-1">
                       <div className="text-xs font-medium">
@@ -206,7 +292,7 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
                         <Calendar className="h-3 w-3 mr-1" />
                         {formatDate(basket.createdAt)}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground">
                         By: {basket.staffId?.fullName || "Not Assigned"}
                       </div>
                     </div>
@@ -242,6 +328,21 @@ export const BasketsTable = ({ baskets }: BasketsTableProps) => {
           totalPages={totalPages}
           onPageChange={(page: any) => setCurrentPage(page)}
         />
+
+        <Modal
+          open={!!previewImage}
+          footer={null}
+          onCancel={() => setPreviewImage(null)}
+          centered
+        >
+          {previewImage && (
+            <img
+              src={previewImage}
+              alt="Proof of Delivery"
+              className="w-full h-auto rounded-md mt-5"
+            />
+          )}
+        </Modal>
       </CardContent>
     </Card>
   );
