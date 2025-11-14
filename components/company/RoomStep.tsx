@@ -46,7 +46,7 @@ const ROOM_AMENITIES = [
   "TV",
   "Refrigerator",
   "Microwave",
-  "Desk",
+  "Kettle",
   "Wardrobe",
   "Table And Chairs",
   "Kitchen Access",

@@ -41,6 +41,7 @@ export function AddMedicalStaffModal({
   const [companyId, setCompanyId] = useState(""); // 🔹 Selected company
   const [branches, setBranches] = useState<string[]>([]); // 🔹 Now array of branch ids
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [medicalTrainingDone, setMedicalTrainingDone] = useState(true);
 
   // NEW: replacement related states
   const [isReplacement, setIsReplacement] = useState<"no" | "yes">("no");
@@ -176,6 +177,7 @@ export function AddMedicalStaffModal({
       emailAddress,
       type,
       status,
+      medicalTrainingDone,
     };
 
     if (isReplacement === "yes" && replacementId) {
@@ -311,6 +313,19 @@ export function AddMedicalStaffModal({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Medical Training Completed */}
+          <div className="mt-2">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="checkbox"
+                checked={medicalTrainingDone}
+                onChange={(e) => setMedicalTrainingDone(e.target.checked)}
+                className="h-4 w-4"
+              />
+              Training Completed?
+            </label>
           </div>
 
           {/* Company */}

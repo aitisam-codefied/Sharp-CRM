@@ -24,7 +24,10 @@ export const useCreateGuest = () => {
       toast({
         title: "Error",
         description:
-          error?.response?.data?.details || "Failed to update staff.",
+          error.response?.data?.error ||
+          error.response?.data?.details ||
+          error.message ||
+          "Failed to add service user.",
         variant: "destructive",
       });
     },

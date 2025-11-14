@@ -20,6 +20,7 @@ export default function ReviewConfirmationForm({
   const totalPeople = numDependants + 1;
   const { data: branchData } = useBranches();
   const sigRef = useRef<SignaturePad | null>(null);
+  const suSigRef = useRef<SignaturePad | null>(null); // Added ref for service user signature
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const getBranchName = (branchId: string) => {
@@ -67,6 +68,45 @@ export default function ReviewConfirmationForm({
     setFormData((prev: any) => ({
       ...prev,
       signature: "", // state se bhi clear
+    }));
+  };
+
+  const saveSUSignature = () => {
+    // Added function to save service user signature
+    if (suSigRef.current) {
+      const dataUrl = suSigRef.current.toDataURL("image/png");
+
+      // Convert base64 → Blob
+      const byteString = atob(dataUrl.split(",")[1]);
+      const mimeString = dataUrl.split(",")[0].split(":")[1].split(";")[0];
+
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+
+      // Convert Blob → File
+      const file = new File([blob], "su_signature.png", { type: "image/png" });
+
+      // Save to formData
+      setFormData((prev: any) => ({
+        ...prev,
+        suSignature: file, // UploadedFile format
+      }));
+    }
+  };
+
+  const clearSUSignature = () => {
+    // Added function to clear service user signature
+    if (suSigRef.current) {
+      suSigRef.current.clear(); // canvas se clear
+    }
+
+    setFormData((prev: any) => ({
+      ...prev,
+      suSignature: "", // state se bhi clear
     }));
   };
 
@@ -670,6 +710,50 @@ export default function ReviewConfirmationForm({
               </Button>
               <Button
                 onClick={clearSignature}
+                variant="outline"
+                className="text-red-500 border-red-500 hover:bg-red-50"
+              >
+                Clear Signature
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Service User Signature - Added new section */}
+      <div className="space-y-6">
+        <h3 className="text-2xl font-bold text-[#F87D7D] tracking-tight">
+          Service User Digital Signature
+        </h3>
+        <Card className="shadow-lg bg-white border border-gray-200 rounded-xl">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex-1">
+                <SignaturePad
+                  ref={suSigRef}
+                  canvasProps={{
+                    width: "500",
+                    height: "200",
+                    className:
+                      "border-2 border-[#F87D7D] rounded-lg bg-gray-50 w-full max-w-[500px]",
+                  }}
+                  options={{
+                    minWidth: 0.5,
+                    maxWidth: 2.5,
+                    penColor: "black",
+                  }}
+                />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-4 mt-4">
+              <Button
+                onClick={saveSUSignature}
+                className="bg-[#F87D7D] hover:bg-[#E66B6B] text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200"
+              >
+                Save Signature
+              </Button>
+              <Button
+                onClick={clearSUSignature}
                 variant="outline"
                 className="text-red-500 border-red-500 hover:bg-red-50"
               >

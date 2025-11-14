@@ -44,7 +44,7 @@ export default function LocationSetupStep({
                 i !== locationIndex && l.name.trim().toLowerCase() === name
             );
             if (isDuplicate) {
-              newErrors[key] = "Location name must be unique within the branch";
+              newErrors[key] = "Floor name must be unique within the branch";
             }
           }
         });
@@ -68,7 +68,7 @@ export default function LocationSetupStep({
     setLocationNameErrors((prev) => ({
       ...prev,
       [key]: isDuplicate
-        ? "Location name must be unique within the branch"
+        ? "Floor must be unique within the branch"
         : "",
     }));
     updateLocation(companyIndex, branchIndex, locationIndex, value);
@@ -81,10 +81,10 @@ export default function LocationSetupStep({
           <Home className="h-8 w-8 text-red-500" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Location Setup
+          Floor Setup
         </h2>
         <p className="text-gray-600">
-          Add locations within each branch (e.g., Floor 1, East Wing)
+          Add floors within each branch (e.g., Floor 1, East Wing)
         </p>
       </div>
 
@@ -160,7 +160,7 @@ export default function LocationSetupStep({
                       size="sm"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Location
+                      Add Floor
                     </Button>
                   </div>
                 </div>

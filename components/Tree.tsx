@@ -18,8 +18,12 @@ const TreeDemo: React.FC<TreeDemoProps> = ({ treeData }) => {
     const title = node.title as string;
     // Check if the title contains the specific note for red badge
     const isCriticalNote = title.includes(
-      "Note: This location needs staff assignment."
+      "Note: This floor needs staff assignment."
     );
+
+    if (title.includes("Locations")) {
+      return <span>Floors</span>;
+    }
 
     // If the title contains "Note:", wrap the note part in a Badge
     if (title.includes("Note:")) {

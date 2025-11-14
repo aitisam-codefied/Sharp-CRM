@@ -17,12 +17,30 @@ import api from "@/lib/axios";
 import { useCreateGuest } from "@/hooks/useCreateGuest";
 
 // Dynamic imports to prevent SSR issues with browser-only libraries
-const PersonalInfoForm = dynamic(() => import("@/components/SU-Registration/PersonalInfoForm"), { ssr: false });
-const DependantsForm = dynamic(() => import("@/components/SU-Registration/DependantForm"), { ssr: false });
-const EmergencyContactForm = dynamic(() => import("@/components/SU-Registration/EmergencyContactForm"), { ssr: false });
-const MedicalDietaryForm = dynamic(() => import("@/components/SU-Registration/MedicalDietaryForm"), { ssr: false });
-const DentalClinicForm = dynamic(() => import("@/components/SU-Registration/DentalClinicForm"), { ssr: false });
-const ReviewConfirmationForm = dynamic(() => import("@/components/SU-Registration/ReviewConfirmationForm"), { ssr: false });
+const PersonalInfoForm = dynamic(
+  () => import("@/components/SU-Registration/PersonalInfoForm"),
+  { ssr: false }
+);
+const DependantsForm = dynamic(
+  () => import("@/components/SU-Registration/DependantForm"),
+  { ssr: false }
+);
+const EmergencyContactForm = dynamic(
+  () => import("@/components/SU-Registration/EmergencyContactForm"),
+  { ssr: false }
+);
+const MedicalDietaryForm = dynamic(
+  () => import("@/components/SU-Registration/MedicalDietaryForm"),
+  { ssr: false }
+);
+const DentalClinicForm = dynamic(
+  () => import("@/components/SU-Registration/DentalClinicForm"),
+  { ssr: false }
+);
+const ReviewConfirmationForm = dynamic(
+  () => import("@/components/SU-Registration/ReviewConfirmationForm"),
+  { ssr: false }
+);
 
 // Guest Emergency Contact
 interface EmergencyContact {
@@ -76,6 +94,7 @@ export interface CreateGuestForm {
   emergencyContact?: EmergencyContact;
   occupancyAgreement: any;
   signature: any;
+  suSignature: any; // Added new field for service user signature
   areThereMultipleGuests?: boolean;
   consentAccuracy: boolean;
   consentDataProcessing: boolean;
@@ -91,9 +110,11 @@ export interface CreateGuestForm {
 
 // Safe phone validation wrapper
 const isValidPhoneNumber = (phone: string) => {
-  if (typeof window === 'undefined') return true; // Skip validation during SSR
+  if (typeof window === "undefined") return true; // Skip validation during SSR
   try {
-    const { isValidPhoneNumber: validate } = require('react-phone-number-input');
+    const {
+      isValidPhoneNumber: validate,
+    } = require("react-phone-number-input");
     return validate(phone);
   } catch {
     return true; // If library fails to load, don't block validation
@@ -116,6 +137,7 @@ export default function NewUserPage() {
     },
     occupancyAgreement: null as File | null,
     signature: null as File | null,
+    suSignature: null as File | null, // Added initial value for service user signature
     areThereMultipleGuests: false,
     consentAccuracy: false,
     consentDataProcessing: false,
@@ -420,7 +442,8 @@ export default function NewUserPage() {
     return (
       formData.consentAccuracy &&
       formData.consentDataProcessing &&
-      !!formData.signature
+      !!formData.signature &&
+      !!formData.suSignature // Added check for service user signature
     );
   };
 
@@ -586,6 +609,10 @@ export default function NewUserPage() {
       if (!(cleanedData.signature instanceof File)) {
         console.error("signature is not a File:", cleanedData.signature);
       }
+      if (!(cleanedData.suSignature instanceof File)) {
+        // Added verification for service user signature
+        console.error("suSignature is not a File:", cleanedData.suSignature);
+      }
 
       // Prepare FormData with flattened fields
       const apiFormData = new FormData();
@@ -603,6 +630,10 @@ export default function NewUserPage() {
       if (cleanedData.signature instanceof File) {
         console.log("object", cleanedData.signature instanceof File);
         apiFormData.append("signature", cleanedData.signature);
+      }
+      if (cleanedData.suSignature instanceof File) {
+        // Added append for service user signature as "suSignatureUrl"
+        apiFormData.append("suSignatureUrl", cleanedData.suSignature);
       }
 
       // Append simple fields

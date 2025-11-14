@@ -37,6 +37,7 @@ export default function CompanyPerformanceTable() {
   const { data, isLoading, error } = useCompanyTree(tenantId);
 
   const companyData: CompanyNode[] = data?.data || [];
+  console.log("companyData", companyData);
 
   useEffect(() => {
     setCurrentPage(1);

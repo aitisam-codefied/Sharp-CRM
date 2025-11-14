@@ -233,22 +233,28 @@ export default function AddStaffDialog() {
 
     let locationIds: string[] = [];
 
-    if (isManager || isAssistantManager) {
-      // Manager → multiple branches ki sari locations
-      // Assistant Manager → single branch ki sari locations
-      locationIds = branchIds.flatMap((branchId) => {
-        const branch = filteredBranches.find((b) => b._id === branchId);
-        return branch?.locations.map((loc) => loc._id) || [];
-      });
-    } else {
-      // Staff → manually selected locations
-      locationIds = selectedLocations
-        .map((locName) => {
-          const loc = filteredLocations.find((l) => l.name === locName);
-          return loc ? loc._id : null;
-        })
-        .filter(Boolean) as string[];
-    }
+    // if (isManager || isAssistantManager) {
+    //   // Manager → multiple branches ki sari locations
+    //   // Assistant Manager → single branch ki sari locations
+    //   locationIds = branchIds.flatMap((branchId) => {
+    //     const branch = filteredBranches.find((b) => b._id === branchId);
+    //     return branch?.locations.map((loc) => loc._id) || [];
+    //   });
+    // } else {
+    //   // Staff → manually selected locations
+    //   locationIds = selectedLocations
+    //     .map((locName) => {
+    //       const loc = filteredLocations.find((l) => l.name === locName);
+    //       return loc ? loc._id : null;
+    //     })
+    //     .filter(Boolean) as string[];
+    // }
+
+    // For ALL roles: Manager, AssistantManager, Staff → auto-fill locations for selected branches
+    locationIds = branchIds.flatMap((branchId) => {
+      const branch = filteredBranches.find((b) => b._id === branchId);
+      return branch?.locations.map((loc) => loc._id) || [];
+    });
 
     const backendData = {
       companyId: selectedCompany,
@@ -526,7 +532,7 @@ export default function AddStaffDialog() {
           )}
 
           {/* Location selection (only Staff) */}
-          {isStaff && selectedBranches.length > 0 && (
+          {/* {isStaff && selectedBranches.length > 0 && (
             <div>
               <Label>Location(s)</Label>
               <Popover
@@ -595,7 +601,7 @@ export default function AddStaffDialog() {
                 </PopoverContent>
               </Popover>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Footer */}

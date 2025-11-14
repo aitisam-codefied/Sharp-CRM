@@ -56,10 +56,10 @@ export default function LocationStep({
           <Home className="h-6 w-6 sm:h-8 sm:w-8 text-red-500" />
         </div>
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-          Location Setup
+          Floor Setup
         </h2>
         <p className="text-gray-600 text-sm sm:text-base">
-          Add locations within each branch (e.g., Floor 1, East Wing)
+          Add floors within each branch (e.g., Floor 1, East Wing)
         </p>
       </div>
       <div className="space-y-4 sm:space-y-6">
@@ -106,7 +106,7 @@ export default function LocationStep({
                           />
                           {location.name.length > 50 && (
                             <p className="text-red-500 text-xs mt-1">
-                              Location name cannot exceed 50 characters.
+                              Floor name cannot exceed 50 characters.
                             </p>
                           )}
                         </div>
@@ -133,7 +133,7 @@ export default function LocationStep({
                       size="sm"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add Location
+                      Add Floor
                     </Button>
                   </CardContent>
                 </Card>

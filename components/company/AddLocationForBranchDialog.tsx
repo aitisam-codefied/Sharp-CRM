@@ -49,7 +49,7 @@ const ROOM_AMENITIES = [
   "TV",
   "Refrigerator",
   "Microwave",
-  "Desk",
+  "Kettle",
   "Wardrobe",
   "Table And Chairs",
   "Kitchen Access",
@@ -114,7 +114,7 @@ export default function AddLocationForBranchDialog({
     setLocation((prev) => ({ ...prev, name: value }));
 
     if (value.trim().length > 50) {
-      setLocationNameError("Location name cannot exceed 50 characters.");
+      setLocationNameError("Floor name cannot exceed 50 characters.");
       return;
     }
 
@@ -125,7 +125,7 @@ export default function AddLocationForBranchDialog({
       )
     ) {
       setLocationNameError(
-        "A location with this name already exists in this branch."
+        "A floor with this name already exists in this branch."
       );
     } else {
       setLocationNameError(null);
@@ -233,7 +233,7 @@ export default function AddLocationForBranchDialog({
     mutate(locationData, {
       onSuccess: (data) => {
         const createdLocation = data.locations[0];
-        toast({ title: "Location Created Successfully" });
+        toast({ title: "Floor Created Successfully" });
         if (createdLocation) {
           onLocationCreated({
             _id: createdLocation._id,
@@ -258,7 +258,7 @@ export default function AddLocationForBranchDialog({
         const message =
           error.response?.data?.error ||
           error.message ||
-          "Failed to create Location.";
+          "Failed to create Floor.";
         toast({
           title: "Error",
           description: message,
@@ -284,19 +284,19 @@ export default function AddLocationForBranchDialog({
       <DialogTrigger asChild>
         <Button className="text-xs sm:text-sm" size="sm">
           {/* <Plus className="h-4 w-4" /> */}
-          Add Location
+          Add Floor
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[90vw] sm:max-w-lg md:max-w-2xl lg:max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Location</DialogTitle>
+          <DialogTitle>Add New Floor</DialogTitle>
           <DialogDescription>
-            Enter the details for the new location
+            Enter the details for the new floor
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="location-name">Location Name *</Label>
+            <Label htmlFor="location-name">Floor Name *</Label>
             <Input
               id="location-name"
               value={location.name}
@@ -433,7 +433,7 @@ export default function AddLocationForBranchDialog({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isPending || !isFormValid}>
-            {isPending ? "Adding..." : "Add Location"}
+            {isPending ? "Adding..." : "Add Floor"}
           </Button>
         </div>
       </DialogContent>
