@@ -120,7 +120,7 @@ export default function LocationCard({
       {
         onSuccess: () => {
           toast({
-            title: "Location Updated successfully",
+            title: "Floor Updated successfully",
           });
           onLocationUpdate?.({ ...location, name: editLocationName });
           setEditingLocationId(null);
@@ -129,7 +129,7 @@ export default function LocationCard({
           const message =
             error.response?.data?.error ||
             error.message ||
-            "Failed to update location.";
+            "Failed to update floor.";
           toast({
             title: "Error",
             description: message,
@@ -153,7 +153,7 @@ export default function LocationCard({
     deleteLocationMutation.mutate(location._id, {
       onSuccess: () => {
         toast({
-          title: "Location Deleted successfully",
+          title: "Floor Deleted successfully",
         });
         onLocationDelete?.(location._id);
         setDeleteDialogOpen(false);
@@ -324,7 +324,7 @@ export default function LocationCard({
                 No rooms available
               </h6>
               <p className="text-gray-500 text-sm">
-                Add rooms to this location to get started
+                Add rooms to this floor to get started
               </p>
             </div>
           )}

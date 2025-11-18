@@ -148,7 +148,7 @@ export default function CompanyTable() {
                       Branches
                     </TableHead>
                     <TableHead className="font-semibold text-gray-700">
-                      Locations
+                      Floors
                     </TableHead>
                     <TableHead className="font-semibold text-gray-700">
                       Total Rooms

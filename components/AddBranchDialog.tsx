@@ -52,7 +52,7 @@ const ROOM_AMENITIES = [
   "TV",
   "Refrigerator",
   "Microwave",
-  "Desk",
+  "Kettle",
   "Wardrobe",
   "Table And Chairs",
   "Kitchen Access",
@@ -373,7 +373,7 @@ export default function AddBranchDialog() {
 
           {/* Locations */}
           <div className="space-y-4">
-            <Label>Locations *</Label>
+            <Label>Floors *</Label>
             {branch.locations.map((location, locationIndex) => (
               <div
                 key={locationIndex}
@@ -555,7 +555,7 @@ export default function AddBranchDialog() {
               size="sm"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Location
+              Add Floor
             </Button>
           </div>
         </div>

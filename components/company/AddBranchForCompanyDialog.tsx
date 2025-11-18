@@ -50,7 +50,7 @@ const ROOM_AMENITIES = [
   "TV",
   "Refrigerator",
   "Microwave",
-  "Desk",
+  "Kettle",
   "Wardrobe",
   "Table And Chairs",
   "Kitchen Access",
@@ -387,7 +387,7 @@ export default function AddBranchForCompanyDialog({
 
           {/* Locations */}
           <div className="space-y-4">
-            <Label>Locations</Label>
+            <Label>Floors</Label>
             {branch.locations.map((location, locationIndex) => (
               <div
                 key={locationIndex}
@@ -412,7 +412,7 @@ export default function AddBranchForCompanyDialog({
                 </div>
                 {location.name.length > 100 && (
                   <p className="text-red-500 text-sm">
-                    Location name cannot exceed 100 characters.
+                    Floor name cannot exceed 100 characters.
                   </p>
                 )}
 
@@ -557,7 +557,7 @@ export default function AddBranchForCompanyDialog({
               size="sm"
             >
               <Plus className="h-4 w-4" />
-              Add Location
+              Add Floor
             </Button>
           </div>
         </div>

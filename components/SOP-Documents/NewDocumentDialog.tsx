@@ -120,7 +120,11 @@ export default function NewDocumentDialog({
     formData.append("description", description);
     // formData.append("version", normalizedVersion);
     formData.append("category", category);
-    formData.append("tags", tags);
+
+    if (tags && tags.trim() !== "") {
+      formData.append("tags", tags);
+    }
+
     formData.append("accessLevel", accessLevel);
     formData.append("isMandatoryReading", isMandatory ? "true" : "false");
 

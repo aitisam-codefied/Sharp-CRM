@@ -328,7 +328,7 @@ export default function BranchCard({
                   variant="outline"
                   className="border-white/50 text-white bg-white/10 font-semibold"
                 >
-                  {branch.locations?.length} Locations
+                  {branch.locations?.length} Floors
                 </Badge>
                 <Badge
                   variant="outline"
@@ -348,7 +348,7 @@ export default function BranchCard({
                 <div className="w-7 h-7 bg-gradient-to-br from-[#F87D7D] to-[#F87D7D]/80 rounded-xl hidden sm:flex items-center justify-center shadow-lg">
                   <Home className="h-3 w-3 text-white" />
                 </div>
-                Locations
+                Floors
               </h4>
               {isEditable && (
                 <AddLocationForBranchDialog

@@ -84,7 +84,7 @@ export default function RoomConfigStep({
               );
               if (isDuplicate) {
                 newErrors[key] =
-                  "Room number must be unique within the location";
+                  "Room number must be unique within the floor";
               }
             }
           });
@@ -111,7 +111,7 @@ export default function RoomConfigStep({
     setRoomNumberErrors((prev) => ({
       ...prev,
       [key]: isDuplicate
-        ? "Room number must be unique within the location"
+        ? "Room number must be unique within the floor"
         : "",
     }));
     updateRoom(
@@ -134,7 +134,7 @@ export default function RoomConfigStep({
           Room Configuration
         </h2>
         <p className="text-gray-600">
-          Set up rooms for each location with details and amenities
+          Set up rooms for each floor with details and amenities
         </p>
       </div>
 

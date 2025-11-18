@@ -4,12 +4,12 @@ import type { TreeDataNode } from "antd"; // For tree structure compatibility
 import api from "@/lib/axios";
 
 interface LocationNode extends TreeDataNode {
-  title: string;
+  title: "Floors";
   key: string;
 }
 
 interface LocationsNode extends TreeDataNode {
-  title: "Locations";
+  title: "Floors";
   key: string;
   children: LocationNode[];
 }
