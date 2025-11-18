@@ -106,7 +106,9 @@ export default function FoodImagesPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
   // API hooks
-  const { data: foods, isLoading: foodsLoading } = useGetFoods();
+  const { data: foods, isLoading: foodsLoading } = useGetFoods(
+    selectedBranch !== "all-branches" ? selectedBranch : undefined
+  );
   const { data: categories, isLoading: categoriesLoading } =
     useGetFoodCategories();
   const createFoodMutation = useCreateFood();
@@ -346,6 +348,21 @@ export default function FoodImagesPage() {
     );
   };
 
+  // Extract unique branches from foods data
+  const uniqueBranches = useMemo(() => {
+    if (!foods) return [];
+    const branchMap = new Map<string, { _id: string; name: string }>();
+    foods.forEach((food) => {
+      if (food.branchId && typeof food.branchId === 'object' && food.branchId._id && food.branchId.name) {
+        branchMap.set(food.branchId._id, {
+          _id: food.branchId._id,
+          name: food.branchId.name,
+        });
+      }
+    });
+    return Array.from(branchMap.values());
+  }, [foods]);
+
   // Filter foods based on search and filters
   const filteredFoods =
     foods?.filter((food) => {
@@ -365,7 +382,12 @@ export default function FoodImagesPage() {
           const created = new Date(food.createdAt).toISOString().split("T")[0]; // "YYYY-MM-DD"
           return created === selected;
         })();
-      return matchesSearch && matchesMeal && matchesFilter && matchesDate;
+      const matchesBranch =
+        selectedBranch === "all-branches" ||
+        (food.branchId && 
+         typeof food.branchId === 'object' && 
+         food.branchId._id === selectedBranch);
+      return matchesSearch && matchesMeal && matchesFilter && matchesDate && matchesBranch;
     }) || [];
 
   function formatDateWithSuffix(dateString: string) {
@@ -818,7 +840,7 @@ export default function FoodImagesPage() {
                 <h2 className="text-lg font-semibold">Food Gallery</h2>
               </div>
               {/* Filters Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -834,23 +856,19 @@ export default function FoodImagesPage() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
                 />
-                {/* <Select value={selectedBranch} onValueChange={setSelectedBranch} >
+                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all-branches">All Branches</SelectItem>
-                    {allBranches.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{branch.name}</span>- <Badge className="bg-[#F87D7D] text-white">
-                            {branch.company}
-                          </Badge>
-                        </div>
+                    {uniqueBranches.map((branch) => (
+                      <SelectItem key={branch._id} value={branch._id}>
+                        {branch.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select> */}
+                </Select>
                 <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
