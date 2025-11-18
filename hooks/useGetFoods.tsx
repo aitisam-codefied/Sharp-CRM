@@ -33,11 +33,12 @@ export interface Food {
   updatedAt: string;
 }
 
-export const useGetFoods = () => {
+export const useGetFoods = (branchId?: string) => {
   return useQuery<Food[]>({
-    queryKey: ["foods"],
+    queryKey: ["foods", branchId],
     queryFn: async () => {
-      const response = await api.get("/meal-and-meal-images/list");
+      const params = branchId && branchId !== "all-branches" ? { branchId } : {};
+      const response = await api.get("/meal-and-meal-images/list", { params });
       if (response.data.success) {
         return response.data.data;
       } else {
