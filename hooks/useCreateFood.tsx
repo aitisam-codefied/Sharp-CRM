@@ -23,10 +23,10 @@ export const useCreateFood = () => {
       formData.append("name", data.name);
       formData.append("mealType", data.mealType);
 
-      // Add dietary tags if any
-      if (data.dietaryTags && data.dietaryTags.length > 0) {
+      // Add dietary tags if any - always send as array
+      if (data.mealType !== "Breakfast" && data.dietaryTags && data.dietaryTags.length > 0) {
         data.dietaryTags.forEach((tag) => {
-          formData.append("dietaryTags", tag);
+          formData.append("dietaryTags[]", tag);
         });
       }
 
