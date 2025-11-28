@@ -160,8 +160,8 @@ export function UserTable({
               <TableHead>Branch</TableHead>
               <TableHead>Contact Info</TableHead>
               <TableHead>Dependants</TableHead>
-              <TableHead>General Practitioner</TableHead>
-              <TableHead>Dentist</TableHead>
+              {/* <TableHead>General Practitioner</TableHead>
+              <TableHead>Dentist</TableHead> */}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -302,7 +302,7 @@ export function UserTable({
                   )}
                 </TableCell>
 
-                <TableCell>
+                {/* <TableCell>
                   <div className="space-y-1 text-xs">
                     <div className="flex items-center">
                       {user?.medicFullName || "N/A"}
@@ -411,7 +411,7 @@ export function UserTable({
                       )}
                     </div>
                   )}
-                </TableCell>
+                </TableCell> */}
 
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end space-x-2">

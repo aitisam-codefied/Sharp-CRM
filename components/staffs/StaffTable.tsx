@@ -425,10 +425,11 @@ export default function StaffTable() {
                       <TableHead>Shift Timings</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Joining Date</TableHead>
-                      {RoleWrapper(
+                      {/* {RoleWrapper(
                         user?.roles[0]?.name,
                         <TableHead className="text-right">Actions</TableHead>
-                      )}
+                      )} */}
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -524,7 +525,6 @@ export default function StaffTable() {
                             </div>
                           </div>
                         </TableCell>
-
                         <TableCell>
                           {staff.shiftTimes.length > 0 ? (
                             staff.shiftTimes.map((t: any, idx: number) => (
@@ -554,28 +554,19 @@ export default function StaffTable() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          {RoleWrapper(
-                            user?.roles[0]?.name,
-                            <div className="flex items-center justify-end space-x-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditStaff(staff)}
-                                disabled={isDeleting}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              {/* <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteStaff(staff)}
-                                className="text-red-600 hover:text-red-700"
-                                disabled={isDeleting}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button> */}
-                            </div>
-                          )}
+                          {/* {RoleWrapper(
+                            user?.roles[0]?.name, */}
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditStaff(staff)}
+                              disabled={isDeleting}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {/* )} */}
                         </TableCell>
                       </TableRow>
                     ))}

@@ -201,13 +201,13 @@ export default function NewUserPage() {
       title: "Medical & Dietary",
       description: "Health and dietary requirements",
     },
+    // {
+    //   id: 5,
+    //   title: "Assign Medical & Dental Staff",
+    //   description: "Assign medical and dental staff",
+    // },
     {
       id: 5,
-      title: "Assign Medical & Dental Staff",
-      description: "Assign medical and dental staff",
-    },
-    {
-      id: 6,
       title: "Review And Confirmation",
       description: "Final review and Confirmation",
     },
@@ -410,35 +410,35 @@ export default function NewUserPage() {
     return true;
   };
 
+  // const isStep5Valid = () => {
+  //   const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
+  //   const hasDependants = numDependants > 0;
+
+  //   // Validate Medic
+  //   let isMedicValid = false;
+  //   if (!hasDependants || formData.sameMedic) {
+  //     // when same, just check primary user (index 0)
+  //     isMedicValid = !!formData.guests[0]?.medic?.trim();
+  //   } else {
+  //     isMedicValid =
+  //       Array.isArray(formData.guests) &&
+  //       formData.guests.every((guest: any) => guest.medic?.trim());
+  //   }
+
+  //   // Validate Dentist
+  //   let isDentistValid = false;
+  //   if (!hasDependants || formData.sameDentist) {
+  //     isDentistValid = !!formData.guests[0]?.dentist?.trim();
+  //   } else {
+  //     isDentistValid =
+  //       Array.isArray(formData.guests) &&
+  //       formData.guests.every((guest: any) => guest.dentist?.trim());
+  //   }
+
+  //   return isMedicValid && isDentistValid;
+  // };
+
   const isStep5Valid = () => {
-    const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
-    const hasDependants = numDependants > 0;
-
-    // Validate Medic
-    let isMedicValid = false;
-    if (!hasDependants || formData.sameMedic) {
-      // when same, just check primary user (index 0)
-      isMedicValid = !!formData.guests[0]?.medic?.trim();
-    } else {
-      isMedicValid =
-        Array.isArray(formData.guests) &&
-        formData.guests.every((guest: any) => guest.medic?.trim());
-    }
-
-    // Validate Dentist
-    let isDentistValid = false;
-    if (!hasDependants || formData.sameDentist) {
-      isDentistValid = !!formData.guests[0]?.dentist?.trim();
-    } else {
-      isDentistValid =
-        Array.isArray(formData.guests) &&
-        formData.guests.every((guest: any) => guest.dentist?.trim());
-    }
-
-    return isMedicValid && isDentistValid;
-  };
-
-  const isStep6Valid = () => {
     return (
       formData.consentAccuracy &&
       formData.consentDataProcessing &&
@@ -457,10 +457,10 @@ export default function NewUserPage() {
         return isStep3Valid();
       case 4:
         return isStep4Valid();
+      // case 5:
+      //   return isStep5Valid();
       case 5:
         return isStep5Valid();
-      case 6:
-        return isStep6Valid();
       default:
         return true; // For unimplemented steps
     }
@@ -597,6 +597,22 @@ export default function NewUserPage() {
 
       cleanedData = removeEmptyObjects(cleanedData);
 
+      // Automatically assign medic and dentist IDs
+      const defaultMedicId = "68f60496e704707dbc30ac8a"; // Dr Sam - General Practitioner
+      const defaultDentistId = "6917244e017d9ced99f4de62"; // Dr Faf - Dental
+
+      // Set top-level medic and dentist
+      cleanedData.medic = defaultMedicId;
+      cleanedData.dentist = defaultDentistId;
+
+      // Set medic and dentist for all guests
+      if (cleanedData.guests && Array.isArray(cleanedData.guests)) {
+        cleanedData.guests.forEach((guest: any) => {
+          guest.medic = defaultMedicId;
+          guest.dentist = defaultDentistId;
+        });
+      }
+
       console.log("📤 Final cleaned data", cleanedData);
 
       // Verify File objects
@@ -704,7 +720,9 @@ export default function NewUserPage() {
         if (guest.dateOfBirth) {
           apiFormData.append(
             `guests[${index}][dateOfBirth]`,
-            guest.dateOfBirth || ""
+            guest.dateOfBirth instanceof Date
+              ? guest.dateOfBirth.toISOString()
+              : String(guest.dateOfBirth || "")
           );
         }
 
@@ -844,11 +862,11 @@ export default function NewUserPage() {
             setErrors={setMedicalErrors}
           />
         );
+      // case 5:
+      //   return (
+      //     <DentalClinicForm formData={formData} setFormData={setFormData} />
+      //   );
       case 5:
-        return (
-          <DentalClinicForm formData={formData} setFormData={setFormData} />
-        );
-      case 6:
         return (
           <ReviewConfirmationForm
             formData={formData}
