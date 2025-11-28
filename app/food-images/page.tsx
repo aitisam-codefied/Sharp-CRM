@@ -90,6 +90,7 @@ export default function FoodImagesPage() {
     name: "",
     mealType: "Breakfast",
     images: [],
+    dietaryTags: [],
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   // State for edit
@@ -105,7 +106,9 @@ export default function FoodImagesPage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [editErrors, setEditErrors] = useState<{ [key: string]: string }>({});
   // API hooks
-  const { data: foods, isLoading: foodsLoading } = useGetFoods();
+  const { data: foods, isLoading: foodsLoading } = useGetFoods(
+    selectedBranch !== "all-branches" ? selectedBranch : undefined
+  );
   const { data: categories, isLoading: categoriesLoading } =
     useGetFoodCategories();
   const createFoodMutation = useCreateFood();
@@ -193,6 +196,27 @@ export default function FoodImagesPage() {
     if (!formData.mealType) newErrors.mealType = "Meal type is required";
     if (!formData.images || formData.images.length === 0)
       newErrors.images = "At least one image is required";
+    
+    // Validate dietary tags - ensure only valid tags are selected
+    const validTags = [
+      "Vegetarian",
+      "Vegan",
+      "Gluten-Free",
+      "Dairy-Free",
+      "Halal",
+      "Kosher",
+      "Kids",
+      "Diabetic",
+    ];
+    if (formData.dietaryTags && formData.dietaryTags.length > 0) {
+      const invalidTags = formData.dietaryTags.filter(
+        (tag) => !validTags.includes(tag)
+      );
+      if (invalidTags.length > 0) {
+        newErrors.dietaryTags = "Invalid dietary tags selected";
+      }
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -220,6 +244,7 @@ export default function FoodImagesPage() {
           name: "",
           mealType: "Breakfast",
           images: [],
+          dietaryTags: [],
         });
         setSelectedFiles([]);
       },
@@ -323,6 +348,21 @@ export default function FoodImagesPage() {
     );
   };
 
+  // Extract unique branches from foods data
+  const uniqueBranches = useMemo(() => {
+    if (!foods) return [];
+    const branchMap = new Map<string, { _id: string; name: string }>();
+    foods.forEach((food) => {
+      if (food.branchId && typeof food.branchId === 'object' && food.branchId._id && food.branchId.name) {
+        branchMap.set(food.branchId._id, {
+          _id: food.branchId._id,
+          name: food.branchId.name,
+        });
+      }
+    });
+    return Array.from(branchMap.values());
+  }, [foods]);
+
   // Filter foods based on search and filters
   const filteredFoods =
     foods?.filter((food) => {
@@ -342,7 +382,12 @@ export default function FoodImagesPage() {
           const created = new Date(food.createdAt).toISOString().split("T")[0]; // "YYYY-MM-DD"
           return created === selected;
         })();
-      return matchesSearch && matchesMeal && matchesFilter && matchesDate;
+      const matchesBranch =
+        selectedBranch === "all-branches" ||
+        (food.branchId && 
+         typeof food.branchId === 'object' && 
+         food.branchId._id === selectedBranch);
+      return matchesSearch && matchesMeal && matchesFilter && matchesDate && matchesBranch;
     }) || [];
 
   function formatDateWithSuffix(dateString: string) {
@@ -366,12 +411,11 @@ export default function FoodImagesPage() {
     return (
       formData.name.trim() &&
       formData.mealType &&
-      formData?.images?.length > 0 &&
+      (formData.images?.length ?? 0) > 0 &&
       !errors.name &&
-      formData.name.trim() &&
-      formData.mealType
+      !errors.dietaryTags
     );
-  }, [formData]);
+  }, [formData, errors]);
 
   const hasChanges = useMemo(() => {
     if (!selectedFood) return false;
@@ -551,6 +595,8 @@ export default function FoodImagesPage() {
                                 (cat) => cat.name.toLowerCase() === "breakfast"
                               )?._id || ""
                             );
+                            // Clear dietary tags for Breakfast
+                            handleFormChange("dietaryTags", []);
                           } else {
                             // Reset category for Lunch or Dinner
                             handleFormChange("categoryId", "");
@@ -688,6 +734,53 @@ export default function FoodImagesPage() {
                       </Dialog>
                     </div>
                   </div>
+
+                  {/* Dietary Tags Selection - Only for Lunch and Dinner */}
+                  {(formData.mealType === "Lunch" || formData.mealType === "Dinner") && (
+                    <div className="space-y-2">
+                      <Label>Dietary Tags * (Multiple Selection Allowed)</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {[
+                          "Vegetarian",
+                          "Vegan",
+                          "Gluten-Free",
+                          "Dairy-Free",
+                          "Halal",
+                          "Kosher",
+                          "Kids",
+                          "Diabetic",
+                        ].map((tag) => {
+                          const isSelected = formData.dietaryTags?.includes(tag);
+                          return (
+                            <button
+                              key={tag}
+                              type="button"
+                              onClick={() => {
+                                const currentTags = formData.dietaryTags || [];
+                                const newTags = isSelected
+                                  ? currentTags.filter((t) => t !== tag)
+                                  : [...currentTags, tag];
+                                handleFormChange("dietaryTags", newTags);
+                                setErrors((prev) => ({ ...prev, dietaryTags: "" }));
+                              }}
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                                isSelected
+                                  ? "bg-[#F87D7D] text-white shadow-md"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              }`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {errors.dietaryTags && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {errors.dietaryTags}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -747,7 +840,7 @@ export default function FoodImagesPage() {
                 <h2 className="text-lg font-semibold">Food Gallery</h2>
               </div>
               {/* Filters Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-between gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 justify-between gap-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -763,23 +856,19 @@ export default function FoodImagesPage() {
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
                 />
-                {/* <Select value={selectedBranch} onValueChange={setSelectedBranch} >
+                <Select value={selectedBranch} onValueChange={setSelectedBranch}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Branches" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all-branches">All Branches</SelectItem>
-                    {allBranches.map((branch) => (
-                      <SelectItem key={branch.id} value={branch.id}>
-                        <div className="flex items-center gap-2">
-                          <span>{branch.name}</span>- <Badge className="bg-[#F87D7D] text-white">
-                            {branch.company}
-                          </Badge>
-                        </div>
+                    {uniqueBranches.map((branch) => (
+                      <SelectItem key={branch._id} value={branch._id}>
+                        {branch.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select> */}
+                </Select>
                 <Select value={selectedMeal} onValueChange={setSelectedMeal}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Meals" />
@@ -844,12 +933,38 @@ export default function FoodImagesPage() {
                                 {food.categoryId?.name || "Unknown Category"}
                               </span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              <span>{food.preparationTime} min</span>
-                            </div>
                             <p>{formatDateWithSuffix(food.createdAt)}</p>
                           </div>
+
+                          {/* Dietary Tags */}
+                          {(() => {
+                            let tags: string[] = [];
+ 
+                            if (Array.isArray(food.dietaryTags)) {
+                              // Flatten nested arrays (handle case where dietaryTags is [[tag1, tag2, tag3]])
+                              const flattened = food.dietaryTags.flat();
+                              tags = flattened.filter(tag => tag && typeof tag === 'string' && tag.trim());
+                            } else if (food.dietaryTags && typeof food.dietaryTags === 'string') {
+                              // Handle comma-separated string (runtime check)
+                              tags = (food.dietaryTags as string).split(',').map(tag => tag.trim()).filter(tag => tag);
+                            }
+                            
+                            return tags.length > 0 ? (
+                              <div className="pt-3 border-t border-gray-200 mt-3">
+                                <div className="flex gap-2 flex-wrap">
+                                  {tags.map((tag, index) => (
+                                    <Badge
+                                      key={`${food._id}-${tag}-${index}`}
+                                      variant="secondary"
+                                      className="text-xs px-3 py-1.5 bg-[#F87D7D]/10 text-[#F87D7D] border border-[#F87D7D]/20 rounded-full w-fit"
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                       </CardContent>
                     </Card>

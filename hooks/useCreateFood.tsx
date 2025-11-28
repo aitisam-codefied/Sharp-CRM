@@ -8,6 +8,7 @@ export interface CreateFoodData {
   name: string;
   mealType: "Breakfast" | "Lunch" | "Dinner";
   images?: File[];
+  dietaryTags?: string[];
 }
 
 export const useCreateFood = () => {
@@ -21,6 +22,13 @@ export const useCreateFood = () => {
       formData.append("categoryId", data.categoryId);
       formData.append("name", data.name);
       formData.append("mealType", data.mealType);
+
+      // Add dietary tags if any - always send as array
+      if (data.mealType !== "Breakfast" && data.dietaryTags && data.dietaryTags.length > 0) {
+        data.dietaryTags.forEach((tag) => {
+          formData.append("dietaryTags[]", tag);
+        });
+      }
 
       // Add images if any
       if (data.images) {
