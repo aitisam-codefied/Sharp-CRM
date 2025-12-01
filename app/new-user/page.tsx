@@ -597,22 +597,6 @@ export default function NewUserPage() {
 
       cleanedData = removeEmptyObjects(cleanedData);
 
-      // Automatically assign medic and dentist IDs
-      const defaultMedicId = "68f60496e704707dbc30ac8a"; // Dr Sam - General Practitioner
-      const defaultDentistId = "6917244e017d9ced99f4de62"; // Dr Faf - Dental
-
-      // Set top-level medic and dentist
-      cleanedData.medic = defaultMedicId;
-      cleanedData.dentist = defaultDentistId;
-
-      // Set medic and dentist for all guests
-      if (cleanedData.guests && Array.isArray(cleanedData.guests)) {
-        cleanedData.guests.forEach((guest: any) => {
-          guest.medic = defaultMedicId;
-          guest.dentist = defaultDentistId;
-        });
-      }
-
       console.log("📤 Final cleaned data", cleanedData);
 
       // Verify File objects
@@ -654,14 +638,6 @@ export default function NewUserPage() {
 
       // Append simple fields
       apiFormData.append("branchId", cleanedData.branchId || "");
-
-      if (cleanedData.medic) {
-        apiFormData.append("medic", cleanedData.medic || "");
-      }
-
-      if (cleanedData.dentist) {
-        apiFormData.append("dentist", cleanedData.dentist || ""); // new field
-      }
 
       apiFormData.append(
         "consentAccuracy",
@@ -753,14 +729,6 @@ export default function NewUserPage() {
           `guests[${index}][numberOfDependents]`,
           String(guest.numberOfDependents || 0)
         );
-
-        if (guest.medic) {
-          apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
-        }
-
-        if (guest.dentist) {
-          apiFormData.append(`guests[${index}][dentist]`, guest.dentist || ""); // new field
-        }
 
         if (guest.address) {
           apiFormData.append(`guests[${index}][address]`, guest.address || "");

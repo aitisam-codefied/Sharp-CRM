@@ -436,7 +436,9 @@ export default function StaffTable() {
                     {paginatedStaffs.map((staff: any) => (
                       <TableRow
                         key={staff.id}
-                        ref={(el) => (rowRefs.current[staff.username] = el)}
+                        ref={(el) => {
+                          rowRefs.current[staff.username] = el;
+                        }}
                         className="hover:bg-gray-50"
                       >
                         <TableCell>
@@ -527,11 +529,23 @@ export default function StaffTable() {
                         </TableCell>
                         <TableCell>
                           {staff.shiftTimes.length > 0 ? (
-                            staff.shiftTimes.map((t: any, idx: number) => (
-                              <div key={idx} className="text-sm text-black">
-                                {t.start} - {t.end}
-                              </div>
-                            ))
+                            staff.shiftTimes.map((t: any, idx: number) => {
+                              // Check if shift timings are the default unassigned timings
+                              const isUnassigned =
+                                t.start == "07:19" && t.end == "19:19";
+
+                              return (
+                                <div key={idx} className="text-sm text-black">
+                                  {isUnassigned ? (
+                                    <span className="text-gray-400">
+                                      Shift timings are not assigned yet
+                                    </span>
+                                  ) : (
+                                    `${t.start} - ${t.end}`
+                                  )}
+                                </div>
+                              );
+                            })
                           ) : (
                             <span className="text-gray-400">
                               No Shift Assigned

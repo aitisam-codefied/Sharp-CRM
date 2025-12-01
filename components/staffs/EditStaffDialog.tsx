@@ -140,8 +140,8 @@ export default function EditStaffDialog({
     email: staff.email || "",
     phone: staff.phone || "",
     joinDate: formatDateForInput(staff.joinDate),
-    shiftStart: staff.shiftTimes?.[0]?.start || "",
-    shiftEnd: staff.shiftTimes?.[0]?.end || "",
+    // shiftStart: staff.shiftTimes?.[0]?.start || "",
+    // shiftEnd: staff.shiftTimes?.[0]?.end || "",
   });
 
   const statusOptions = ["Active", "Inactive"];
@@ -162,8 +162,8 @@ export default function EditStaffDialog({
     email: "",
     phone: "",
     joinDate: "",
-    shiftStart: "",
-    shiftEnd: "",
+    // shiftStart: "",
+    // shiftEnd: "",
   });
 
   const roles = ["Manager", "AssistantManager", "Staff"];
@@ -260,21 +260,21 @@ export default function EditStaffDialog({
         updatedForm[id] = value;
       }
 
-      if (id === "shiftStart" && value) {
-        const [hours, minutes] = value.split(":").map(Number);
-        const newEnd = new Date();
-        newEnd.setHours(hours + 12, minutes);
-        const formattedEnd = newEnd
-          .toTimeString()
-          .split(":")
-          .slice(0, 2)
-          .join(":");
+      // if (id === "shiftStart" && value) {
+      //   const [hours, minutes] = value.split(":").map(Number);
+      //   const newEnd = new Date();
+      //   newEnd.setHours(hours + 12, minutes);
+      //   const formattedEnd = newEnd
+      //     .toTimeString()
+      //     .split(":")
+      //     .slice(0, 2)
+      //     .join(":");
 
-        updatedForm.shiftEnd = formattedEnd;
-        setChangedFields((prev) =>
-          prev.includes("shiftEnd") ? prev : [...prev, "shiftEnd"]
-        );
-      }
+      //   updatedForm.shiftEnd = formattedEnd;
+      //   setChangedFields((prev) =>
+      //     prev.includes("shiftEnd") ? prev : [...prev, "shiftEnd"]
+      //   );
+      // }
 
       return updatedForm;
     });
@@ -352,12 +352,12 @@ export default function EditStaffDialog({
       ...(changedFields.includes("joinDate") && {
         joinDate: formData.joinDate,
       }),
-      ...(changedFields.includes("shiftStart") && {
-        start: formData.shiftStart,
-      }),
-      ...(changedFields.includes("shiftEnd") && {
-        end: formData.shiftEnd,
-      }),
+      // ...(changedFields.includes("shiftStart") && {
+      //   start: formData.shiftStart,
+      // }),
+      // ...(changedFields.includes("shiftEnd") && {
+      //   end: formData.shiftEnd,
+      // }),
       ...(changedFields.includes("roles") && { roles: [selectedRoles] }),
       ...(changedFields.includes("branchId") && { branches: branchIds }),
       ...(changedFields.includes("locations") && { locations: locationIds }),
@@ -499,7 +499,7 @@ export default function EditStaffDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="shiftStart">Shift Start</Label>
               <Input
@@ -525,7 +525,7 @@ export default function EditStaffDialog({
                 <p className="text-sm text-red-600">{errors.shiftEnd}</p>
               )}
             </div>
-          </div>
+          </div> */}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">

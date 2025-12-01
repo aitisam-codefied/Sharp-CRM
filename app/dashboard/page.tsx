@@ -8,9 +8,11 @@ import BranchPerformanceTable from "@/components/BranchPerformanceTable";
 import TopBranchPerformance from "@/components/TopBranchPerformance";
 import RecentActivities from "@/components/RecentActivities";
 import { RoleWrapper } from "@/lib/RoleWrapper";
+import ShiftTimeAssignment from "@/components/ShiftTimeAssignment";
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const isManager = user?.roles?.[0]?.name === "Manager";
 
   return (
     <DashboardLayout>
@@ -28,6 +30,9 @@ export default function AdminDashboard() {
 
         {/* Key Metrics */}
         <StatsCards />
+
+        {/* Shift Time Assignment - Only for Manager */}
+        {isManager && <ShiftTimeAssignment />}
 
         {/* Branch Performance Table */}
         <BranchPerformanceTable />
