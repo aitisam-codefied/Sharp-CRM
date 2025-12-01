@@ -149,7 +149,10 @@ export default function ShiftTimeAssignment() {
                 </p>
               </div>
             </div>
-            <Badge className="bg-white text-yellow-900 font-bold px-3 pt-1">
+            <Badge
+              variant="outline"
+              className="bg-white text-pink-500 font-bold px-3 pt-1"
+            >
               Action Required
             </Badge>
           </div>

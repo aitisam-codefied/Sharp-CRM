@@ -60,7 +60,7 @@ export interface Notification {
 }
 
 const fetchNotifications = async (): Promise<Notification[]> => {
-  const response = await api.get("/notification/my-notifications?limit=100");
+  const response = await api.get("/notification/my-notifications?limit=1000");
   return response.data.data;
 };
 
