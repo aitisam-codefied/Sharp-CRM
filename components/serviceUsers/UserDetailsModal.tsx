@@ -344,8 +344,7 @@ export function UserDetailsModal({
                 </div>
               </p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Medic */}
+              {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div
                   className={`space-y-2 rounded-md p-3 text-sm ${
                     user?.medic?.status === "Inactive"
@@ -369,9 +368,7 @@ export function UserDetailsModal({
                     <p className="text-red-500 text-xs mt-2">
                       This medic is <strong>Inactive</strong>. Kindly{" "}
                       <span
-                        onClick={() =>
-                          router.push("/medical-staff")
-                        }
+                        onClick={() => router.push("/medical-staff")}
                         className="text-red-500 underline cursor-pointer"
                       >
                         activate
@@ -423,7 +420,6 @@ export function UserDetailsModal({
                   )}
                 </div>
 
-                {/* Dentist */}
                 <div
                   className={`space-y-2 rounded-md p-3 text-sm ${
                     user?.dentist?.status === "Inactive"
@@ -447,9 +443,7 @@ export function UserDetailsModal({
                     <p className="text-red-500 text-xs mt-2">
                       This dentist is <strong>Inactive</strong>. Kindly{" "}
                       <span
-                        onClick={() =>
-                          router.push("/medical-staff")
-                        }
+                        onClick={() => router.push("/medical-staff")}
                         className="text-red-500 underline cursor-pointer"
                       >
                         activate
@@ -500,7 +494,7 @@ export function UserDetailsModal({
                     </p>
                   )}
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 

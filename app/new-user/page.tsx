@@ -201,13 +201,13 @@ export default function NewUserPage() {
       title: "Medical & Dietary",
       description: "Health and dietary requirements",
     },
+    // {
+    //   id: 5,
+    //   title: "Assign Medical & Dental Staff",
+    //   description: "Assign medical and dental staff",
+    // },
     {
       id: 5,
-      title: "Assign Medical & Dental Staff",
-      description: "Assign medical and dental staff",
-    },
-    {
-      id: 6,
       title: "Review And Confirmation",
       description: "Final review and Confirmation",
     },
@@ -410,35 +410,35 @@ export default function NewUserPage() {
     return true;
   };
 
+  // const isStep5Valid = () => {
+  //   const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
+  //   const hasDependants = numDependants > 0;
+
+  //   // Validate Medic
+  //   let isMedicValid = false;
+  //   if (!hasDependants || formData.sameMedic) {
+  //     // when same, just check primary user (index 0)
+  //     isMedicValid = !!formData.guests[0]?.medic?.trim();
+  //   } else {
+  //     isMedicValid =
+  //       Array.isArray(formData.guests) &&
+  //       formData.guests.every((guest: any) => guest.medic?.trim());
+  //   }
+
+  //   // Validate Dentist
+  //   let isDentistValid = false;
+  //   if (!hasDependants || formData.sameDentist) {
+  //     isDentistValid = !!formData.guests[0]?.dentist?.trim();
+  //   } else {
+  //     isDentistValid =
+  //       Array.isArray(formData.guests) &&
+  //       formData.guests.every((guest: any) => guest.dentist?.trim());
+  //   }
+
+  //   return isMedicValid && isDentistValid;
+  // };
+
   const isStep5Valid = () => {
-    const numDependants = Number(formData.guests[0]?.numberOfDependents) || 0;
-    const hasDependants = numDependants > 0;
-
-    // Validate Medic
-    let isMedicValid = false;
-    if (!hasDependants || formData.sameMedic) {
-      // when same, just check primary user (index 0)
-      isMedicValid = !!formData.guests[0]?.medic?.trim();
-    } else {
-      isMedicValid =
-        Array.isArray(formData.guests) &&
-        formData.guests.every((guest: any) => guest.medic?.trim());
-    }
-
-    // Validate Dentist
-    let isDentistValid = false;
-    if (!hasDependants || formData.sameDentist) {
-      isDentistValid = !!formData.guests[0]?.dentist?.trim();
-    } else {
-      isDentistValid =
-        Array.isArray(formData.guests) &&
-        formData.guests.every((guest: any) => guest.dentist?.trim());
-    }
-
-    return isMedicValid && isDentistValid;
-  };
-
-  const isStep6Valid = () => {
     return (
       formData.consentAccuracy &&
       formData.consentDataProcessing &&
@@ -457,10 +457,10 @@ export default function NewUserPage() {
         return isStep3Valid();
       case 4:
         return isStep4Valid();
+      // case 5:
+      //   return isStep5Valid();
       case 5:
         return isStep5Valid();
-      case 6:
-        return isStep6Valid();
       default:
         return true; // For unimplemented steps
     }
@@ -639,14 +639,6 @@ export default function NewUserPage() {
       // Append simple fields
       apiFormData.append("branchId", cleanedData.branchId || "");
 
-      if (cleanedData.medic) {
-        apiFormData.append("medic", cleanedData.medic || "");
-      }
-
-      if (cleanedData.dentist) {
-        apiFormData.append("dentist", cleanedData.dentist || ""); // new field
-      }
-
       apiFormData.append(
         "consentAccuracy",
         String(cleanedData.consentAccuracy || false)
@@ -704,7 +696,9 @@ export default function NewUserPage() {
         if (guest.dateOfBirth) {
           apiFormData.append(
             `guests[${index}][dateOfBirth]`,
-            guest.dateOfBirth || ""
+            guest.dateOfBirth instanceof Date
+              ? guest.dateOfBirth.toISOString()
+              : String(guest.dateOfBirth || "")
           );
         }
 
@@ -735,14 +729,6 @@ export default function NewUserPage() {
           `guests[${index}][numberOfDependents]`,
           String(guest.numberOfDependents || 0)
         );
-
-        if (guest.medic) {
-          apiFormData.append(`guests[${index}][medic]`, guest.medic || "");
-        }
-
-        if (guest.dentist) {
-          apiFormData.append(`guests[${index}][dentist]`, guest.dentist || ""); // new field
-        }
 
         if (guest.address) {
           apiFormData.append(`guests[${index}][address]`, guest.address || "");
@@ -844,11 +830,11 @@ export default function NewUserPage() {
             setErrors={setMedicalErrors}
           />
         );
+      // case 5:
+      //   return (
+      //     <DentalClinicForm formData={formData} setFormData={setFormData} />
+      //   );
       case 5:
-        return (
-          <DentalClinicForm formData={formData} setFormData={setFormData} />
-        );
-      case 6:
         return (
           <ReviewConfirmationForm
             formData={formData}

@@ -245,12 +245,12 @@ export function AppNavbar() {
         icon: Clock,
         color: "bg-green-100 text-green-700 border-green-200",
       },
-      {
-        title: "Medical Staff",
-        href: "/medical-staff",
-        icon: Users,
-        color: "bg-yellow-100 text-yellow-700 border-yellow-200",
-      },
+      // {
+      //   title: "Medical Staff",
+      //   href: "/medical-staff",
+      //   icon: Users,
+      //   color: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      // },
       {
         title: "SOP Documents",
         href: "/documents",

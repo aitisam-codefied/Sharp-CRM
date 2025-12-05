@@ -10,9 +10,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, Eye, Edit, Trash2, Check, Copy } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Star, Eye, Edit, Trash2, Check, Copy, Info, ChevronRight } from "lucide-react";
 import { DisplayFeedback } from "@/hooks/useGetFoodFeedback";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { CustomPagination } from "../CustomPagination";
 import Link from "next/link";
 
@@ -21,6 +26,63 @@ interface Props {
   getRatingColor: (rating: number) => string;
   getMealTypeColor: (mealType: string) => string;
 }
+
+// Component to check if text is truncated and show icon
+const CommentWithIcon = ({ text }: { text: string }) => {
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (textRef.current) {
+        // Create a hidden clone element to measure full text height
+        const clone = textRef.current.cloneNode(true) as HTMLElement;
+        clone.style.position = "absolute";
+        clone.style.visibility = "hidden";
+        clone.style.height = "auto";
+        clone.style.maxHeight = "none";
+        clone.style.webkitLineClamp = "unset";
+        clone.style.display = "block";
+        clone.style.width = textRef.current.offsetWidth + "px";
+        
+        document.body.appendChild(clone);
+        const fullHeight = clone.offsetHeight;
+        document.body.removeChild(clone);
+        
+        // Get the actual clamped height
+        const clampedHeight = textRef.current.offsetHeight;
+        
+        // If full height is greater than clamped height, text is truncated
+        setIsTruncated(fullHeight > clampedHeight + 2); // +2 for rounding/line-height differences
+      }
+    };
+    
+    // Check after DOM is rendered
+    const timeoutId = setTimeout(checkTruncation, 0);
+    
+    // Recheck on window resize
+    window.addEventListener("resize", checkTruncation);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("resize", checkTruncation);
+    };
+  }, [text]);
+
+  return (
+    <>
+      <p
+        ref={textRef}
+        className="text-sm line-clamp-1 text-blue-600 group-hover:text-blue-800 transition-colors flex-1"
+      >
+        {text}
+      </p>
+      {isTruncated && (
+        <Info className="h-3.5 w-3.5 text-blue-600 group-hover:text-blue-800 transition-colors flex-shrink-0" />
+      )}
+    </>
+  );
+};
 
 export const FeedbackTable = ({
   filteredFeedback,
@@ -77,7 +139,7 @@ export const FeedbackTable = ({
               <TableHead>Resident</TableHead>
               <TableHead>Port Number</TableHead>
               <TableHead>Meal Details</TableHead>
-              <TableHead>Overall Rating</TableHead>
+              {/* <TableHead>Overall Rating</TableHead> */}
               <TableHead>Comments</TableHead>
               <TableHead>Staff</TableHead>
               {/* <TableHead className="">Actions</TableHead> */}
@@ -146,7 +208,7 @@ export const FeedbackTable = ({
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>
+                {/* <TableCell>
                   <div className="flex items-center gap-1">
                     <Star className="h-4 w-4 text-yellow-500" />
                     <span
@@ -161,15 +223,145 @@ export const FeedbackTable = ({
                       }
                     </span>
                   </div>
-                </TableCell>
+                </TableCell> */}
                 <TableCell>
-                  <p className="text-sm line-clamp-2 max-w-xs">
-                    {feedback?.details[feedback?.details.length - 1]?.comments
-                      ? feedback?.details[feedback?.details.length - 1]
-                          ?.comments
-                      : "No Comments Provided"}
-                  </p>
-                </TableCell>
+                  {(() => {
+                    const latestDetail = feedback?.details?.[feedback?.details.length - 1];
+                    const ratings = latestDetail?.ratings || {};
+                    
+                    // Collect all meal feedback
+                    const mealFeedback = [];
+                    
+                    // Breakfast
+                    if (ratings.breakfast) {
+                      const breakfast = ratings.breakfast;
+                      const breakfastComment = breakfast.comments?.trim() || "";
+                      const isAutoGenBreakfast = breakfastComment.includes(
+                        "Initial food feedback created automatically"
+                      );
+                      if (breakfastComment && !isAutoGenBreakfast) {
+                        mealFeedback.push({
+                          meal: "Breakfast",
+                          comment: breakfastComment,
+                          rating: breakfast.rate,
+                          satisfaction: breakfast.satisfaction,
+                        });
+                      }
+                    }
+                    
+                    // Lunch
+                    if (ratings.lunch) {
+                      const lunch = ratings.lunch;
+                      const lunchComment = lunch.comments?.trim() || "";
+                      const isAutoGenLunch = lunchComment.includes(
+                        "Initial food feedback created automatically"
+                      );
+                      if (lunchComment && !isAutoGenLunch) {
+                        mealFeedback.push({
+                          meal: "Lunch",
+                          comment: lunchComment,
+                          rating: lunch.rate,
+                          satisfaction: lunch.satisfaction,
+                        });
+                      }
+                    }
+                    
+                    // Dinner
+                    if (ratings.dinner) {
+                      const dinner = ratings.dinner;
+                      const dinnerComment = dinner.comments?.trim() || "";
+                      const isAutoGenDinner = dinnerComment.includes(
+                        "Initial food feedback created automatically"
+                      );
+                      if (dinnerComment && !isAutoGenDinner) {
+                        mealFeedback.push({
+                          meal: "Dinner",
+                          comment: dinnerComment,
+                          rating: dinner.rate,
+                          satisfaction: dinner.satisfaction,
+                        });
+                      }
+                    }
+                    
+                    // Snacks
+                    if (ratings.snacks) {
+                      const snacks = ratings.snacks;
+                      const likedSnack = snacks.mostLikedSnack?.trim() || "";
+                      const dislikedSnack = snacks.dislikedSnack?.trim() || "";
+                      if (likedSnack || dislikedSnack) {
+                        let snackComment = "";
+                        if (likedSnack) snackComment += `Liked: ${likedSnack}`;
+                        if (dislikedSnack) {
+                          if (snackComment) snackComment += "\n";
+                          snackComment += `Disliked: ${dislikedSnack}`;
+                        }
+                        mealFeedback.push({
+                          meal: "Snacks",
+                          comment: snackComment,
+                          rating: snacks.rating,
+                        });
+                      }
+                    }
+                    
+                    // Combine all comments for display
+                    const allComments = mealFeedback
+                      .map((mf) => `${mf.meal}: ${mf.comment}`)
+                      .join("\n");
+                    
+                    const hasComments = mealFeedback.length > 0;
+
+                    return (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <div className="flex items-center gap-1 max-w-xs cursor-pointer group">
+                            {hasComments ? (
+                              <CommentWithIcon text={allComments} />
+                            ) : (
+                              <p className="text-sm text-blue-600 group-hover:text-blue-800 transition-colors">
+                                No Comments Provided
+                              </p>
+                            )}
+                          </div>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="max-w-lg whitespace-pre-line"
+                          side="top"
+                          align="start"
+                        >
+                          <div className="space-y-3">
+                            <h4 className="font-semibold text-sm mb-3">
+                              Meal Feedback
+                            </h4>
+                            {hasComments ? (
+                              <div className="space-y-3 text-sm">
+                                {mealFeedback.map((mf, index) => (
+                                  <div key={index} className="border-b pb-2 last:border-0">
+                                    <div className="font-medium text-blue-600 mb-1">
+                                      {mf.meal}
+                                      {mf.rating && (
+                                        <span className="ml-2 text-gray-600">
+                                          (Rating: {mf.rating}
+                                          {mf.satisfaction && `, Satisfaction: ${mf.satisfaction}`})
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-gray-700 whitespace-pre-line">
+                                      {mf.comment}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No Comments Provided
+                              </p>
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  })()}
+                </TableCell> 
                 <TableCell>
                   <div className="text-sm text-muted-foreground">
                     {feedback?.staffId?.fullName

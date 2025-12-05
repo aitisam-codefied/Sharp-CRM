@@ -69,8 +69,6 @@ export default function AddStaffDialog() {
     email: "",
     phone: "",
     joinDate: "",
-    shiftStart: "",
-    shiftEnd: "",
   });
 
   const [errors, setErrors] = useState({
@@ -180,21 +178,10 @@ export default function AddStaffDialog() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
 
-    setFormData((prev) => {
-      let updated = { ...prev, [id]: value };
-
-      if (id === "shiftStart" && value) {
-        const [h, m] = value.split(":").map(Number);
-        const d = new Date();
-        d.setHours(h, m, 0, 0);
-        d.setHours(d.getHours() + 12);
-
-        updated.shiftEnd = `${String(d.getHours()).padStart(2, "0")}:${String(
-          d.getMinutes()
-        ).padStart(2, "0")}`;
-      }
-      return updated;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
 
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
@@ -215,8 +202,6 @@ export default function AddStaffDialog() {
       email: "",
       phone: "",
       joinDate: "",
-      shiftStart: "",
-      shiftEnd: "",
     });
     setErrors({ name: "", email: "", phone: "", joinDate: "" });
   };
@@ -262,8 +247,6 @@ export default function AddStaffDialog() {
       emailAddress: formData.email,
       phoneNumber: formData.phone,
       joinDate: formData.joinDate,
-      start: formData.shiftStart,
-      end: formData.shiftEnd,
       roles: [selectedRole],
       branches: branchIds,
       locations: locationIds, // ✅ Manager ke liye auto filled
@@ -407,30 +390,6 @@ export default function AddStaffDialog() {
               {errors.joinDate && (
                 <p className="text-sm text-red-600">{errors.joinDate}</p>
               )}
-            </div>
-          </div>
-
-          {/* Shift Times */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label>Shift Start</Label>
-              <Input
-                id="shiftStart"
-                type="time"
-                step="60"
-                value={formData.shiftStart}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div>
-              <Label>Shift End</Label>
-              <Input
-                id="shiftEnd"
-                type="time"
-                step="60"
-                value={formData.shiftEnd}
-                readOnly
-              />
             </div>
           </div>
 
