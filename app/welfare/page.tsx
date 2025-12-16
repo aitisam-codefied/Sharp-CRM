@@ -72,19 +72,20 @@ export default function WelfarePage() {
 
   console.log("allWelfareChecks ===>", welfareData);
 
-  const allWelfareChecks: WelfareCheck[] = welfareData?.data.data || [];
+  const allWelfareChecks: any[] = (welfareData?.data as any)?.data || welfareData?.data?.results || [];
 
   // Filtering logic
   const filteredWelfareChecks = useMemo(() => {
-    return allWelfareChecks.filter((check: WelfareCheck) => {
+    return allWelfareChecks.filter((check: any) => {
       const fullName = check.guestId?.userId?.fullName || "";
       const matchesSearch = fullName
         ?.toLowerCase()
         .includes(searchTerm?.toLowerCase());
 
+      const lastDetail = check?.details?.[check?.details?.length - 1];
       const matchesStatus =
         selectedStatus === "all" ||
-        check?.details[0]?.status?.toLowerCase() ===
+        lastDetail?.status?.toLowerCase() ===
           selectedStatus?.toLowerCase();
 
       // Date range filter
@@ -92,8 +93,8 @@ export default function WelfarePage() {
         !dateRange?.from && !dateRange?.to
           ? true
           : (() => {
-              const start = new Date(check?.details[0]?.weekStartDate);
-              const end = new Date(check?.details[0]?.weekEndDate);
+              const start = new Date(lastDetail?.weekStartDate);
+              const end = new Date(lastDetail?.weekEndDate);
 
               if (dateRange?.from && end < dateRange.from) return false;
               if (dateRange?.to && start > dateRange.to) return false;
@@ -254,19 +255,22 @@ export default function WelfarePage() {
                         <TableHead>Social Support</TableHead>
                         <TableHead>Overall Assessment</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Comments</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedChecks.map((check) => (
+                      {paginatedChecks.map((check) => {
+                        const lastDetail = check?.details?.[check?.details?.length - 1];
+                        return (
                         <TableRow className="text-xs" key={check._id}>
                           <TableCell>
                             <img
-                              src={`${API_HOST}${check?.details[0]?.images}`}
+                              src={`${API_HOST}${lastDetail?.images}`}
                               alt="Evidence"
                               className="w-14 h-14 object-cover rounded cursor-pointer hover:opacity-80 transition"
                               onClick={() =>
                                 setPreviewImage(
-                                  `${API_HOST}${check?.details[0]?.images}`
+                                  `${API_HOST}${lastDetail?.images}`
                                 )
                               }
                               onError={(e) => {
@@ -326,71 +330,76 @@ export default function WelfarePage() {
                           <TableCell>
                             <div className="">
                               {new Date(
-                                check?.details[0]?.weekStartDate
+                                lastDetail?.weekStartDate
                               ).toLocaleDateString()}{" "}
                               -{" "}
                               {new Date(
-                                check?.details[0]?.weekEndDate
+                                lastDetail?.weekEndDate
                               ).toLocaleDateString()}
                             </div>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check?.details[0]?.physicalHealth?.status
+                                lastDetail?.physicalHealth?.status
                               )}
                             >
-                              {check?.details[0]?.physicalHealth?.status}
+                              {lastDetail?.physicalHealth?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getMentalStateColor(
-                                check?.details[0]?.mentalHealth?.status
+                                lastDetail?.mentalHealth?.status
                               )}
                             >
-                              {check?.details[0]?.mentalHealth?.status}
+                              {lastDetail?.mentalHealth?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check?.details[0]?.emotionalWellbeing?.status
+                                lastDetail?.emotionalWellbeing?.status
                               )}
                             >
-                              {check?.details[0]?.emotionalWellbeing?.status}
+                              {lastDetail?.emotionalWellbeing?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check?.details[0]?.socialSupport?.status
+                                lastDetail?.socialSupport?.status
                               )}
                             >
-                              {check?.details[0]?.socialSupport?.status}
+                              {lastDetail?.socialSupport?.status}
                             </span>
                           </TableCell>
                           <TableCell>
                             <span
                               className={getHealthColor(
-                                check?.details[0]?.overallAssessment
+                                lastDetail?.overallAssessment
                               )}
                             >
-                              {check?.details[0]?.overallAssessment}
+                              {lastDetail?.overallAssessment}
                             </span>
                           </TableCell>
                           <TableCell>
                             <Badge
                               variant="outline"
                               className={getStatusColor(
-                                check?.details[0]?.status
+                                lastDetail?.status
                               )}
                             >
-                              {check?.details[0]?.status}
+                              {lastDetail?.status}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            <div className="text-xs text-gray-700 max-w-xs">
+                              {lastDetail?.notes || "No comments"}
+                            </div>
+                          </TableCell>
                         </TableRow>
-                      ))}
+                      )})}
                     </TableBody>
                   </Table>
 
