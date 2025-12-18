@@ -72,7 +72,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
     if (id === "emailAddress") {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-      if (value && !emailRegex.test(value)) {
+      if (value && value.trim() && !emailRegex.test(value)) {
         setErrors((prev) => ({
           ...prev,
           emailAddress: "Invalid email format",
@@ -182,7 +182,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
 
         <div>
           <Label htmlFor="emailAddress" className="text-gray-700 font-medium">
-            Email Address *
+            Email Address (Optional)
           </Label>
           <Input
             id="emailAddress"
@@ -202,7 +202,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
           <Label htmlFor="phoneNumber" className="text-gray-700 font-medium">
-            Phone Number *
+            Phone Number (Optional)
           </Label>
           <StyledPhoneInput
             id="phoneNumber"
@@ -215,7 +215,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
                 ),
               }))
             }
-            error={validatePhone(formData.guests[0].phoneNumber)}
+            error={formData.guests[0].phoneNumber?.trim() ? validatePhone(formData.guests[0].phoneNumber) : undefined}
             defaultCountry="GB"
           />
         </div>
@@ -403,7 +403,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
       {/* Address + Notes  */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div>
-          <Label className="text-gray-700 font-medium">Address</Label>
+          <Label className="text-gray-700 font-medium">Address (Optional)</Label>
           <Textarea
             id="address"
             placeholder="Enter address"
@@ -417,7 +417,7 @@ export default function PersonalInfoForm({ formData, setFormData }: any) {
         </div>
 
         <div>
-          <Label className="text-gray-700 font-medium">Additional Notes</Label>
+          <Label className="text-gray-700 font-medium">Additional Notes (Optional)</Label>
           <Textarea
             id="additionalNotes"
             placeholder="Enter any additional notes"

@@ -244,7 +244,7 @@ export function UserTable({
                           {user.phone}
                         </a>
                       ) : (
-                        "N/A"
+                        "No Phone Number Provided"
                       )}
                     </div>
 

@@ -223,26 +223,32 @@ export default function NewUserPage() {
       !isNaN(Number(dep)) && // number ho
       Number(dep) >= 0; // 0 ya upar
 
+    // Validate email format only if provided
+    const emailValid = !formData.guests[0].emailAddress?.trim() ||
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
+        formData.guests[0].emailAddress
+      );
+    
+    // Validate phone number only if provided
+    const phoneValid = !formData.guests[0].phoneNumber?.trim() ||
+      isValidPhoneNumber(formData.guests[0].phoneNumber);
+
     return (
       formData.guests[0].fullName?.trim() &&
       formData.guests[0].fullName.length <= 20 &&
-      formData.guests[0].emailAddress?.trim() &&
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(
-        formData.guests[0].emailAddress
-      ) &&
-      formData.guests[0].phoneNumber?.trim() &&
-      isValidPhoneNumber(formData.guests[0].phoneNumber) &&
+      emailValid &&
+      phoneValid &&
       formData.guests[0].dateOfBirth &&
       formData.guests[0].gender?.trim() &&
       formData.guests[0].language?.trim() &&
       formData.guests[0].nationality?.trim() &&
       (!formData.guests[0].address ||
         formData.guests[0].address.length <= 150) &&
+      (!formData.guests[0].additionalNotes ||
+        formData.guests[0].additionalNotes.length <= 150) &&
       formData.guests[0].portNumber?.trim() && // portNumber required
       formData.guests[0].portNumber.length >= 12 && // min 12 characters
       formData.guests[0].portNumber.length <= 55 && // max 55 characters
-      // formData.guests[0].additionalNotes?.trim() &&
-      // formData.guests[0].additionalNotes.length <= 150 &&
       isDependantValid && // ✅ yahan enforce hoga
       formData.branchId?.trim()
     );
@@ -257,13 +263,19 @@ export default function NewUserPage() {
       for (let i = 1; i <= dependants; i++) {
         const dep = formData.guests[i];
 
+        // Validate email format only if provided
+        const depEmailValid = !dep?.emailAddress?.trim() ||
+          /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress);
+        
+        // Validate phone number only if provided
+        const depPhoneValid = !dep?.phoneNumber?.trim() ||
+          isValidPhoneNumber(dep.phoneNumber);
+
         if (
           !dep?.fullName?.trim() ||
           dep.fullName.length > 20 ||
-          !dep?.phoneNumber?.trim() ||
-          isValidPhoneNumber(dep.phoneNumber) === false ||
-          !dep?.emailAddress?.trim() ||
-          !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(dep.emailAddress) ||
+          (dep?.phoneNumber?.trim() && !depPhoneValid) ||
+          (dep?.emailAddress?.trim() && !depEmailValid) ||
           !dep?.dateOfBirth ||
           !dep?.portNumber?.trim() ||
           dep.portNumber.length < 12 ||
@@ -681,14 +693,22 @@ export default function NewUserPage() {
       // Append guests array with nested fields
       (cleanedData.guests || []).forEach((guest: Guest, index: number) => {
         apiFormData.append(`guests[${index}][fullName]`, guest.fullName || "");
-        apiFormData.append(
-          `guests[${index}][emailAddress]`,
-          guest.emailAddress || ""
-        );
-        apiFormData.append(
-          `guests[${index}][phoneNumber]`,
-          guest.phoneNumber || ""
-        );
+        
+        // Only append emailAddress if it has a value
+        if (guest.emailAddress?.trim()) {
+          apiFormData.append(
+            `guests[${index}][emailAddress]`,
+            guest.emailAddress
+          );
+        }
+        
+        // Only append phoneNumber if it has a value
+        if (guest.phoneNumber?.trim()) {
+          apiFormData.append(
+            `guests[${index}][phoneNumber]`,
+            guest.phoneNumber
+          );
+        }
         if (guest.isKid) {
           apiFormData.append(`guests[${index}][isKid]`, String(guest.isKid));
         }
@@ -730,8 +750,9 @@ export default function NewUserPage() {
           String(guest.numberOfDependents || 0)
         );
 
-        if (guest.address) {
-          apiFormData.append(`guests[${index}][address]`, guest.address || "");
+        // Only append address if it has a value
+        if (guest.address?.trim()) {
+          apiFormData.append(`guests[${index}][address]`, guest.address);
         }
 
         if (guest.medicalCondition) {
@@ -755,10 +776,11 @@ export default function NewUserPage() {
           );
         }
 
-        if (guest.additionalNotes) {
+        // Only append additionalNotes if it has a value
+        if (guest.additionalNotes?.trim()) {
           apiFormData.append(
             `guests[${index}][additionalNotes]`,
-            guest.additionalNotes || ""
+            guest.additionalNotes
           );
         }
 

@@ -52,6 +52,12 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     today.getMonth(),
     today.getDate()
   );
+  // For kids: age should be 0-5 years (between 5 years ago and today)
+  const fiveYearsAgo = new Date(
+    today.getFullYear() - 5,
+    today.getMonth(),
+    today.getDate()
+  );
   const minDate =
     Number(formData.numKids || 0) === dependants && dependants > 0
       ? eighteenYearsAgo.toISOString().split("T")[0]
@@ -100,6 +106,33 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
     }
   }, [formData.numKids, formData.guests[0]?.numberOfDependents, setFormData]);
 
+  // Re-validate date of birth when isKid status changes
+  useEffect(() => {
+    const totalDependents = Number(formData.guests[0]?.numberOfDependents || 0);
+    const today = new Date();
+    const fiveYearsAgo = new Date(
+      today.getFullYear() - 5,
+      today.getMonth(),
+      today.getDate()
+    );
+
+    for (let i = 1; i <= totalDependents; i++) {
+      const guest = formData.guests?.[i];
+      if (guest?.isKid && guest?.dateOfBirth) {
+        const selected = new Date(guest.dateOfBirth);
+        if (selected < fiveYearsAgo) {
+          setErrors((prev) => ({
+            ...prev,
+            [i]: {
+              ...prev[i],
+              dob: "Kids must be between 0-5 years old.",
+            },
+          }));
+        }
+      }
+    }
+  }, [formData.guests, formData.guests[0]?.numberOfDependents]);
+
   const handleDependantChange = (index: number, field: string, value: any) => {
     setFormData((prev: any) => {
       const updatedGuests = Array.isArray(prev.guests) ? [...prev.guests] : [];
@@ -136,12 +169,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       // Email validation
       if (field === "emailAddress") {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
-        if (!value.trim()) {
-          newErrors[index] = {
-            ...newErrors[index],
-            email: "Email is required.",
-          };
-        } else if (!emailRegex.test(value)) {
+        if (value && value.trim() && !emailRegex.test(value)) {
           newErrors[index] = {
             ...newErrors[index],
             email: "Invalid email format.",
@@ -155,6 +183,13 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
       if (field === "dateOfBirth") {
         const today = new Date();
         const selected = new Date(value);
+        const fiveYearsAgo = new Date(
+          today.getFullYear() - 5,
+          today.getMonth(),
+          today.getDate()
+        );
+        const isKid = formData.guests?.[index]?.isKid || false;
+        
         if (!value.trim()) {
           newErrors[index] = {
             ...newErrors[index],
@@ -165,6 +200,16 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
             ...newErrors[index],
             dob: "DOB cannot be today or future date.",
           };
+        } else if (isKid) {
+          // Kids must be 0-5 years old
+          if (selected < fiveYearsAgo) {
+            newErrors[index] = {
+              ...newErrors[index],
+              dob: "Kids must be between 0-5 years old.",
+            };
+          } else {
+            if (newErrors[index]) delete newErrors[index].dob;
+          }
         } else if (
           Number(formData.numKids || 0) === dependants &&
           dependants > 0 &&
@@ -437,7 +482,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     htmlFor={`emailAddress-${i}`}
                     className="text-gray-600"
                   >
-                    Email Address *
+                    Email Address (Optional)
                   </Label>
                   <Input
                     id={`emailAddress-${i}`}
@@ -459,7 +504,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
                   <Label htmlFor={`phone-${i}`} className="text-gray-600">
-                    Phone Number *
+                    Phone Number (Optional)
                   </Label>
                   <StyledPhoneInput
                     id={`phone-${i}`}
@@ -467,7 +512,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     onChange={(value) =>
                       handleDependantChange(i, "phoneNumber", value)
                     }
-                    error={validatePhone(formData.guests?.[i]?.phoneNumber)}
+                    error={formData.guests?.[i]?.phoneNumber?.trim() ? validatePhone(formData.guests?.[i]?.phoneNumber) : undefined}
                     defaultCountry="GB"
                   />
                 </div>
@@ -478,7 +523,11 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                   <Input
                     id={`dob-${i}`}
                     type="date"
-                    min={minDate}
+                    min={
+                      formData.guests?.[i]?.isKid
+                        ? fiveYearsAgo.toISOString().split("T")[0]
+                        : minDate
+                    }
                     max={maxDate}
                     value={formData.guests?.[i]?.dateOfBirth || ""}
                     onChange={(e) =>
@@ -593,7 +642,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     htmlFor={`additional-notes-${i}`}
                     className="text-gray-600"
                   >
-                    Additional Notes
+                    Additional Notes (Optional)
                   </Label>
                   <Textarea
                     id={`additional-notes-${i}`}
@@ -617,7 +666,7 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor={`address-${i}`} className="text-gray-600">
-                    Address
+                    Address (Optional)
                   </Label>
                   <Textarea
                     id={`address-${i}`}
