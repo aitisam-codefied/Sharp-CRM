@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Building2, ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { Building2, ArrowLeft, ArrowRight, CheckCircle, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/providers/auth-provider";
 import api from "@/lib/axios";
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user, updateUserCompanies } = useAuth();
+  const { user, updateUserCompanies, logout } = useAuth();
 
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
@@ -502,6 +502,11 @@ export default function OnboardingPage() {
     setCurrentStep(currentStep - 1);
   };
 
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
+
   const handleSubmit = async () => {
     if (!validateStep(5)) {
       toast({
@@ -601,18 +606,28 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
-              <Building2 className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-r from-red-500 to-pink-500">
+                <Building2 className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Sharp MS Setup
+                </h1>
+                <p className="text-gray-600">
+                  Let's get your management system configured
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Sharp MS Setup
-              </h1>
-              <p className="text-gray-600">
-                Let's get your management system configured
-              </p>
-            </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
           </div>
         </div>
       </div>
