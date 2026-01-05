@@ -2,8 +2,10 @@ import axios from "axios";
 
 // const API_HOST = "http://localhost:5001";
 const API_HOST = "https://api.supasystem.co.uk";
+// const API_HOST = "https://beta.api.supasystem.co.uk";
 // const BASE_URL = "http://localhost:5001/api/v1";
 const BASE_URL = "https://api.supasystem.co.uk/api/v1";
+// const BASE_URL = "https://beta.api.supasystem.co.uk/api/v1";
 const api = axios.create({
   baseURL: BASE_URL,
   headers: {
