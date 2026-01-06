@@ -28,9 +28,8 @@ export default function MedicalDietaryForm({
 
   const validateField = (guestIndex: number, field: string, value: string) => {
     let error = "";
-    if (!value.trim()) {
-      error = `${field} is required`;
-    } else if (value.length > 50) {
+    // Remove required validation - fields are now optional
+    if (value.trim() && value.length > 50) {
       error = `${field} must be 50 characters or less`;
     }
 
@@ -87,7 +86,7 @@ export default function MedicalDietaryForm({
           <div className="space-y-4">
             <div className="space-y-1">
               <Label htmlFor={`medical-conditions-${i}`}>
-                Medical Conditions
+                Medical Conditions (Optional)
               </Label>
               <Textarea
                 id={`medical-conditions-${i}`}
@@ -104,7 +103,7 @@ export default function MedicalDietaryForm({
               )}
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`allergies-${i}`}>Allergies</Label>
+              <Label htmlFor={`allergies-${i}`}>Allergies (Optional)</Label>
               <Textarea
                 id={`allergies-${i}`}
                 placeholder="List any allergies"
@@ -120,7 +119,7 @@ export default function MedicalDietaryForm({
               )}
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`medications-${i}`}>Current Medications</Label>
+              <Label htmlFor={`medications-${i}`}>Current Medications (Optional)</Label>
               <Textarea
                 id={`medications-${i}`}
                 placeholder="List current medications"

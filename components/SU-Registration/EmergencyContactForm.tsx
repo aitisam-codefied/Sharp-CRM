@@ -120,7 +120,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Full Name */}
             <div className="space-y-1">
-              <Label htmlFor="ec-name">Full Name *</Label>
+              <Label htmlFor="ec-name">Full Name (Optional)</Label>
               <Input
                 id="ec-name"
                 placeholder="Enter name"
@@ -137,19 +137,19 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
 
             {/* Phone Number ✅ replaced with StyledPhoneInput */}
             <div className="space-y-1">
-              <Label htmlFor="ec-phone">Phone Number *</Label>
+              <Label htmlFor="ec-phone">Phone Number (Optional)</Label>
               <StyledPhoneInput
                 id="ec-phone"
                 value={formData?.emergencyContact?.phoneNumber || ""}
                 onChange={(value) => handleContactChange("phoneNumber", value)}
-                error={validatePhone(formData?.emergencyContact?.phoneNumber)}
+                error={formData?.emergencyContact?.phoneNumber?.trim() ? validatePhone(formData?.emergencyContact?.phoneNumber) : undefined}
                 defaultCountry="GB"
               />
             </div>
 
             {/* Relationship */}
             <div className="space-y-1">
-              <Label htmlFor="ec-relation">Relation *</Label>
+              <Label htmlFor="ec-relation">Relation (Optional)</Label>
               <Input
                 id="ec-relation"
                 placeholder="e.g., Family, Friend"
@@ -182,7 +182,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Full Name */}
                 <div className="space-y-1">
-                  <Label htmlFor={`ec-name-${i}`}>Name *</Label>
+                  <Label htmlFor={`ec-name-${i}`}>Name (Optional)</Label>
                   <Input
                     id={`ec-name-${i}`}
                     placeholder="Enter name"
@@ -203,7 +203,7 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
 
                 {/* Phone Number ✅ replaced with StyledPhoneInput */}
                 <div className="space-y-1">
-                  <Label htmlFor={`ec-phone-${i}`}>Phone Number *</Label>
+                  <Label htmlFor={`ec-phone-${i}`}>Phone Number (Optional)</Label>
                   <StyledPhoneInput
                     id={`ec-phone-${i}`}
                     value={
@@ -212,16 +212,16 @@ export default function EmergencyContactForm({ formData, setFormData }: any) {
                     onChange={(value) =>
                       handleContactChangeGuest(i, "phoneNumber", value)
                     }
-                    error={validatePhone(
+                    error={formData?.guests[i]?.emergencyContact?.phoneNumber?.trim() ? validatePhone(
                       formData?.guests[i]?.emergencyContact?.phoneNumber
-                    )}
+                    ) : undefined}
                     defaultCountry="GB"
                   />
                 </div>
 
                 {/* Relationship */}
                 <div className="space-y-1">
-                  <Label htmlFor={`ec-relation-${i}`}>Relation *</Label>
+                  <Label htmlFor={`ec-relation-${i}`}>Relation (Optional)</Label>
                   <Input
                     id={`ec-relation-${i}`}
                     placeholder="e.g., Family, Friend"

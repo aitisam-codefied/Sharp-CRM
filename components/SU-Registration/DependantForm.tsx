@@ -15,15 +15,278 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
 import { StyledPhoneInput, validatePhone } from "../StyledFormInputWrapper";
+import DateInput from "./DateInput";
+import { SearchableSelect } from "./SearchableSelect";
+
+const languages = [
+  "English",
+  "Spanish",
+  "French",
+  "German",
+  "Italian",
+  "Portuguese",
+  "Russian",
+  "Chinese (Mandarin)",
+  "Chinese (Cantonese)",
+  "Japanese",
+  "Korean",
+  "Arabic",
+  "Hindi",
+  "Bengali",
+  "Urdu",
+  "Turkish",
+  "Polish",
+  "Dutch",
+  "Greek",
+  "Czech",
+  "Swedish",
+  "Norwegian",
+  "Danish",
+  "Finnish",
+  "Romanian",
+  "Hungarian",
+  "Bulgarian",
+  "Croatian",
+  "Serbian",
+  "Slovak",
+  "Slovenian",
+  "Lithuanian",
+  "Latvian",
+  "Estonian",
+  "Ukrainian",
+  "Belarusian",
+  "Georgian",
+  "Armenian",
+  "Azerbaijani",
+  "Kazakh",
+  "Uzbek",
+  "Persian (Farsi)",
+  "Pashto",
+  "Kurdish",
+  "Hebrew",
+  "Thai",
+  "Vietnamese",
+  "Indonesian",
+  "Malay",
+  "Tagalog",
+  "Swahili",
+  "Hausa",
+  "Yoruba",
+  "Zulu",
+  "Amharic",
+  "Somali",
+  "Tigrinya",
+  "Tamil",
+  "Telugu",
+  "Marathi",
+  "Gujarati",
+  "Punjabi",
+  "Kannada",
+  "Malayalam",
+  "Sinhala",
+  "Nepali",
+  "Burmese",
+  "Khmer",
+  "Lao",
+  "Mongolian",
+  "Tibetan",
+  "Other",
+];
 
 const nationalities = [
-  "Syrian",
   "Afghan",
-  "Venezuelan",
+  "Albanian",
+  "Algerian",
+  "Andorran",
+  "Angolan",
+  "Antiguans",
+  "Argentinean",
+  "Armenian",
+  "Australian",
+  "Austrian",
+  "Azerbaijani",
+  "Bahamian",
+  "Bahraini",
+  "Bangladeshi",
+  "Barbadian",
+  "Barbudans",
+  "Batswana",
+  "Belarusian",
+  "Belgian",
+  "Belizean",
+  "Beninese",
+  "Bhutanese",
+  "Bolivian",
+  "Bosnian",
+  "Brazilian",
+  "British",
+  "Bruneian",
+  "Bulgarian",
+  "Burkinabe",
+  "Burmese",
+  "Burundian",
+  "Cambodian",
+  "Cameroonian",
+  "Canadian",
+  "Cape Verdean",
+  "Central African",
+  "Chadian",
+  "Chilean",
+  "Chinese",
+  "Colombian",
+  "Comoran",
+  "Congolese",
+  "Costa Rican",
+  "Croatian",
+  "Cuban",
+  "Cypriot",
+  "Czech",
+  "Danish",
+  "Djibouti",
+  "Dominican",
+  "Dutch",
+  "East Timorese",
+  "Ecuadorean",
+  "Egyptian",
+  "Emirian",
+  "Equatorial Guinean",
   "Eritrean",
-  "Iraqi",
+  "Estonian",
+  "Ethiopian",
+  "Fijian",
+  "Filipino",
+  "Finnish",
+  "French",
+  "Gabonese",
+  "Gambian",
+  "Georgian",
+  "German",
+  "Ghanaian",
+  "Greek",
+  "Grenadian",
+  "Guatemalan",
+  "Guinea-Bissauan",
+  "Guinean",
+  "Guyanese",
+  "Haitian",
+  "Herzegovinian",
+  "Honduran",
+  "Hungarian",
+  "I-Kiribati",
+  "Icelander",
+  "Indian",
+  "Indonesian",
   "Iranian",
+  "Iraqi",
+  "Irish",
+  "Israeli",
+  "Italian",
+  "Ivorian",
+  "Jamaican",
+  "Japanese",
+  "Jordanian",
+  "Kazakhstani",
+  "Kenyan",
+  "Kittian and Nevisian",
+  "Kuwaiti",
+  "Kyrgyz",
+  "Laotian",
+  "Latvian",
+  "Lebanese",
+  "Liberian",
+  "Libyan",
+  "Liechtensteiner",
+  "Lithuanian",
+  "Luxembourger",
+  "Macedonian",
+  "Malagasy",
+  "Malawian",
+  "Malaysian",
+  "Maldivian",
+  "Malian",
+  "Maltese",
+  "Marshallese",
+  "Mauritanian",
+  "Mauritian",
+  "Mexican",
+  "Micronesian",
+  "Moldovan",
+  "Monacan",
+  "Mongolian",
+  "Montenegrin",
+  "Moroccan",
+  "Mozambican",
+  "Namibian",
+  "Nauruan",
+  "Nepalese",
+  "New Zealander",
+  "Nicaraguan",
+  "Nigerian",
+  "Nigerien",
+  "North Korean",
+  "Northern Irish",
+  "Norwegian",
+  "Omani",
+  "Pakistani",
+  "Palauan",
+  "Palestinian",
+  "Panamanian",
+  "Papua New Guinean",
+  "Paraguayan",
+  "Peruvian",
+  "Polish",
+  "Portuguese",
+  "Qatari",
+  "Romanian",
+  "Russian",
+  "Rwandan",
+  "Saint Lucian",
+  "Salvadoran",
+  "Samoan",
+  "San Marinese",
+  "Sao Tomean",
+  "Saudi Arabian",
+  "Senegalese",
+  "Serbian",
+  "Seychellois",
+  "Sierra Leonean",
+  "Singaporean",
+  "Slovak",
+  "Slovenian",
+  "Solomon Islander",
+  "Somali",
+  "South African",
+  "South Korean",
+  "South Sudanese",
+  "Spanish",
+  "Sri Lankan",
   "Sudanese",
+  "Surinamer",
+  "Swazi",
+  "Swedish",
+  "Swiss",
+  "Syrian",
+  "Taiwanese",
+  "Tajik",
+  "Tanzanian",
+  "Thai",
+  "Togolese",
+  "Tongan",
+  "Trinidadian or Tobagonian",
+  "Tunisian",
+  "Turkish",
+  "Tuvaluan",
+  "Ugandan",
+  "Ukrainian",
+  "Uruguayan",
+  "Uzbekistani",
+  "Vanuatuan",
+  "Venezuelan",
+  "Vietnamese",
+  "Welsh",
+  "Yemenite",
+  "Zambian",
+  "Zimbabwean",
 ];
 
 export default function DependantsForm({ formData, setFormData, rooms }: any) {
@@ -516,31 +779,20 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     defaultCountry="GB"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`dob-${i}`} className="text-gray-600">
-                    Date of Birth *
-                  </Label>
-                  <Input
-                    id={`dob-${i}`}
-                    type="date"
-                    min={
-                      formData.guests?.[i]?.isKid
-                        ? fiveYearsAgo.toISOString().split("T")[0]
-                        : minDate
-                    }
-                    max={maxDate}
-                    value={formData.guests?.[i]?.dateOfBirth || ""}
-                    onChange={(e) =>
-                      handleDependantChange(i, "dateOfBirth", e.target.value)
-                    }
-                    className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                  />
-                  {errors[i]?.dob && (
-                    <p className="text-red-500 text-xs flex items-center gap-1 mt-1">
-                      <AlertCircle className="h-3 w-3" /> {errors[i].dob}
-                    </p>
-                  )}
-                </div>
+                <DateInput
+                  id={`dob-${i}`}
+                  label="Date of Birth"
+                  value={formData.guests?.[i]?.dateOfBirth || ""}
+                  onChange={(value) => handleDependantChange(i, "dateOfBirth", value)}
+                  min={
+                    formData.guests?.[i]?.isKid
+                      ? fiveYearsAgo.toISOString().split("T")[0]
+                      : minDate
+                  }
+                  max={maxDate}
+                  required={true}
+                  error={errors[i]?.dob}
+                />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
@@ -563,31 +815,25 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`nationality-${i}`} className="text-gray-600">
-                    Nationality *
-                  </Label>
-                  <Select
-                    value={formData.guests?.[i]?.nationality || ""}
-                    onValueChange={(value) =>
-                      handleDependantChange(i, "nationality", value)
-                    }
-                  >
-                    <SelectTrigger className="border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors">
-                      <SelectValue placeholder="Select nationality" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {nationalities.map((nationality) => (
-                        <SelectItem
-                          key={nationality}
-                          value={nationality.toLowerCase()}
-                        >
-                          {nationality}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <SearchableSelect
+                  value={
+                    formData.guests?.[i]?.nationality
+                      ? nationalities.find(
+                          (n) => n.toLowerCase() === formData.guests[i].nationality.toLowerCase()
+                        ) || ""
+                      : ""
+                  }
+                  onValueChange={(value) =>
+                    handleDependantChange(i, "nationality", value.toLowerCase())
+                  }
+                  options={nationalities}
+                  placeholder="Select nationality"
+                  searchPlaceholder="Search nationality..."
+                  emptyMessage="No nationality found."
+                  label="Nationality"
+                  required={true}
+                  id={`nationality-${i}`}
+                />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">
@@ -609,32 +855,18 @@ export default function DependantsForm({ formData, setFormData, rooms }: any) {
                     </p>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={`language-${i}`} className="text-gray-600">
-                    Language
-                  </Label>
-                  <Select
-                    value={formData.guests?.[i]?.language || ""}
-                    onValueChange={(value) =>
-                      handleDependantChange(i, "language", value)
-                    }
-                  >
-                    <SelectTrigger
-                      id={`language-${i}`}
-                      className="w-full border-gray-300 focus:border-[#F87D7D] focus:ring-[#F87D7D] transition-colors"
-                    >
-                      <SelectValue placeholder="Select preferred language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="English">English</SelectItem>
-                      <SelectItem value="Spanish">Spanish</SelectItem>
-                      <SelectItem value="French">French</SelectItem>
-                      <SelectItem value="German">German</SelectItem>
-                      <SelectItem value="Chinese">Chinese</SelectItem>
-                      <SelectItem value="Urdu">Urdu</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <SearchableSelect
+                  value={formData.guests?.[i]?.language || ""}
+                  onValueChange={(value) =>
+                    handleDependantChange(i, "language", value)
+                  }
+                  options={languages}
+                  placeholder="Select preferred language"
+                  searchPlaceholder="Search language..."
+                  emptyMessage="No language found."
+                  label="Language"
+                  id={`language-${i}`}
+                />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div className="space-y-2">

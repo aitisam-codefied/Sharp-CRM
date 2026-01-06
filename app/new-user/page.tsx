@@ -382,43 +382,12 @@ export default function NewUserPage() {
   };
 
   const isStep3Valid = () => {
-    const numDep = Number(formData.guests?.[0]?.numberOfDependents || 0);
-    const total = numDep + 1;
-
-    if (numDep === 0 || formData.sameEmergencyContact) {
-      const ec = formData.emergencyContact || {
-        fullName: "",
-        relationship: "",
-        phoneNumber: "",
-      };
-      return validateEmergencyContact(ec);
-    } else {
-      const ecs = formData.guests || [];
-      if (ecs.length !== total) return false;
-
-      return ecs.every((g: any) =>
-        validateEmergencyContact(g.emergencyContact)
-      );
-    }
+    // Step 3 is now optional - always return true
+    return true;
   };
 
   const isStep4Valid = () => {
-    // saare error messages empty hone chahiye aur saari fields filled
-    if (Object.values(medicalErrors).some((e) => e)) return false;
-
-    const numDep = Number(formData.guests[0]?.numberOfDependents || 0);
-    const total = numDep + 1;
-
-    for (let i = 0; i < total; i++) {
-      const g = formData.guests[i];
-      if (
-        !g?.medicalCondition?.trim() ||
-        !g?.allergies?.trim() ||
-        !g?.currentMedications?.trim()
-      ) {
-        return false;
-      }
-    }
+    // Step 4 is now optional - always return true
     return true;
   };
 
@@ -674,19 +643,24 @@ export default function NewUserPage() {
 
       apiFormData.append("locations", selectedLocationIds.join(","));
 
-      // Append emergencyContact fields
-      if (cleanedData.emergencyContact) {
+      // Append emergencyContact fields only if all fields have values
+      if (
+        cleanedData.emergencyContact &&
+        cleanedData.emergencyContact.fullName?.trim() &&
+        cleanedData.emergencyContact.phoneNumber?.trim() &&
+        cleanedData.emergencyContact.relationship?.trim()
+      ) {
         apiFormData.append(
           "emergencyContact[fullName]",
-          cleanedData.emergencyContact.fullName || ""
+          cleanedData.emergencyContact.fullName
         );
         apiFormData.append(
           "emergencyContact[phoneNumber]",
-          cleanedData.emergencyContact.phoneNumber || ""
+          cleanedData.emergencyContact.phoneNumber
         );
         apiFormData.append(
           "emergencyContact[relationship]",
-          cleanedData.emergencyContact.relationship || ""
+          cleanedData.emergencyContact.relationship
         );
       }
 
@@ -755,24 +729,25 @@ export default function NewUserPage() {
           apiFormData.append(`guests[${index}][address]`, guest.address);
         }
 
-        if (guest.medicalCondition) {
+        // Only append medical fields if they have values
+        if (guest.medicalCondition?.trim()) {
           apiFormData.append(
             `guests[${index}][medicalCondition]`,
-            guest.medicalCondition || ""
+            guest.medicalCondition
           );
         }
 
-        if (guest.allergies) {
+        if (guest.allergies?.trim()) {
           apiFormData.append(
             `guests[${index}][allergies]`,
-            guest.allergies || ""
+            guest.allergies
           );
         }
 
-        if (guest.currentMedications) {
+        if (guest.currentMedications?.trim()) {
           apiFormData.append(
             `guests[${index}][currentMedications]`,
-            guest.currentMedications || ""
+            guest.currentMedications
           );
         }
 
@@ -794,19 +769,24 @@ export default function NewUserPage() {
           }
         );
 
-        // Append emergencyContact for each guest
-        if (guest.emergencyContact) {
+        // Append emergencyContact for each guest only if all fields have values
+        if (
+          guest.emergencyContact &&
+          guest.emergencyContact.fullName?.trim() &&
+          guest.emergencyContact.phoneNumber?.trim() &&
+          guest.emergencyContact.relationship?.trim()
+        ) {
           apiFormData.append(
             `guests[${index}][emergencyContact][fullName]`,
-            guest.emergencyContact.fullName || ""
+            guest.emergencyContact.fullName
           );
           apiFormData.append(
             `guests[${index}][emergencyContact][phoneNumber]`,
-            guest.emergencyContact.phoneNumber || ""
+            guest.emergencyContact.phoneNumber
           );
           apiFormData.append(
             `guests[${index}][emergencyContact][relationship]`,
-            guest.emergencyContact.relationship || ""
+            guest.emergencyContact.relationship
           );
         }
       });
