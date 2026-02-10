@@ -52,6 +52,7 @@ interface AuthContextType {
     branch: Branch;
   }) => void;
   removeBranchFromCompany: (companyId: string, branchId: string) => void;
+  updateUserOnboardingStatus: (isOnboarded: boolean) => void;
   isLoading: boolean;
 }
 
@@ -186,6 +187,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateUserOnboardingStatus = (isOnboarded: boolean) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updatedUser = { ...prev, isOnboarded };
+      localStorage.setItem("sms_user", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   const logout = async () => {
     try {
       const token = localStorage.getItem("sms_access_token");
@@ -223,6 +233,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updateUserCompanies,
         updateUserBranchesManually,
         removeBranchFromCompany,
+        updateUserOnboardingStatus,
       }}
     >
       {children}

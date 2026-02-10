@@ -4,8 +4,8 @@ import withPWA from "next-pwa";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: "export",
-  output: "standalone",
+  output: "export",
+  // output: "standalone",
   eslint: {
     ignoreDuringBuilds: true,
   },

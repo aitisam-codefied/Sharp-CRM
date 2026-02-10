@@ -110,7 +110,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { user, updateUserCompanies, logout } = useAuth();
+  const { user, updateUserCompanies, updateUserOnboardingStatus, logout } = useAuth();
 
   const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
@@ -136,6 +136,10 @@ export default function OnboardingPage() {
 
       const newCompany = data.company;
       updateUserCompanies(newCompany);
+      
+      // Update onboarding status to true
+      updateUserOnboardingStatus(true);
+      
       queryClient.invalidateQueries({ queryKey: ["companies"] });
       router.push("/dashboard");
     },
