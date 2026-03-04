@@ -163,12 +163,12 @@ export default function FeedbackPage() {
                     />
                   </div>
                 </div>
-                <Input
+                {/* <Input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full"
-                />
+                /> */}
                 <Select
                   value={selectedBranch}
                   onValueChange={setSelectedBranch}
@@ -188,7 +188,7 @@ export default function FeedbackPage() {
                   </SelectContent>
                 </Select>
 
-                <Select
+                {/* <Select
                   value={selectedRating}
                   onValueChange={setSelectedRating}
                 >
@@ -202,7 +202,7 @@ export default function FeedbackPage() {
                     <SelectItem value="fair">Fair (2.5-3.4)</SelectItem>
                     <SelectItem value="poor">Poor (&lt;2.5)</SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
               </div>
 
               <FeedbackTable
